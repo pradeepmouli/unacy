@@ -31,15 +31,26 @@ type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
 const tempRegistry = createRegistry<'Celsius' | 'Fahrenheit'>()
   .register('Celsius', 'Fahrenheit', (c) => ((c * 9/5) + 32) as Fahrenheit);
 
-// Convert with type safety
+// Convert with type safety - two ways:
 const temp: Celsius = 25 as Celsius;
-const fahrenheit = tempRegistry.convert(temp, 'Celsius').to('Fahrenheit');
-console.log(fahrenheit); // 77
+
+// Method 1: convert() method
+const fahrenheit1 = tempRegistry.convert(temp, 'Celsius').to('Fahrenheit');
+
+// Method 2: unit accessor API
+const fahrenheit2 = tempRegistry.Celsius.to.Fahrenheit(temp);
+
+console.log(fahrenheit1); // 77
+console.log(fahrenheit2); // 77
 ```
 
 ## Usage Examples
 
 ### Basic Unit Conversions
+
+The library provides two API styles for conversions:
+
+#### Method 1: Using `convert()` method
 
 ```typescript
 import { createRegistry, type WithUnits } from '@unacy/core';
@@ -54,6 +65,21 @@ const distanceRegistry = createRegistry<'meters' | 'feet'>()
 const distance: Meters = 10 as Meters;
 const feet = distanceRegistry.convert(distance, 'meters').to('feet');
 console.log(feet); // 32.8084
+```
+
+#### Method 2: Using unit accessor API
+
+```typescript
+// Same registry as above
+const distance: Meters = 10 as Meters;
+
+// Access units directly via property syntax
+const feet = distanceRegistry.meters.to.feet(distance);
+console.log(feet); // 32.8084
+
+// Works in both directions
+const meters = distanceRegistry.feet.to.meters(32.8084 as Feet);
+console.log(meters); // 10
 ```
 
 ### Bidirectional Converters

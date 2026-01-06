@@ -278,3 +278,74 @@ describe('Registry - Performance', () => {
     expect(time2).toBeLessThanOrEqual(time1 * 2); // Allow some variance
   });
 });
+
+describe('Registry - Unit Accessor API', () => {
+  it('provides unit-based accessor API', () => {
+    const registry = createRegistry<'Celsius' | 'Fahrenheit'>().register(
+      'Celsius',
+      'Fahrenheit',
+      (c) => ((c * 9) / 5 + 32) as Fahrenheit
+    );
+
+    const temp = 0 as Celsius;
+    
+    // Use the unit accessor API: registry.celsius.to.fahrenheit(value)
+    const result = (registry as any).Celsius.to.Fahrenheit(temp);
+    
+    expect(result).toBe(32);
+    expectTypeOf(result).toEqualTypeOf<Fahrenheit>();
+  });
+
+  it('unit accessor API works with bidirectional converters', () => {
+    const registry = createRegistry<'meters' | 'kilometers'>().registerBidirectional(
+      'meters',
+      'kilometers',
+      {
+        to: (m) => (m / 1000) as Kilometers,
+        from: (km) => (km * 1000) as Meters
+      }
+    );
+
+    const meters = 5000 as Meters;
+    const km = 5 as Kilometers;
+    
+    // Both directions should work
+    const toKm = (registry as any).meters.to.kilometers(meters);
+    const toM = (registry as any).kilometers.to.meters(km);
+    
+    expect(toKm).toBe(5);
+    expect(toM).toBe(5000);
+  });
+
+  it('unit accessor API works with multi-hop conversions', () => {
+    const registry = createRegistry<'meters' | 'kilometers' | 'miles'>()
+      .registerBidirectional('meters', 'kilometers', {
+        to: (m) => (m / 1000) as Kilometers,
+        from: (km) => (km * 1000) as Meters
+      })
+      .registerBidirectional('kilometers', 'miles', {
+        to: (km) => (km * 0.621371) as Miles,
+        from: (mi) => (mi / 0.621371) as Kilometers
+      });
+
+    const meters = 5000 as Meters;
+    
+    // Should auto-compose: meters → kilometers → miles
+    const miles = (registry as any).meters.to.miles(meters);
+    
+    expect(miles).toBeCloseTo(3.106855, 5);
+  });
+
+  it('unit accessor API throws error when no converter exists', () => {
+    const registry = createRegistry<'A' | 'B' | 'C'>().register(
+      'A',
+      'B',
+      (a) => (a * 2) as any
+    );
+
+    // Try to convert from A to C (no path exists)
+    expect(() => {
+      (registry as any).A.to.C(10 as any);
+    }).toThrow(ConversionError);
+  });
+});

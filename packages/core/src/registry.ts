@@ -74,11 +74,24 @@ export interface ConverterRegistry<Units extends PropertyKey> {
 }
 
 /**
+ * Type for unit-based conversion accessors
+ * Provides the shape: registry.celsius.to.fahrenheit(value)
+ */
+export type UnitConversionAccessors<Units extends PropertyKey> = {
+  [From in Units]: {
+    to: {
+      [To in Exclude<Units, From>]: (value: WithUnits<any, From>) => WithUnits<any, To>;
+    };
+  };
+};
+
+/**
  * Internal implementation of ConverterRegistry
  */
 class ConverterRegistryImpl<Units extends PropertyKey> implements ConverterRegistry<Units> {
   private readonly graph: Map<PropertyKey, Map<PropertyKey, Converter<any, any>>>;
   private readonly pathCache: Map<string, Converter<any, any>>;
+  private readonly unitAccessors: Map<PropertyKey, any>;
 
   constructor(
     graph?: Map<PropertyKey, Map<PropertyKey, Converter<any, any>>>,
@@ -86,13 +99,54 @@ class ConverterRegistryImpl<Units extends PropertyKey> implements ConverterRegis
   ) {
     this.graph = graph || new Map();
     this.pathCache = pathCache || new Map();
+    this.unitAccessors = new Map();
+    
+    // Build unit accessors dynamically
+    this.buildUnitAccessors();
+  }
+  
+  /**
+   * Build dynamic unit accessors for fluent API: registry.celsius.to.fahrenheit(value)
+   */
+  private buildUnitAccessors(): void {
+    // Get all unique units from the graph
+    const allUnits = new Set<PropertyKey>();
+    for (const from of this.graph.keys()) {
+      allUnits.add(from);
+      const toMap = this.graph.get(from);
+      if (toMap) {
+        for (const to of toMap.keys()) {
+          allUnits.add(to);
+        }
+      }
+    }
+    
+    // For each unit, create a `to` object with converter functions
+    for (const fromUnit of allUnits) {
+      const toAccessors: any = {};
+      
+      for (const toUnit of allUnits) {
+        if (fromUnit !== toUnit) {
+          // Create converter function
+          toAccessors[toUnit] = (value: any) => {
+            const converter = this.getConverter(fromUnit as any, toUnit as any);
+            if (!converter) {
+              throw new ConversionError(fromUnit, toUnit, 'No converter found');
+            }
+            return converter(value);
+          };
+        }
+      }
+      
+      this.unitAccessors.set(fromUnit, { to: toAccessors });
+    }
   }
 
   register<From extends Units, To extends Exclude<Units, From>>(
     from: From,
     to: To,
     converter: Converter<WithUnits<any, From>, WithUnits<any, To>>
-  ): ConverterRegistry<Units> {
+  ): ConverterRegistry<Units> & UnitConversionAccessors<Units> {
     // Create new graph with the added converter
     const newGraph = new Map(this.graph);
 
@@ -104,20 +158,20 @@ class ConverterRegistryImpl<Units extends PropertyKey> implements ConverterRegis
     fromMap.set(to, converter);
     newGraph.set(from, fromMap);
 
-    // Return new registry instance (immutable)
-    return new ConverterRegistryImpl<Units>(newGraph, new Map());
+    // Return new registry instance (immutable) with proxy
+    return createRegistryFromGraph<Units>(newGraph, new Map());
   }
 
   registerBidirectional<From extends Units, To extends Exclude<Units, From>>(
     from: From,
     to: To,
     converter: BidirectionalConverter<WithUnits<any, From>, WithUnits<any, To>>
-  ): ConverterRegistry<Units> {
+  ): ConverterRegistry<Units> & UnitConversionAccessors<Units> {
     return this.register(from, to, converter.to).register(
       to as any,
       from as any,
       converter.from as any
-    );
+    ) as ConverterRegistry<Units> & UnitConversionAccessors<Units>;
   }
 
   getConverter<From extends Units, To extends Exclude<Units, From>>(
@@ -187,14 +241,50 @@ class ConverterRegistryImpl<Units extends PropertyKey> implements ConverterRegis
  * Create a new converter registry
  *
  * @template Units - Union type of all unit identifiers
- * @returns Empty converter registry
+ * @returns Empty converter registry with unit-based accessors
  *
  * @example
  * ```typescript
  * const registry = createRegistry<'Celsius' | 'Fahrenheit'>()
  *   .register('Celsius', 'Fahrenheit', c => (c * 9/5 + 32) as Fahrenheit);
+ * 
+ * // Method 1: Using convert() method
+ * const temp = 25 as Celsius;
+ * const f1 = registry.convert(temp, 'Celsius').to('Fahrenheit');
+ * 
+ * // Method 2: Using unit accessors
+ * const f2 = registry.celsius.to.fahrenheit(temp);
  * ```
  */
-export function createRegistry<Units extends PropertyKey>(): ConverterRegistry<Units> {
-  return new ConverterRegistryImpl<Units>();
+export function createRegistry<Units extends PropertyKey>(): ConverterRegistry<Units> & UnitConversionAccessors<Units> {
+  return createRegistryFromGraph<Units>();
+}
+
+/**
+ * Internal helper to create a registry with proxy from an existing graph
+ */
+function createRegistryFromGraph<Units extends PropertyKey>(
+  graph?: Map<PropertyKey, Map<PropertyKey, Converter<any, any>>>,
+  pathCache?: Map<string, Converter<any, any>>
+): ConverterRegistry<Units> & UnitConversionAccessors<Units> {
+  const registryImpl = new ConverterRegistryImpl<Units>(graph, pathCache);
+  
+  // Create a Proxy to intercept property access for unit accessors
+  return new Proxy(registryImpl, {
+    get(target: any, prop: string | symbol): any {
+      // If the property exists on the registry implementation, return it
+      if (prop in target || typeof prop === 'symbol') {
+        return target[prop];
+      }
+      
+      // Otherwise, check if it's a unit accessor
+      const unitAccessor = target.unitAccessors.get(prop);
+      if (unitAccessor) {
+        return unitAccessor;
+      }
+      
+      // Return undefined for unknown properties
+      return undefined;
+    }
+  }) as ConverterRegistry<Units> & UnitConversionAccessors<Units>;
 }
