@@ -17,15 +17,15 @@ Unacy Core provides type-safe unit and format conversions using TypeScript's typ
 **Testing**: Vitest (unit tests with compile-time type assertions via `expectTypeOf`)
 **Target Platform**: Node.js >=20.0.0, browser (ESM), edge runtimes
 **Project Type**: Single library package (monorepo structure: `packages/core`)
-**Performance Goals**: 
+**Performance Goals**:
   - Type operations resolve in <1s for typical conversion graphs (<100 units)
   - Registry lookup O(1) for direct conversions, O(V+E) BFS for multi-hop
   - Zero runtime overhead for type branding (phantom types)
-**Constraints**: 
+**Constraints**:
   - Tree-shakeable: unused converters must not be bundled
   - No `any` types in public API surface
   - Compile-time enforcement wherever possible over runtime checks
-**Scale/Scope**: 
+**Scale/Scope**:
   - Support 100+ unit types in a single registry without TS performance degradation
   - Handle conversion graphs with depth ≤5 hops efficiently
   - Public API surface <20 exported symbols
