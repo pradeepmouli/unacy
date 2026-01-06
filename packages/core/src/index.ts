@@ -4,76 +4,48 @@
  */
 
 import { z } from 'zod';
+import type { Tagged } from 'type-fest';
 
-/**
- * Represents an API response with status and data
- */
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
+export type WithUnits<T, U extends PropertyKey> = Tagged<T, 'Units', U>;
 
-/**
- * Validates an email address
- * @param email - The email address to validate
- * @returns true if valid, false otherwise
- * @example
- * ```ts
- * isValidEmail('user@example.com'); // true
- * isValidEmail('invalid'); // false
- * ```
- */
-export function isValidEmail(email: string): boolean {
-  const emailSchema = z.string().email();
-  return emailSchema.safeParse(email).success;
-}
+export type WithFormat<T, F extends string> = Tagged<T, 'Format', F>;
 
-/**
- * Creates a successful API response
- * @param data - The response data
- * @returns An API response with success=true
- * @example
- * ```ts
- * const response = createSuccessResponse({ id: 1, name: 'John' });
- * // { success: true, data: { id: 1, name: 'John' } }
- * ```
- */
-export function createSuccessResponse<T>(data: T): ApiResponse<T> {
-  return {
-    success: true,
-    data
+export type Converter<
+  TInput extends WithUnits<unknown, PropertyKey>,
+  TOutput extends WithUnits<unknown, PropertyKey>
+> = (input: TInput) => TOutput;
+
+export type BidirectionalConverter<
+  TInput extends WithUnits<unknown, PropertyKey>,
+  TOutput extends WithUnits<unknown, PropertyKey>
+> = {
+  to: Converter<TInput, TOutput>;
+  from: Converter<TOutput, TInput>;
+};
+
+export type Formatter<TInput extends WithFormat<unknown, string>> = (input: TInput) => string;
+
+export type Parser<TOutput extends WithFormat<unknown, string>> = (input: string) => TOutput;
+
+export type FormatterParser<T extends WithFormat<unknown, string>> = {
+  format: Formatter<T>;
+  parse: Parser<T>;
+};
+
+export type ConverterRegistry<Units extends PropertyKey> = {
+  [input in Units]: {
+    to: {
+      [output in Exclude<Units, input>]: Converter<
+        WithUnits<unknown, input>,
+        WithUnits<unknown, output>
+      >;
+    };
   };
-}
-
-/**
- * Creates an error API response
- * @param error - The error message
- * @returns An API response with success=false
- * @example
- * ```ts
- * const response = createErrorResponse('Not found');
- * // { success: false, error: 'Not found' }
- * ```
- */
-export function createErrorResponse(error: string): ApiResponse<never> {
-  return {
-    success: false,
-    error
-  };
-}
-
-/**
- * Delays execution for a specified number of milliseconds
- * @param ms - Milliseconds to delay
- * @returns A promise that resolves after the delay
- * @example
- * ```ts
- * await delay(1000); // Wait 1 second
- * ```
- */
-export async function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
+} & {
+  register<
+    TInput extends WithUnits<unknown, PropertyKey>,
+    TOutput extends WithUnits<unknown, PropertyKey>
+  >(
+    converter: Converter<TInput, TOutput>
+  ): ConverterRegistry<Units> & ConverterRegistry<TInput['Units'] | TOutput['Units']>;
+};
