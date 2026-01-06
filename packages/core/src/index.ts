@@ -1,51 +1,23 @@
 /**
- * Core utility functions and types for the monorepo
+ * Unacy Core - Type-safe unit and format conversion library
  * @packageDocumentation
  */
 
-import { z } from 'zod';
-import type { Tagged } from 'type-fest';
+// Core types
+export type { WithUnits, WithFormat } from './types';
 
-export type WithUnits<T, U extends PropertyKey> = Tagged<T, 'Units', U>;
+// Converter types
+export type { Converter, BidirectionalConverter } from './converters';
 
-export type WithFormat<T, F extends string> = Tagged<T, 'Format', F>;
+// Formatter/Parser types
+export type { Formatter, Parser, FormatterParser } from './formatters';
 
-export type Converter<
-  TInput extends WithUnits<unknown, PropertyKey>,
-  TOutput extends WithUnits<unknown, PropertyKey>
-> = (input: TInput) => TOutput;
+// Registry
+export type { ConverterRegistry } from './registry';
+export { createRegistry } from './registry';
 
-export type BidirectionalConverter<
-  TInput extends WithUnits<unknown, PropertyKey>,
-  TOutput extends WithUnits<unknown, PropertyKey>
-> = {
-  to: Converter<TInput, TOutput>;
-  from: Converter<TOutput, TInput>;
-};
+// Errors
+export { UnacyError, CycleError, MaxDepthError, ConversionError, ParseError } from './errors';
 
-export type Formatter<TInput extends WithFormat<unknown, string>> = (input: TInput) => string;
-
-export type Parser<TOutput extends WithFormat<unknown, string>> = (input: string) => TOutput;
-
-export type FormatterParser<T extends WithFormat<unknown, string>> = {
-  format: Formatter<T>;
-  parse: Parser<T>;
-};
-
-export type ConverterRegistry<Units extends PropertyKey> = {
-  [input in Units]: {
-    to: {
-      [output in Exclude<Units, input>]: Converter<
-        WithUnits<unknown, input>,
-        WithUnits<unknown, output>
-      >;
-    };
-  };
-} & {
-  register<
-    TInput extends WithUnits<unknown, PropertyKey>,
-    TOutput extends WithUnits<unknown, PropertyKey>
-  >(
-    converter: Converter<TInput, TOutput>
-  ): ConverterRegistry<Units> & ConverterRegistry<TInput['Units'] | TOutput['Units']>;
-};
+// Utilities
+export { createParserWithSchema } from './utils/validation';
