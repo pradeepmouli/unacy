@@ -1,5 +1,5 @@
 {
-  "name": "@company/ts-template",
+  "name": "unacy-monorepo",
   "version": "1.0.0",
   "private": true,
   "description": "TypeScript monorepo template with pnpm, oxlint, oxfmt, and Vitest",
@@ -12,15 +12,15 @@
     "typescript",
     "vitest"
   ],
-  "homepage": "https://github.com/your-org/ts-template#readme",
+  "homepage": "https://github.com/pradeepmouli/unacy#readme",
   "bugs": {
-    "url": "https://github.com/your-org/ts-template/issues"
+    "url": "https://github.com/pradeepmouli/unacy/issues"
   },
   "license": "MIT",
-  "author": "Your Name <your.email@example.com>",
+  "author": "Pradeep Mouli <pradeep.mouli@example.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/ts-template.git"
+    "url": "https://github.com/pradeepmouli/unacy.git"
   },
   "workspaces": [
     "packages/*"
@@ -57,12 +57,12 @@
     "@commitlint/types": "^20.2.0",
     "@size-limit/preset-small-lib": "^12.0.0",
     "@types/node": "^25.0.3",
-    "@typescript/native-preview": "7.0.0-dev.20251231.1",
+    "@typescript/native-preview": "7.0.0-dev.20260106.1",
     "@vitest/coverage-v8": "^4.0.16",
     "@vitest/ui": "^4.0.16",
     "lint-staged": "^16.2.7",
-    "oxfmt": "^0.21.0",
-    "oxlint": "^1.36.0",
+    "oxfmt": "^0.23.0",
+    "oxlint": "^1.38.0",
     "simple-git-hooks": "^2.13.1",
     "size-limit": "^12.0.0",
     "type-fest": "^5.3.1",

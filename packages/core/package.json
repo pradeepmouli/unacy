@@ -1,36 +1,40 @@
 {
-  "name": "@company/core",
+  "name": "@unacy/core",
   "version": "0.1.0",
-  "description": "Core utilities for the monorepo",
+  "description": "Type-safe unit and format conversion library",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "author": "Pradeep Mouli",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "import": "./dist/index.js"
     }
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
-    "build": "tsgo -p tsconfig.json",
+    "build": "tsc",
     "clean": "rm -rf dist",
-    "dev": "tsx watch src/index.ts",
-    "type-check": "tsgo --noEmit -p tsconfig.json",
+    "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
-    "zod": "^4.2.1"
+    "type-fest": "^5.3.1",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
-    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.16"
   },
-  "keywords": [
-    "core",
-    "utilities"
-  ],
-  "license": "MIT"
+  "engines": {
+    "node": ">=20.0.0"
+  }
 }
