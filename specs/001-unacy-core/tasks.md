@@ -293,4 +293,3 @@ With multiple developers:
 - Commit after each user story completion (T020, T043, T057)
 - Each story checkpoint should be independently deployable
 - Run quickstart.md validation in T070 to ensure API matches documentation
-

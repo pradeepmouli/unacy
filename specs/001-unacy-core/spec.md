@@ -1,8 +1,8 @@
 # Feature Specification: Unacy Core Conversion Library
 
-**Feature Branch**: `001-unacy-core`  
-**Created**: 2026-01-06  
-**Status**: Draft  
+**Feature Branch**: `001-unacy-core`
+**Created**: 2026-01-06
+**Status**: Draft
 **Input**: User description: "create a specification for this library using the attached code as a strawman/context"
 
 ## User Scenarios & Testing *(mandatory)*
