@@ -48,8 +48,8 @@ export function findShortestPath(
     // Explore neighbors
     for (const neighbor of neighbors.keys()) {
       // Check max depth before extending path
-      // path currently has N nodes, adding neighbor makes N+1 nodes = N edges
-      const numEdges = path.length; // This will be the number of edges after adding neighbor
+      // path currently has N nodes (N-1 edges); adding neighbor would make N+1 nodes (N edges)
+      const numEdges = path.length; // Number of edges after adding neighbor
       if (numEdges > MAX_DEPTH) {
         throw new MaxDepthError(from, to, MAX_DEPTH);
       }
