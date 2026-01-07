@@ -13,7 +13,7 @@ export type { Converter, BidirectionalConverter } from './converters';
 export type { Formatter, Parser, FormatterParser } from './formatters';
 
 // Registry
-export type { ConverterRegistry, UnitConversionAccessors } from './registry';
+export type { ConverterRegistry } from './registry';
 export { createRegistry } from './registry';
 
 // Errors

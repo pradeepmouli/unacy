@@ -63,7 +63,7 @@ describe('Parser Type', () => {
       const schema = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
       try {
         return schema.parse(input) as HexColor;
-      } catch (err) {
+      } catch {
         throw new ParseError('HexColor', input, 'Expected #RRGGBB format');
       }
     };

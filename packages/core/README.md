@@ -28,46 +28,21 @@ type Celsius = WithUnits<number, 'Celsius'>;
 type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
 
 // Create a registry
-const tempRegistry = createRegistry<'Celsius' | 'Fahrenheit'>()
+const tempRegistry = createRegistry()
   .register('Celsius', 'Fahrenheit', (c) => ((c * 9/5) + 32) as Fahrenheit);
 
 // Convert with type safety - two ways:
 const temp: Celsius = 25 as Celsius;
 
-// Method 1: convert() method
-const fahrenheit1 = tempRegistry.convert(temp, 'Celsius').to('Fahrenheit');
+// Method 1: unit accessor API
+const fahrenheit2 = tempRegistry.Celsius.to.Fahrenheit(temp as Celsius) satisfies Fahrenheit;
 
-// Method 2: unit accessor API
-const fahrenheit2 = tempRegistry.Celsius.to.Fahrenheit(temp);
-
-console.log(fahrenheit1); // 77
 console.log(fahrenheit2); // 77
 ```
 
 ## Usage Examples
 
 ### Basic Unit Conversions
-
-The library provides two API styles for conversions:
-
-#### Method 1: Using `convert()` method
-
-```typescript
-import { createRegistry, type WithUnits } from '@unacy/core';
-
-type Meters = WithUnits<number, 'meters'>;
-type Feet = WithUnits<number, 'feet'>;
-
-const distanceRegistry = createRegistry<'meters' | 'feet'>()
-  .register('meters', 'feet', (m) => (m * 3.28084) as Feet)
-  .register('feet', 'meters', (ft) => (ft / 3.28084) as Meters);
-
-const distance: Meters = 10 as Meters;
-const feet = distanceRegistry.convert(distance, 'meters').to('feet');
-console.log(feet); // 32.8084
-```
-
-#### Method 2: Using unit accessor API
 
 ```typescript
 // Same registry as above
@@ -78,7 +53,7 @@ const feet = distanceRegistry.meters.to.feet(distance);
 console.log(feet); // 32.8084
 
 // Works in both directions
-const meters = distanceRegistry.feet.to.meters(32.8084 as Feet);
+const meters = distanceRegistry.feet.to.meters(32.8084 as Feet) satisfies Meters;
 console.log(meters); // 10
 ```
 
@@ -179,7 +154,7 @@ const date: ISO8601 = new Date() as ISO8601;
 Unidirectional converter function.
 
 ```typescript
-const c2f: Converter<Celsius, Fahrenheit> = (c) => 
+const c2f: Converter<Celsius, Fahrenheit> = (c) =>
   ((c * 9/5) + 32) as Fahrenheit;
 ```
 

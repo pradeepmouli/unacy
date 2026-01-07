@@ -4,14 +4,48 @@
  */
 
 import type { Converter, BidirectionalConverter } from './converters';
-import type { WithUnits } from './types';
+import type { RelaxedWithUnits, UnitsFor, WithUnits } from './types';
+import type { UnionToTuple, TupleToObject, TupleToUnion, GetTagMetadata } from 'type-fest';
 import { ConversionError } from './errors';
 import { findShortestPath, composeConverters } from './utils/graph';
 
 /**
+ * Represents a conversion edge from one unit to another
+ */
+type Edge<From extends string = string, To extends string = string> = readonly [From, To];
+
+/**
+ * Extract all unique 'from' units from a list of edges
+ */
+type FromUnits<Edges extends readonly Edge[]> = Edges[number][0];
+
+/**
+ * Extract all 'to' units for a specific 'from' unit string
+ */
+type ToUnitsFor<Edges extends readonly Edge[], FromUnit extends string> = Extract<
+  Edges[number],
+  readonly [FromUnit, any]
+>[1];
+
+/**
+ * Type for unit-based conversion accessors
+ * Provides the shape: registry.Celsius.to.Fahrenheit(value)
+ * Only allows conversions that have been registered
+ */
+export type ConverterMap<Edges extends readonly Edge[]> = {
+  [From in FromUnits<Edges>]: {
+    to: {
+      [To in ToUnitsFor<Edges, From>]: (
+        value: RelaxedWithUnits<number, From>
+      ) /*To avoid having to cast*/ => WithUnits<number, To>;
+    };
+  };
+};
+
+/**
  * Registry for managing and composing unit converters
  */
-export interface ConverterRegistry<Units extends PropertyKey> {
+export interface ConverterRegistry<Edges extends Edge[] = []> {
   /**
    * Register a unidirectional converter
    *
@@ -20,12 +54,12 @@ export interface ConverterRegistry<Units extends PropertyKey> {
    * @param converter - Converter function
    * @returns New registry instance with the converter registered
    */
-  register<From extends Units, To extends Exclude<Units, From>>(
-    from: From,
-    to: To,
-    converter: Converter<WithUnits<any, From>, WithUnits<any, To>>
-  ): ConverterRegistry<Units>;
-
+  register<From extends WithUnits<number, string>, To extends WithUnits<number, string>>(
+    from: UnitsFor<From>,
+    to: UnitsFor<To>,
+    converter: Converter<From, To>
+  ): ConverterRegistry<[...Edges, Edge<UnitsFor<From>, UnitsFor<To>>]> &
+    ConverterMap<[...Edges, Edge<UnitsFor<From>, UnitsFor<To>>]>;
   /**
    * Register a bidirectional converter (both directions)
    *
@@ -34,12 +68,65 @@ export interface ConverterRegistry<Units extends PropertyKey> {
    * @param converter - Bidirectional converter object
    * @returns New registry instance with both converters registered
    */
-  registerBidirectional<From extends Units, To extends Exclude<Units, From>>(
-    from: From,
-    to: To,
-    converter: BidirectionalConverter<WithUnits<any, From>, WithUnits<any, To>>
-  ): ConverterRegistry<Units>;
+  register<From extends WithUnits<number, string>, To extends WithUnits<number, string>>(
+    from: UnitsFor<From>,
+    to: UnitsFor<To>,
+    converter: BidirectionalConverter<From, To>
+  ): ConverterRegistry<
+    [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
+  > &
+    ConverterMap<
+      [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
+    >;
 
+  /**
+   * Register a bidirectional converter (both directions)
+   * @deprecated Use register() with BidirectionalConverter instead
+   *
+   * @param from - First unit
+   * @param to - Second unit
+   * @param converter - Bidirectional converter object
+   * @returns New registry instance with both converters registered
+   */
+  registerBidirectional<
+    From extends WithUnits<number, string>,
+    To extends WithUnits<number, string>
+  >(
+    from: UnitsFor<From>,
+    to: UnitsFor<To>,
+    converter: BidirectionalConverter<From, To>
+  ): ConverterRegistry<
+    [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
+  > &
+    ConverterMap<
+      [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
+    >;
+  /**
+   * Explicitly allow a conversion path in the type system (for multi-hop conversions)
+   *
+   * This method verifies that a conversion path exists at runtime (via BFS) and adds it
+   * to the type system so it can be used with type-safe accessor syntax.
+   *
+   * @param from - Source unit string
+   * @param to - Destination unit string
+   * @returns New registry instance with the conversion path enabled in types
+   * @throws ConversionError if no path exists between the units
+   *
+   * @example
+   * ```typescript
+   * const registry = createRegistry()
+   *   .register('Celsius', 'Kelvin', c => (c + 273.15) as Kelvin)
+   *   .register('Kelvin', 'Fahrenheit', k => ((k - 273.15) * 9/5 + 32) as Fahrenheit)
+   *   .allow('Celsius', 'Fahrenheit'); // Enable multi-hop path in types
+   *
+   * // Now type-safe:
+   * const f = registry.Celsius.to.Fahrenheit(temp);
+   * ```
+   */
+  allow<From extends string, To extends string>(
+    from: From,
+    to: To
+  ): ConverterRegistry<[...Edges, Edge<From, To>]> & ConverterMap<[...Edges, Edge<From, To>]>;
   /**
    * Get a converter (direct or composed via BFS)
    *
@@ -47,48 +134,29 @@ export interface ConverterRegistry<Units extends PropertyKey> {
    * @param to - Destination unit
    * @returns Converter function, or undefined if no path exists
    */
-  getConverter<From extends Units, To extends Exclude<Units, From>>(
-    from: From,
-    to: To
-  ): Converter<WithUnits<any, From>, WithUnits<any, To>> | undefined;
-
+  getConverter<From extends WithUnits<number, string>, To extends WithUnits<number, string>>(
+    from: UnitsFor<From>,
+    to: UnitsFor<To>
+  ): Converter<From, To> | undefined;
   /**
-   * Fluent conversion API
+   * Convert a value using fluent API
    *
    * @param value - Value to convert
-   * @returns Object with `to()` method for specifying target unit
-   *
-   * @example
-   * ```typescript
-   * const temp: Celsius = 25 as Celsius;
-   * // Pass the unit explicitly via a wrapper object
-   * const result = registry.convert(temp, 'Celsius').to('Fahrenheit');
-   * ```
+   * @param fromUnit - Source unit
+   * @returns Object with to() method for conversion
    */
-  convert<From extends Units>(
-    value: WithUnits<any, From>,
-    fromUnit: From
+  convert<From extends WithUnits<number, string>>(
+    value: From,
+    fromUnit: UnitsFor<From>
   ): {
-    to<To extends Exclude<Units, From>>(unit: To): WithUnits<any, To>;
+    to<To extends WithUnits<number, string>>(unit: UnitsFor<To>): To;
   };
 }
 
 /**
- * Type for unit-based conversion accessors
- * Provides the shape: registry.celsius.to.fahrenheit(value)
- */
-export type UnitConversionAccessors<Units extends PropertyKey> = {
-  [From in Units]: {
-    to: {
-      [To in Exclude<Units, From>]: (value: WithUnits<any, From>) => WithUnits<any, To>;
-    };
-  };
-};
-
-/**
  * Internal implementation of ConverterRegistry
  */
-class ConverterRegistryImpl<Units extends PropertyKey> implements ConverterRegistry<Units> {
+class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegistry<Edges> {
   private readonly graph: Map<PropertyKey, Map<PropertyKey, Converter<any, any>>>;
   private readonly pathCache: Map<string, Converter<any, any>>;
   private readonly unitAccessors: Map<PropertyKey, any>;
@@ -100,16 +168,16 @@ class ConverterRegistryImpl<Units extends PropertyKey> implements ConverterRegis
     this.graph = graph || new Map();
     this.pathCache = pathCache || new Map();
     this.unitAccessors = new Map();
-    
+
     // Build unit accessors dynamically
     this.buildUnitAccessors();
   }
-  
+
   /**
-   * Build dynamic unit accessors for fluent API: registry.celsius.to.fahrenheit(value)
+   * Build dynamic unit accessors for fluent API: registry.Celsius.to.Fahrenheit(value)
    */
   private buildUnitAccessors(): void {
-    // Get all unique units from the graph
+    // Get all unique units from the graph (both from and to)
     const allUnits = new Set<PropertyKey>();
     for (const from of this.graph.keys()) {
       allUnits.add(from);
@@ -120,14 +188,14 @@ class ConverterRegistryImpl<Units extends PropertyKey> implements ConverterRegis
         }
       }
     }
-    
+
     // For each unit, create a `to` object with converter functions
     for (const fromUnit of allUnits) {
       const toAccessors: any = {};
-      
+
       for (const toUnit of allUnits) {
         if (fromUnit !== toUnit) {
-          // Create converter function
+          // Create converter function that will look up the converter at call time
           toAccessors[toUnit] = (value: any) => {
             const converter = this.getConverter(fromUnit as any, toUnit as any);
             if (!converter) {
@@ -137,17 +205,49 @@ class ConverterRegistryImpl<Units extends PropertyKey> implements ConverterRegis
           };
         }
       }
-      
-      this.unitAccessors.set(fromUnit, { to: toAccessors });
+
+      // Wrap toAccessors in a Proxy to handle unknown units dynamically
+      const toProxy = new Proxy(toAccessors, {
+        get: (target: any, toProp: string | symbol) => {
+          if (typeof toProp === 'symbol') {
+            return target[toProp];
+          }
+          // If accessor exists, return it
+          if (toProp in target) {
+            return target[toProp];
+          }
+          // Otherwise, create a dynamic converter function
+          return (value: any) => {
+            const converter = this.getConverter(fromUnit as any, toProp as any);
+            if (!converter) {
+              throw new ConversionError(fromUnit, toProp, 'No converter found');
+            }
+            return converter(value);
+          };
+        }
+      });
+
+      this.unitAccessors.set(fromUnit, { to: toProxy });
     }
   }
 
-  register<From extends Units, To extends Exclude<Units, From>>(
-    from: From,
-    to: To,
-    converter: Converter<WithUnits<any, From>, WithUnits<any, To>>
-  ): ConverterRegistry<Units> & UnitConversionAccessors<Units> {
-    // Create new graph with the added converter
+  register<From extends WithUnits<number, string>, To extends WithUnits<number, string>>(
+    from: UnitsFor<From>,
+    to: UnitsFor<To>,
+    converter: Converter<From, To> | BidirectionalConverter<From, To>
+  ): ConverterRegistry<any> & ConverterMap<any> {
+    // Check if it's a bidirectional converter
+    if (typeof converter === 'object' && 'to' in converter && 'from' in converter) {
+      // Handle bidirectional converter
+      const biConverter = converter as BidirectionalConverter<From, To>;
+      return this.register(from, to, biConverter.to).register(
+        to as any,
+        from as any,
+        biConverter.from as any
+      ) as any;
+    }
+
+    // Handle unidirectional converter
     const newGraph = new Map(this.graph);
 
     if (!newGraph.has(from)) {
@@ -155,29 +255,55 @@ class ConverterRegistryImpl<Units extends PropertyKey> implements ConverterRegis
     }
 
     const fromMap = new Map(newGraph.get(from)!);
-    fromMap.set(to, converter);
+    fromMap.set(to, converter as Converter<From, To>);
     newGraph.set(from, fromMap);
 
     // Return new registry instance (immutable) with proxy
-    return createRegistryFromGraph<Units>(newGraph, new Map());
+    return createRegistryFromGraph<[...Edges, Edge<UnitsFor<From>, UnitsFor<To>>]>(
+      newGraph,
+      new Map()
+    );
   }
 
-  registerBidirectional<From extends Units, To extends Exclude<Units, From>>(
-    from: From,
-    to: To,
-    converter: BidirectionalConverter<WithUnits<any, From>, WithUnits<any, To>>
-  ): ConverterRegistry<Units> & UnitConversionAccessors<Units> {
+  registerBidirectional<
+    From extends WithUnits<number, string>,
+    To extends WithUnits<number, string>
+  >(
+    from: UnitsFor<From>,
+    to: UnitsFor<To>,
+    converter: BidirectionalConverter<From, To>
+  ): ConverterRegistry<
+    [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
+  > &
+    ConverterMap<
+      [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
+    > {
     return this.register(from, to, converter.to).register(
       to as any,
       from as any,
       converter.from as any
-    ) as ConverterRegistry<Units> & UnitConversionAccessors<Units>;
+    ) as any;
   }
 
-  getConverter<From extends Units, To extends Exclude<Units, From>>(
+  allow<From extends string, To extends string>(
     from: From,
     to: To
-  ): Converter<WithUnits<any, From>, WithUnits<any, To>> | undefined {
+  ): ConverterRegistry<[...Edges, Edge<From, To>]> & ConverterMap<[...Edges, Edge<From, To>]> {
+    // Verify that a conversion path exists at runtime
+    const converter = this.getConverter(from as any, to as any);
+    if (!converter) {
+      throw new ConversionError(from, to, 'No conversion path exists');
+    }
+
+    // Return the same registry instance with updated type information
+    // The actual conversion already works via BFS, we just need to expose it in types
+    return this as any;
+  }
+
+  getConverter<From extends WithUnits<number, string>, To extends WithUnits<number, string>>(
+    from: UnitsFor<From>,
+    to: UnitsFor<To>
+  ): Converter<From, To> | undefined {
     // Check cache first
     const cacheKey = `${String(from)}->${String(to)}`;
     const cached = this.pathCache.get(cacheKey);
@@ -219,19 +345,19 @@ class ConverterRegistryImpl<Units extends PropertyKey> implements ConverterRegis
     }
   }
 
-  convert<From extends Units>(
-    value: WithUnits<any, From>,
-    fromUnit: From
+  convert<From extends WithUnits<number, string>>(
+    value: From,
+    fromUnit: UnitsFor<From>
   ): {
-    to<To extends Exclude<Units, From>>(unit: To): WithUnits<any, To>;
+    to<To extends WithUnits<number, string>>(unit: UnitsFor<To>): To;
   } {
     return {
-      to: <To extends Exclude<Units, From>>(unit: To): WithUnits<any, To> => {
+      to: <To extends WithUnits<number, string>>(unit: UnitsFor<To>): To => {
         const converter = this.getConverter(fromUnit as any, unit as any);
         if (!converter) {
           throw new ConversionError(fromUnit, unit, 'No converter found');
         }
-        return converter(value);
+        return converter(value) as To;
       }
     };
   }
@@ -240,35 +366,34 @@ class ConverterRegistryImpl<Units extends PropertyKey> implements ConverterRegis
 /**
  * Create a new converter registry
  *
- * @template Units - Union type of all unit identifiers
  * @returns Empty converter registry with unit-based accessors
  *
  * @example
  * ```typescript
- * const registry = createRegistry<'Celsius' | 'Fahrenheit'>()
- *   .register('Celsius', 'Fahrenheit', c => (c * 9/5 + 32) as Fahrenheit);
- * 
- * // Method 1: Using convert() method
- * const temp = 25 as Celsius;
- * const f1 = registry.convert(temp, 'Celsius').to('Fahrenheit');
- * 
- * // Method 2: Using unit accessors
- * const f2 = registry.celsius.to.fahrenheit(temp);
+ * type Celsius = WithUnits<number, 'Celsius'>;
+ * type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
+ *
+ * const registry = createRegistry()
+ *   .register('Celsius', 'Fahrenheit', (c: Celsius) => ((c * 9/5) + 32) as Fahrenheit);
+ *
+ * const temp: Celsius = 25 as Celsius;
+ * const fahrenheit = registry.Celsius.to.Fahrenheit(temp);
+ * console.log(fahrenheit); // 77
  * ```
  */
-export function createRegistry<Units extends PropertyKey>(): ConverterRegistry<Units> & UnitConversionAccessors<Units> {
-  return createRegistryFromGraph<Units>();
+export function createRegistry(): ConverterRegistry<[]> & ConverterMap<[]> {
+  return createRegistryFromGraph<[]>();
 }
 
 /**
  * Internal helper to create a registry with proxy from an existing graph
  */
-function createRegistryFromGraph<Units extends PropertyKey>(
+function createRegistryFromGraph<Edges extends Edge[] = []>(
   graph?: Map<PropertyKey, Map<PropertyKey, Converter<any, any>>>,
   pathCache?: Map<string, Converter<any, any>>
-): ConverterRegistry<Units> & UnitConversionAccessors<Units> {
-  const registryImpl = new ConverterRegistryImpl<Units>(graph, pathCache);
-  
+): ConverterRegistry<Edges> & ConverterMap<Edges> {
+  const registryImpl = new ConverterRegistryImpl<Edges>(graph, pathCache);
+
   // Create a Proxy to intercept property access for unit accessors
   return new Proxy(registryImpl, {
     get(target: any, prop: string | symbol): any {
@@ -276,15 +401,34 @@ function createRegistryFromGraph<Units extends PropertyKey>(
       if (prop in target || typeof prop === 'symbol') {
         return target[prop];
       }
-      
+
       // Otherwise, check if it's a unit accessor
       const unitAccessor = target.unitAccessors.get(prop);
       if (unitAccessor) {
         return unitAccessor;
       }
-      
-      // Return undefined for unknown properties
-      return undefined;
+
+      // For unknown units, create a dynamic accessor that will throw ConversionError
+      // This handles cases where a unit is referenced but not in the registry
+      return {
+        to: new Proxy(
+          {},
+          {
+            get: (_: any, toProp: string | symbol) => {
+              if (typeof toProp === 'symbol') {
+                return undefined;
+              }
+              return (value: any) => {
+                const converter = target.getConverter(prop as any, toProp as any);
+                if (!converter) {
+                  throw new ConversionError(prop, toProp, 'No converter found');
+                }
+                return converter(value);
+              };
+            }
+          }
+        )
+      };
     }
-  }) as ConverterRegistry<Units> & UnitConversionAccessors<Units>;
+  }) as ConverterRegistry<Edges> & ConverterMap<Edges>;
 }

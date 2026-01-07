@@ -71,9 +71,8 @@ describe('WithUnits Type Safety', () => {
     expect(money).toBe('100.50');
   });
 
-  it('supports symbol as unit identifier', () => {
-    const customUnit = Symbol('custom');
-    type CustomUnit = WithUnits<number, typeof customUnit>;
+  it('supports string literal as unit identifier', () => {
+    type CustomUnit = WithUnits<number, 'CustomUnit'>;
 
     const value: CustomUnit = 42 as CustomUnit;
 

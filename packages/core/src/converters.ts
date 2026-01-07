@@ -26,8 +26,8 @@ import type { WithUnits } from './types';
  * ```
  */
 export type Converter<
-  TInput extends WithUnits<unknown, PropertyKey>,
-  TOutput extends WithUnits<unknown, PropertyKey>
+  TInput extends WithUnits<unknown, string>,
+  TOutput extends WithUnits<unknown, string>
 > = (input: TInput) => TOutput;
 
 /**
@@ -53,8 +53,8 @@ export type Converter<
  * ```
  */
 export type BidirectionalConverter<
-  TInput extends WithUnits<unknown, PropertyKey>,
-  TOutput extends WithUnits<unknown, PropertyKey>
+  TInput extends WithUnits<unknown, string>,
+  TOutput extends WithUnits<unknown, string>
 > = {
   to: Converter<TInput, TOutput>;
   from: Converter<TOutput, TInput>;

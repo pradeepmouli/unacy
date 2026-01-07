@@ -28,12 +28,12 @@ Monorepo structure: `packages/core/`
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Initialize `packages/core` as TypeScript library with proper configuration
-- [ ] T002 [P] Create `packages/core/src/` directory structure with subdirectories (`utils/`, `__tests__/`)
-- [ ] T003 [P] Create `packages/core/tsconfig.json` extending root tsconfig with proper output settings
-- [ ] T004 [P] Update `packages/core/package.json` with dependencies (type-fest, zod) and TypeScript configuration
-- [ ] T005 Configure Vitest in `packages/core/` with `expectTypeOf` support for type assertions
-- [ ] T006 Create initial `packages/core/README.md` with feature overview and quick link to spec
+- [X] T001 Initialize `packages/core` as TypeScript library with proper configuration
+- [X] T002 [P] Create `packages/core/src/` directory structure with subdirectories (`utils/`, `__tests__/`)
+- [X] T003 [P] Create `packages/core/tsconfig.json` extending root tsconfig with proper output settings
+- [X] T004 [P] Update `packages/core/package.json` with dependencies (type-fest, zod) and TypeScript configuration
+- [X] T005 Configure Vitest in `packages/core/` with `expectTypeOf` support for type assertions
+- [X] T006 Create initial `packages/core/README.md` with feature overview and quick link to spec
 
 ---
 
@@ -41,12 +41,12 @@ Monorepo structure: `packages/core/`
 
 **Purpose**: Core type definitions and error classes needed by all user stories
 
-- [ ] T007 [P] Create `packages/core/src/types.ts` with `WithUnits<T, U>` type alias using `type-fest`'s `Tagged`
-- [ ] T008 [P] Create `packages/core/src/types.ts` with `WithFormat<T, F>` type alias using `type-fest`'s `Tagged`
-- [ ] T009 Create `packages/core/src/__tests__/types.test.ts` with compile-time tests for WithUnits type safety
-- [ ] T010 Create `packages/core/src/__tests__/types.test.ts` with compile-time tests for WithFormat type safety
-- [ ] T011 [P] Create `packages/core/src/errors.ts` with error classes: `UnacyError`, `CycleError`, `MaxDepthError`, `ConversionError`, `ParseError`
-- [ ] T012 Create `packages/core/src/__tests__/errors.test.ts` with tests for all error classes and message formatting
+- [X] T007 [P] Create `packages/core/src/types.ts` with `WithUnits<T, U>` type alias using `type-fest`'s `Tagged`
+- [X] T008 [P] Create `packages/core/src/types.ts` with `WithFormat<T, F>` type alias using `type-fest`'s `Tagged`
+- [X] T009 Create `packages/core/src/__tests__/types.test.ts` with compile-time tests for WithUnits type safety
+- [X] T010 Create `packages/core/src/__tests__/types.test.ts` with compile-time tests for WithFormat type safety
+- [X] T011 [P] Create `packages/core/src/errors.ts` with error classes: `UnacyError`, `CycleError`, `MaxDepthError`, `ConversionError`, `ParseError`
+- [X] T012 Create `packages/core/src/__tests__/errors.test.ts` with tests for all error classes and message formatting
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -60,17 +60,17 @@ Monorepo structure: `packages/core/`
 
 ### Tests for User Story 1
 
-- [ ] T013 [P] [US1] Create `packages/core/src/__tests__/converters.test.ts` with test: unidirectional converter returns correct type
-- [ ] T014 [P] [US1] Add test: bidirectional converter round-trip preserves value within tolerance
-- [ ] T015 [P] [US1] Add compile-time test: wrong unit type to converter causes compile error
-- [ ] T016 [P] [US1] Add test: converter function is deterministic (same input → same output)
+- [X] T013 [P] [US1] Create `packages/core/src/__tests__/converters.test.ts` with test: unidirectional converter returns correct type
+- [X] T014 [P] [US1] Add test: bidirectional converter round-trip preserves value within tolerance
+- [X] T015 [P] [US1] Add compile-time test: wrong unit type to converter causes compile error
+- [X] T016 [P] [US1] Add test: converter function is deterministic (same input → same output)
 
 ### Implementation for User Story 1
 
-- [ ] T017 [US1] Create `packages/core/src/converters.ts` with `Converter<TInput, TOutput>` type definition
-- [ ] T018 [US1] Add `BidirectionalConverter<TInput, TOutput>` type definition in `packages/core/src/converters.ts`
-- [ ] T019 [US1] Create example converters in test file (Celsius ↔ Fahrenheit) to verify type safety
-- [ ] T020 [US1] Update `packages/core/src/index.ts` to export `Converter` and `BidirectionalConverter` types
+- [X] T017 [US1] Create `packages/core/src/converters.ts` with `Converter<TInput, TOutput>` type definition
+- [X] T018 [US1] Add `BidirectionalConverter<TInput, TOutput>` type definition in `packages/core/src/converters.ts`
+- [X] T019 [US1] Create example converters in test file (Celsius ↔ Fahrenheit) to verify type safety
+- [X] T020 [US1] Update `packages/core/src/index.ts` to export `Converter` and `BidirectionalConverter` types
 
 **Checkpoint**: User Story 1 complete and independently testable - converters work with compile-time safety
 
@@ -84,32 +84,32 @@ Monorepo structure: `packages/core/`
 
 ### Tests for User Story 2
 
-- [ ] T021 [P] [US2] Create `packages/core/src/__tests__/registry.test.ts` with test: register and retrieve direct converter
-- [ ] T022 [P] [US2] Add test: registerBidirectional registers both directions
-- [ ] T023 [P] [US2] Add test: getConverter finds direct converter in O(1)
-- [ ] T024 [P] [US2] Add test: auto-compose 2-hop conversion (A→B→C)
-- [ ] T025 [P] [US2] Add test: auto-compose 3-hop conversion (A→B→C→D)
-- [ ] T026 [P] [US2] Add test: cycle detection throws CycleError with path
-- [ ] T027 [P] [US2] Add test: max depth (>5 hops) throws MaxDepthError
-- [ ] T028 [P] [US2] Add test: missing converter path throws ConversionError
-- [ ] T029 [P] [US2] Add compile-time test: wrong unit to convert() causes error
-- [ ] T030 [P] [US2] Add integration test: 3-unit distance conversion (m→km→mi) produces correct value
+- [X] T021 [P] [US2] Create `packages/core/src/__tests__/registry.test.ts` with test: register and retrieve direct converter
+- [X] T022 [P] [US2] Add test: registerBidirectional registers both directions
+- [X] T023 [P] [US2] Add test: getConverter finds direct converter in O(1)
+- [X] T024 [P] [US2] Add test: auto-compose 2-hop conversion (A→B→C)
+- [X] T025 [P] [US2] Add test: auto-compose 3-hop conversion (A→B→C→D)
+- [X] T026 [P] [US2] Add test: cycle detection throws CycleError with path
+- [X] T027 [P] [US2] Add test: max depth (>5 hops) throws MaxDepthError
+- [X] T028 [P] [US2] Add test: missing converter path throws ConversionError
+- [X] T029 [P] [US2] Add compile-time test: wrong unit to convert() causes error
+- [X] T030 [P] [US2] Add integration test: 3-unit distance conversion (m→km→mi) produces correct value
 
 ### Implementation for User Story 2
 
-- [ ] T031 [US2] Create `packages/core/src/utils/graph.ts` with BFS function: `findShortestPath(from, to, adjacencyMap): PropertyKey[]`
-- [ ] T032 [US2] Add cycle detection in `findShortestPath` using visited set
-- [ ] T033 [US2] Add max depth check (5 hops) in `findShortestPath`
-- [ ] T034 [US2] Create `packages/core/src/utils/graph.ts` with `composeConverters(path, registry)` to chain converters
-- [ ] T035 [US2] Create `packages/core/src/registry.ts` with `ConverterRegistryImpl` class (internal)
-- [ ] T036 [US2] Implement adjacency list storage: `private graph: Map<PropertyKey, Map<PropertyKey, Converter>>`
-- [ ] T037 [US2] Implement `register<From, To>(from, to, converter)` method returning new registry instance
-- [ ] T038 [US2] Implement `registerBidirectional<From, To>(from, to, bidirectional)` registering both directions
-- [ ] T039 [US2] Implement `getConverter<From, To>(from, to)` with direct lookup fallback to BFS
-- [ ] T040 [US2] Implement path caching: `private pathCache: Map<string, Converter>` for memoization
-- [ ] T041 [US2] Implement fluent `convert<From>(value)` method returning object with `to<To>(unit)` method
-- [ ] T042 [US2] Create `createRegistry<Units>()` factory function in `packages/core/src/registry.ts`
-- [ ] T043 [US2] Update `packages/core/src/index.ts` to export `ConverterRegistry` type, `createRegistry` function
+- [X] T031 [US2] Create `packages/core/src/utils/graph.ts` with BFS function: `findShortestPath(from, to, adjacencyMap): PropertyKey[]`
+- [X] T032 [US2] Add cycle detection in `findShortestPath` using visited set
+- [X] T033 [US2] Add max depth check (5 hops) in `findShortestPath`
+- [X] T034 [US2] Create `packages/core/src/utils/graph.ts` with `composeConverters(path, registry)` to chain converters
+- [X] T035 [US2] Create `packages/core/src/registry.ts` with `ConverterRegistryImpl` class (internal)
+- [X] T036 [US2] Implement adjacency list storage: `private graph: Map<PropertyKey, Map<PropertyKey, Converter>>`
+- [X] T037 [US2] Implement `register<From, To>(from, to, converter)` method returning new registry instance
+- [X] T038 [US2] Implement `registerBidirectional<From, To>(from, to, bidirectional)` registering both directions
+- [X] T039 [US2] Implement `getConverter<From, To>(from, to)` with direct lookup fallback to BFS
+- [X] T040 [US2] Implement path caching: `private pathCache: Map<string, Converter>` for memoization
+- [X] T041 [US2] Implement fluent `convert<From>(value)` method returning object with `to<To>(unit)` method
+- [X] T042 [US2] Create `createRegistry<Units>()` factory function in `packages/core/src/registry.ts`
+- [X] T043 [US2] Update `packages/core/src/index.ts` to export `ConverterRegistry` type, `createRegistry` function
 
 **Checkpoint**: User Story 2 complete - registry auto-composes conversions with shortest path and cycle detection
 
@@ -149,17 +149,17 @@ Monorepo structure: `packages/core/`
 
 **Purpose**: Documentation, optimization, testing completeness, and quality gates
 
-- [ ] T058 [P] Create `packages/core/src/index.ts` complete public API exports (types, functions, errors)
-- [ ] T059 [P] Run type checking: `pnpm type-check` and verify zero `any` leakage in `packages/core/`
-- [ ] T060 [P] Run tests: `pnpm test packages/core` and ensure all pass within 1 second
+- [X] T058 [P] Create `packages/core/src/index.ts` complete public API exports (types, functions, errors)
+- [X] T059 [P] Run type checking: `pnpm type-check` and verify zero `any` leakage in `packages/core/`
+- [X] T060 [P] Run tests: `pnpm test packages/core` and ensure all pass within 1 second
 - [ ] T061 [P] Run linting: `pnpm lint packages/core` and fix any issues
 - [ ] T062 [P] Run formatting: `pnpm format packages/core` and verify format compliance
-- [ ] T063 Add JSDoc comments to all public APIs in `packages/core/src/` (types, functions, error classes)
-- [ ] T064 Create comprehensive usage examples in `packages/core/README.md` (basic, multi-hop, formatter/parser)
+- [X] T063 Add JSDoc comments to all public APIs in `packages/core/src/` (types, functions, error classes)
+- [X] T064 Create comprehensive usage examples in `packages/core/README.md` (basic, multi-hop, formatter/parser)
 - [ ] T065 Verify tree-shakeability: build with `pnpm build packages/core` and check dist outputs
-- [ ] T066 Update main `README.md` to list new `@unacy/core` package (or reference if monorepo exports it)
+- [X] T066 Update main `README.md` to list new `@unacy/core` package (or reference if monorepo exports it)
 - [ ] T067 Create changeset: `pnpm changeset` describing this feature (version, description, scope)
-- [ ] T068 Verify all tests still pass: `pnpm test` (full suite)
+- [X] T068 Verify all tests still pass: `pnpm test` (full suite)
 - [ ] T069 Final code review against constitution: verify TypeScript-first, small/focused, TDD, no `any`, ESM, changesets
 - [ ] T070 Run quickstart.md examples as smoke tests to ensure API is usable as documented
 
