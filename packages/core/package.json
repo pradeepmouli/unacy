@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Type-safe unit and format conversion library",
   "type": "module",
+  "private": false,
   "author": "Pradeep Mouli",
   "license": "MIT",
   "main": "./dist/index.js",
