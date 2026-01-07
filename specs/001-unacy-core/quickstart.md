@@ -175,13 +175,16 @@ try {
 ### Compile-Time Error Prevention
 
 ```typescript
-// ✅ Valid: Celsius → Fahrenheit
+// ✅ Valid: Celsius → Fahrenheit (using unit accessor API)
 const temp1 = 25 as Celsius;
-const f1 = fullTempRegistry.fahrenheit.to.celsius(temp1);
+const f1 = fullTempRegistry.Celsius.to.Fahrenheit(temp1);
+
+// ✅ Valid: Celsius → Fahrenheit (using convert method)
+const f2 = fullTempRegistry.convert(temp1, 'Celsius').to('Fahrenheit');
 
 // ❌ Compile error: Cannot convert to same unit
 const temp2 = 25 as Celsius;
-// const c2 = fullTempRegistry.convert(temp2).to('Celsius'); // Error!
+// const c2 = fullTempRegistry.convert(temp2, 'Celsius').to('Celsius'); // Error!
 
 // ❌ Compile error: Unit not in registry
 // const invalid = fullTempRegistry.convert(temp1).to('Rankine'); // Error!
