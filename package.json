@@ -57,7 +57,7 @@
     "@commitlint/types": "^20.2.0",
     "@size-limit/preset-small-lib": "^12.0.0",
     "@types/node": "^25.0.3",
-    "@typescript/native-preview": "7.0.0-dev.20260106.1",
+    "@typescript/native-preview": "7.0.0-dev.20260108.1",
     "@vitest/coverage-v8": "^4.0.16",
     "@vitest/ui": "^4.0.16",
     "lint-staged": "^16.2.7",
