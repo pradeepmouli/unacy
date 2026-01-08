@@ -27,13 +27,13 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "type-fest": "^5.3.1",
-    "zod": "^3.24.1"
+    "type-fest": "^5.3.1"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.16",
+    "zod": "^4.3.5"
   },
   "engines": {
     "node": ">=20.0.0"

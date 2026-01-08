@@ -20,7 +20,20 @@ Type-safe unit, format and type conversion library for TypeScript
 ### Installation
 
 ```bash
-git clone <repository-url>
+# Install from npm
+npm install unacy
+
+# Or with pnpm
+pnpm add unacy
+
+# Or with yarn
+yarn add unacy
+```
+
+For development:
+
+```bash
+git clone https://github.com/pradeepmouli/unacy.git
 cd unacy
 pnpm install
 ```
@@ -30,7 +43,7 @@ pnpm install
 ### Basic Usage
 
 ```typescript
-import { createRegistry, type WithUnits } from '@unacy/core';
+import { createRegistry, type WithUnits } from 'unacy';
 
 // Define unit types
 type Celsius = WithUnits<number, 'Celsius'>;
@@ -86,7 +99,7 @@ Export individual unit converters for optimal bundle size:
 
 ```typescript
 // temperature.ts
-import { createRegistry, type WithUnits } from '@unacy/core';
+import { createRegistry, type WithUnits } from 'unacy';
 
 export type Celsius = WithUnits<number, 'Celsius'>;
 export type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
@@ -112,41 +125,60 @@ const fahrenheit = Celsius.to.Fahrenheit(25 as Celsius);
 ### Development
 
 ```bash
-# Start development
-pnpm run dev
-
 # Run tests
-pnpm run test
+pnpm test
 
-# Lint and format
-pnpm run lint
-pnpm run format
+# Run tests in watch mode
+pnpm test:watch
+
+# Build packages
+pnpm build
+
+# Lint code
+pnpm lint
+
+# Format code
+pnpm format
+
+# Type check
+pnpm type-check
 ```
 
-## Project Structure
+## Packages
 
-This project uses pnpm workspaces for managing multiple packages:
+This monorepo contains the following packages:
+
+- **[unacy](packages/core)** - Core conversion library with type-safe unit conversions, registry, and formatters
+
+## Project Structure
 
 ```
 unacy/
 ├── packages/
-│   └── [your packages here]
-├── docs/
-├── .github/workflows/
-├── package.json
+│   └── core/           # unacy - Core conversion library
+│       ├── src/
+│       │   ├── types.ts           # WithUnits, WithFormat types
+│       │   ├── converters.ts      # Converter types
+│       │   ├── registry.ts        # ConverterRegistry implementation
+│       │   ├── formatters.ts      # Formatter/Parser types
+│       │   ├── errors.ts          # Error classes
+│       │   └── utils/
+│       │       ├── graph.ts       # BFS pathfinding
+│       │       └── validation.ts  # Runtime validation helpers
+│       └── __tests__/             # Test suites
+├── specs/                         # Feature specifications
+│   └── 001-unacy-core/
+├── docs/                          # Documentation
+├── .github/workflows/             # CI/CD workflows
 └── README.md
 ```
 
-## Creating Your First Package
-
-See [docs/WORKSPACE.md](docs/WORKSPACE.md) for detailed instructions on adding packages.
-
 ## Documentation
 
-- [Workspace Guide](docs/WORKSPACE.md) - Managing packages
-- [Development Workflow](docs/DEVELOPMENT.md) - Development process
-- [Testing Guide](docs/TESTING.md) - Testing setup
-- [Examples](docs/EXAMPLES.md) - Usage examples
+- [Feature Specification](specs/001-unacy-core/spec.md) - Complete feature specification
+- [Implementation Plan](specs/001-unacy-core/plan.md) - Technical implementation details
+- [API Documentation](packages/core/README.md) - Core package API reference
+- [Type System Architecture](specs/001-unacy-core/spec.md#type-system-architecture) - Edge-based type tracking
 
 ## Contributing
 
