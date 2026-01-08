@@ -1,0 +1,5 @@
+---
+"unacy": patch
+---
+
+type fixes
