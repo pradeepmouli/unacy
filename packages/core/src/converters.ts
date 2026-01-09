@@ -3,7 +3,8 @@
  * @packageDocumentation
  */
 
-import type { WithUnits } from './types';
+import type { Primitive } from 'type-fest';
+import type { PrimitiveType, Unwrap, WithUnits } from './types';
 
 /**
  * Unidirectional converter from one unit to another.
@@ -26,9 +27,19 @@ import type { WithUnits } from './types';
  * ```
  */
 export type Converter<
-  TInput extends WithUnits<unknown, string>,
-  TOutput extends WithUnits<unknown, string>
+  TInput extends WithUnits<PrimitiveType, string>,
+  TOutput extends WithUnits<PrimitiveType, string>
 > = (input: TInput) => TOutput;
+
+export type RelaxConverter<ConverterType> =
+  ConverterType extends Converter<infer A, infer B>
+    ? (input: Unwrap<A> | A) => Unwrap<B> | B
+    : (input: PrimitiveType) => PrimitiveType;
+
+export type Relax<ConverterType extends Converter<any, any> | BidirectionalConverter<any, any>> =
+  ConverterType extends Converter<infer A, infer B>
+    ? RelaxConverter<ConverterType>
+    : RelaxBidirectionalConverter<ConverterType>;
 
 /**
  * Bidirectional converter with forward and reverse transformations.
@@ -53,9 +64,20 @@ export type Converter<
  * ```
  */
 export type BidirectionalConverter<
-  TInput extends WithUnits<unknown, string>,
-  TOutput extends WithUnits<unknown, string>
+  TInput extends WithUnits<PrimitiveType, string>,
+  TOutput extends WithUnits<PrimitiveType, string>
 > = {
   to: Converter<TInput, TOutput>;
   from: Converter<TOutput, TInput>;
 };
+
+export type RelaxBidirectionalConverter<ConverterType> =
+  ConverterType extends BidirectionalConverter<infer A, infer B>
+    ? {
+        to: (input: Unwrap<A> | A) => Unwrap<B> | B;
+        from: (input: Unwrap<B> | B) => Unwrap<A> | A;
+      }
+    : {
+        to: (input: PrimitiveType) => PrimitiveType;
+        from: (input: PrimitiveType) => PrimitiveType;
+      };

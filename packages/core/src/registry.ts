@@ -3,8 +3,13 @@
  * @packageDocumentation
  */
 
-import type { Converter, BidirectionalConverter } from './converters';
-import type { RelaxedWithUnits, UnitsFor, WithUnits } from './types';
+import type {
+  Converter,
+  BidirectionalConverter,
+  RelaxBidirectionalConverter,
+  RelaxConverter
+} from './converters';
+import type { OptionalWithUnits, Relax, UnitsFor, UnitsOf, WithUnits } from './types';
 import type { UnionToTuple, TupleToObject, TupleToUnion, GetTagMetadata } from 'type-fest';
 import { ConversionError } from './errors';
 import { findShortestPath, composeConverters } from './utils/graph';
@@ -36,7 +41,7 @@ export type ConverterMap<Edges extends readonly Edge[]> = {
   [From in FromUnits<Edges>]: {
     to: {
       [To in ToUnitsFor<Edges, From>]: (
-        value: RelaxedWithUnits<number, From>
+        value: OptionalWithUnits<number, From>
       ) /*To avoid having to cast*/ => WithUnits<number, To>;
     };
   };
@@ -54,10 +59,15 @@ export interface ConverterRegistry<Edges extends Edge[] = []> {
    * @param converter - Converter function
    * @returns New registry instance with the converter registered
    */
-  register<From extends WithUnits<number, string>, To extends WithUnits<number, string>>(
-    from: UnitsFor<From>,
-    to: UnitsFor<To>,
-    converter: Converter<From, To>
+  register<
+    From extends WithUnits<number, UF>,
+    To extends WithUnits<number, UY>,
+    UF extends string,
+    UY extends string
+  >(
+    from: UF,
+    to: UY,
+    converter: RelaxConverter<Converter<From, To>>
   ): ConverterRegistry<[...Edges, Edge<UnitsFor<From>, UnitsFor<To>>]> &
     ConverterMap<[...Edges, Edge<UnitsFor<From>, UnitsFor<To>>]>;
   /**
@@ -69,9 +79,9 @@ export interface ConverterRegistry<Edges extends Edge[] = []> {
    * @returns New registry instance with both converters registered
    */
   register<From extends WithUnits<number, string>, To extends WithUnits<number, string>>(
-    from: UnitsFor<From>,
-    to: UnitsFor<To>,
-    converter: BidirectionalConverter<From, To>
+    from: UnitsFor<From> | { name: UnitsFor<From> },
+    to: UnitsFor<To> | { name: UnitsFor<To> },
+    converter: RelaxBidirectionalConverter<BidirectionalConverter<From, To>>
   ): ConverterRegistry<
     [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
   > &
@@ -94,7 +104,7 @@ export interface ConverterRegistry<Edges extends Edge[] = []> {
   >(
     from: UnitsFor<From>,
     to: UnitsFor<To>,
-    converter: BidirectionalConverter<From, To>
+    converter: Relax<BidirectionalConverter<From, To>>
   ): ConverterRegistry<
     [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
   > &
@@ -232,10 +242,16 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
   }
 
   register<From extends WithUnits<number, string>, To extends WithUnits<number, string>>(
-    from: UnitsFor<From>,
-    to: UnitsFor<To>,
+    from: UnitsFor<From> | { name: UnitsFor<From> },
+    to: UnitsFor<To> | { name: UnitsFor<To> },
     converter: Converter<From, To> | BidirectionalConverter<From, To>
   ): ConverterRegistry<any> & ConverterMap<any> {
+    if (typeof from === 'object' && 'name' in from) {
+      from = from.name;
+    }
+    if (typeof to === 'object' && 'name' in to) {
+      to = to.name;
+    }
     // Check if it's a bidirectional converter
     if (typeof converter === 'object' && 'to' in converter && 'from' in converter) {
       // Handle bidirectional converter
@@ -347,10 +363,13 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
 
   convert<From extends WithUnits<number, string>>(
     value: From,
-    fromUnit: UnitsFor<From>
+    fromUnit: UnitsFor<From> | { name: UnitsFor<From> }
   ): {
     to<To extends WithUnits<number, string>>(unit: UnitsFor<To>): To;
   } {
+    if (typeof fromUnit === 'object' && 'name' in fromUnit) {
+      fromUnit = fromUnit.name;
+    }
     return {
       to: <To extends WithUnits<number, string>>(unit: UnitsFor<To>): To => {
         const converter = this.getConverter(fromUnit as any, unit as any);

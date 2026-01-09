@@ -4,7 +4,8 @@
  */
 
 import { createRegistry, type WithUnits } from './src/index';
-import { Distance, Feet } from './namespace-export-demo.js';
+import { Celsius, Distance, Feet, Kelvin } from './namespace-export-demo.js';
+import { format } from 'node:path';
 
 console.log('=== Unit Accessor API Demo ===\n');
 
@@ -13,14 +14,19 @@ type Celsius = WithUnits<number, 'Celsius'>;
 type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
 type Kelvin = WithUnits<number, 'Kelvin'>;
 
+const Celsius = {
+  type: 'number',
+  name: 'Celsius',
+  abbreviation: '°C',
+  format: '${value}°C'
+};
+
 // Create registry with converters
 const tempRegistry = createRegistry()
-  .register('Celsius', 'Fahrenheit', {
-    to: (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit,
-    from: (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius
-  })
-  .register('Celsius', 'Kelvin', (c: Celsius) => (c + 273.15) as Kelvin)
-  .register('Kelvin', 'Celsius', (k: Kelvin) => (k - 273.15) as Celsius)
+  .register('Celsius', 'Kelvin', (c) => c + 273.15)
+  .register('Kelvin', 'Celsius', (k) => k - 273.15)
+  .register('Celsius', 'Fahrenheit', (c) => (c * 9) / 5 + 32)
+  .register('Fahrenheit', 'Celsius', (f) => ((f - 32) * 5) / 9)
   .allow('Kelvin', 'Fahrenheit'); // Explicitly enable multi-hop path in types
 
 // This demonstrates that the following would NOT be permitted at compile-time:
