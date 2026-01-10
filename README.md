@@ -125,22 +125,22 @@ const registry = createRegistry()
   .register('Celsius', 'Fahrenheit', {
     to: (c: Celsius) => (c * 9 / 5) + 32,
     from: (f: Fahrenheit) => (f - 32) * 5 / 9
+  })
+  .Celsius.addMetadata({
+    abbreviation: '°C',
+    symbol: '°C',
+    description: 'Degrees Celsius'
+  })
+  .Fahrenheit.addMetadata({
+    abbreviation: '°F',
+    symbol: '°F',
+    description: 'Degrees Fahrenheit'
   });
 
-// Add metadata to units
-registry.Celsius.setMetadata({
-  symbol: '°C',
-  description: 'Degrees Celsius'
-});
-
-registry.Fahrenheit.setMetadata({
-  symbol: '°F',
-  description: 'Degrees Fahrenheit'
-});
-
-// Access metadata
-const metadata = registry.Celsius.getMetadata();
-console.log(metadata); // { symbol: '°C', description: 'Degrees Celsius' }
+// Access metadata properties directly
+console.log(registry.Celsius.symbol); // '°C'
+console.log(registry.Celsius.description); // 'Degrees Celsius'
+console.log(registry.Fahrenheit.abbreviation); // '°F'
 ```
 
 #### Dynamic Converter Registration via Unit Accessor
@@ -150,12 +150,13 @@ Register new converters using the intuitive unit accessor API:
 ```typescript
 type Kelvin = WithUnits<number, 'Kelvin'>;
 
-// Register converter directly through the unit accessor
-registry.Celsius.to.Kelvin.register((c: Celsius) => c + 273.15);
-registry.Kelvin.to.Celsius.register((k: Kelvin) => k - 273.15);
+// Register converters directly through the unit accessor
+const updatedRegistry = registry
+  .Celsius.register('Kelvin', (c: Celsius) => c + 273.15)
+  .Kelvin.register('Celsius', (k: Kelvin) => k - 273.15);
 
 // Now use the newly registered converters
-const kelvin = registry.Celsius.to.Kelvin(25 as Celsius);
+const kelvin = updatedRegistry.Celsius.to.Kelvin(25 as Celsius);
 console.log(kelvin); // 298.15
 ```
 
