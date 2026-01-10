@@ -34,9 +34,9 @@ describe('Registry - Basic Operations', () => {
   });
 
   it('registerBidirectional registers both directions', () => {
-    const registry = createRegistry().registerBidirectional('meters', 'kilometers', {
-      to: (m) => (m / 1000) as Kilometers,
-      from: (km) => (km * 1000) as Meters
+    const registry = createRegistry().register('meters', 'kilometers', {
+      to: (m: Meters) => (m / 1000) as Kilometers,
+      from: (km: Kilometers) => (km * 1000) as Meters
     });
 
     const m2km = getConverter(registry, 'meters', 'kilometers');
@@ -98,13 +98,13 @@ describe('Registry - Multi-Hop Composition', () => {
 
   it('integration test: 3-unit distance conversion (m→km→mi)', () => {
     const registry = createRegistry()
-      .registerBidirectional('meters', 'kilometers', {
-        to: (m) => (m / 1000) as Kilometers,
-        from: (km) => (km * 1000) as Meters
+      .register('meters', 'kilometers', {
+        to: (m: Meters) => (m / 1000) as Kilometers,
+        from: (km: Kilometers) => (km * 1000) as Meters
       })
-      .registerBidirectional('kilometers', 'miles', {
-        to: (km) => (km * 0.621371) as Miles,
-        from: (mi) => (mi / 0.621371) as Kilometers
+      .register('kilometers', 'miles', {
+        to: (km: Kilometers) => (km * 0.621371) as Miles,
+        from: (mi: Miles) => (mi / 0.621371) as Kilometers
       });
 
     const converter = getConverter(registry, 'meters', 'miles');
@@ -296,9 +296,9 @@ describe('Registry - Unit Accessor API', () => {
   });
 
   it('unit accessor API works with bidirectional converters', () => {
-    const registry = createRegistry().registerBidirectional('meters', 'kilometers', {
-      to: (m) => (m / 1000) as Kilometers,
-      from: (km) => (km * 1000) as Meters
+    const registry = createRegistry().register('meters', 'kilometers', {
+      to: (m: Meters) => (m / 1000) as Kilometers,
+      from: (km: Kilometers) => (km * 1000) as Meters
     });
 
     const meters = 5000 as Meters;
@@ -314,13 +314,13 @@ describe('Registry - Unit Accessor API', () => {
 
   it('unit accessor API works with multi-hop conversions', () => {
     const registry = createRegistry()
-      .registerBidirectional('meters', 'kilometers', {
-        to: (m) => (m / 1000) as Kilometers,
-        from: (km) => (km * 1000) as Meters
+      .register('meters', 'kilometers', {
+        to: (m: Meters) => (m / 1000) as Kilometers,
+        from: (km: Kilometers) => (km * 1000) as Meters
       })
-      .registerBidirectional('kilometers', 'miles', {
-        to: (km) => (km * 0.621371) as Miles,
-        from: (mi) => (mi / 0.621371) as Kilometers
+      .register('kilometers', 'miles', {
+        to: (km: Kilometers) => (km * 0.621371) as Miles,
+        from: (mi: Miles) => (mi / 0.621371) as Kilometers
       });
 
     const meters = 5000 as Meters;
@@ -338,5 +338,186 @@ describe('Registry - Unit Accessor API', () => {
     expect(() => {
       (registry as any).A.to.C(10 as any);
     }).toThrow(ConversionError);
+  });
+});
+
+describe('Registry - Metadata Support', () => {
+  it('addMetadata attaches metadata to a unit', () => {
+    const registry = createRegistry()
+      .register('Celsius', 'Fahrenheit', (c) => ((c * 9) / 5 + 32) as Fahrenheit)
+      .Celsius.addMetadata({
+        abbreviation: '°C',
+        format: '${value}°C',
+        description: 'Temperature in Celsius'
+      });
+
+    expect((registry as any).Celsius.abbreviation).toBe('°C');
+    expect((registry as any).Celsius.format).toBe('${value}°C');
+    expect((registry as any).Celsius.description).toBe('Temperature in Celsius');
+  });
+
+  it('metadata properties are accessible on unit accessors', () => {
+    const registry = createRegistry()
+      .register('meters', 'kilometers', (m) => (m / 1000) as Kilometers)
+      .meters.addMetadata({ abbreviation: 'm', symbol: 'm' });
+
+    expect((registry as any).meters.abbreviation).toBe('m');
+    expect((registry as any).meters.symbol).toBe('m');
+  });
+
+  it('addMetadata supports arbitrary custom properties', () => {
+    const registry = createRegistry()
+      .register('Kelvin', 'Celsius', (k) => (k - 273.15) as Celsius)
+      .Kelvin.addMetadata({
+        abbreviation: 'K',
+        customProp: 'custom value',
+        numericProp: 42
+      });
+
+    expect((registry as any).Kelvin.abbreviation).toBe('K');
+    expect((registry as any).Kelvin.customProp).toBe('custom value');
+    expect((registry as any).Kelvin.numericProp).toBe(42);
+  });
+
+  it('metadata persists across register operations', () => {
+    const registry = createRegistry()
+      .register('A', 'B', (a) => (a * 2) as any)
+      .A.addMetadata({ abbreviation: 'A' })
+      .register('B', 'C', (b) => (b * 3) as any);
+
+    expect((registry as any).A.abbreviation).toBe('A');
+  });
+
+  it('addMetadata can update existing metadata', () => {
+    const registry = createRegistry()
+      .register('meters', 'feet', (m) => (m * 3.28084) as any)
+      .meters.addMetadata({ abbreviation: 'm' })
+      .meters.addMetadata({ description: 'Length in meters' });
+
+    expect((registry as any).meters.abbreviation).toBe('m');
+    expect((registry as any).meters.description).toBe('Length in meters');
+  });
+
+  it('addMetadata overwrites existing properties', () => {
+    const registry = createRegistry()
+      .register('grams', 'kilograms', (g) => (g / 1000) as any)
+      .grams.addMetadata({ abbreviation: 'g' })
+      .grams.addMetadata({ abbreviation: 'gram' });
+
+    expect((registry as any).grams.abbreviation).toBe('gram');
+  });
+
+  it('multiple units can have independent metadata', () => {
+    const registry = createRegistry()
+      .register('Celsius', 'Fahrenheit', (c) => ((c * 9) / 5 + 32) as Fahrenheit)
+      .register('Fahrenheit', 'Celsius', (f) => (((f - 32) * 5) / 9) as Celsius)
+      .Celsius.addMetadata({ abbreviation: '°C' })
+      .Fahrenheit.addMetadata({ abbreviation: '°F' });
+
+    expect((registry as any).Celsius.abbreviation).toBe('°C');
+    expect((registry as any).Fahrenheit.abbreviation).toBe('°F');
+  });
+
+  it('metadata returns undefined for non-existent properties', () => {
+    const registry = createRegistry()
+      .register('meters', 'feet', (m) => (m * 3.28084) as any)
+      .meters.addMetadata({ abbreviation: 'm' });
+
+    expect((registry as any).meters.abbreviation).toBe('m');
+    expect((registry as any).meters.nonExistent).toBeUndefined();
+  });
+
+  it('addMetadata returns new registry instance (immutable)', () => {
+    const registry1 = createRegistry().register('A', 'B', (a) => (a * 2) as any);
+    const registry2 = (registry1 as any).A.addMetadata({ abbreviation: 'A' });
+
+    expect((registry1 as any).A.abbreviation).toBeUndefined();
+    expect((registry2 as any).A.abbreviation).toBe('A');
+  });
+});
+
+describe('Registry - Unit Accessor Registration', () => {
+  it('register method on unit accessor registers converter', () => {
+    type CelsiusEdge = readonly ['Celsius', 'Fahrenheit'];
+    const registry = createRegistry<[CelsiusEdge]>().Celsius.register(
+      'Fahrenheit',
+      (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit
+    );
+
+    const converter = getConverter(registry, 'Celsius', 'Fahrenheit');
+    expect(converter).toBeDefined();
+    if (converter) {
+      expect(converter(0 as Celsius)).toBe(32);
+    }
+  });
+
+  it('unit accessor register supports bidirectional converters', () => {
+    type MeterEdge = readonly ['meters', 'kilometers'];
+    const registry = createRegistry<[MeterEdge]>().meters.register('kilometers', {
+      to: (m) => (m / 1000) as Kilometers,
+      from: (km) => (km * 1000) as Meters
+    });
+
+    const m2km = getConverter(registry, 'meters', 'kilometers');
+    const km2m = getConverter(registry, 'kilometers', 'meters');
+
+    expect(m2km).toBeDefined();
+    expect(km2m).toBeDefined();
+
+    if (m2km && km2m) {
+      expect(m2km(1000 as Meters)).toBe(1);
+      expect(km2m(1 as Kilometers)).toBe(1000);
+    }
+  });
+
+  it('unit accessor register can be chained', () => {
+    type CelsiusEdge = readonly ['Celsius', 'Fahrenheit'];
+    type FahrenheitEdge = readonly ['Fahrenheit', 'Kelvin'];
+    const registry = createRegistry<[CelsiusEdge, FahrenheitEdge]>()
+      .Celsius.register('Fahrenheit', (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit)
+      .Fahrenheit.register('Kelvin', (f: Fahrenheit) => ((f - 32) * (5 / 9) + 273.15) as Kelvin);
+
+    const c2f = getConverter(registry, 'Celsius', 'Fahrenheit');
+    const f2k = getConverter(registry, 'Fahrenheit', 'Kelvin');
+
+    expect(c2f).toBeDefined();
+    expect(f2k).toBeDefined();
+  });
+
+  it('unit accessor register preserves existing converters', () => {
+    type CEdge = readonly ['C', 'D'];
+    const registry = createRegistry<[CEdge]>()
+      .register('A', 'B', (a) => (a * 2) as any)
+      .C.register('D', (c: any) => (c * 3) as any);
+
+    const ab = getConverter(registry, 'A', 'B');
+    const cd = getConverter(registry, 'C', 'D');
+
+    expect(ab).toBeDefined();
+    expect(cd).toBeDefined();
+  });
+
+  it('unit accessor register works with unit accessor API', () => {
+    type CelsiusEdge = readonly ['Celsius', 'Fahrenheit'];
+    const registry = createRegistry<[CelsiusEdge]>().Celsius.register(
+      'Fahrenheit',
+      (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit
+    );
+
+    const temp = 0 as Celsius;
+    const result = (registry as any).Celsius.to.Fahrenheit(temp);
+
+    expect(result).toBe(32);
+  });
+
+  it('unit accessor register and addMetadata work together', () => {
+    type CelsiusEdge = readonly ['Celsius', 'Fahrenheit'];
+    const registry = createRegistry<[CelsiusEdge]>()
+      .Celsius.addMetadata({ abbreviation: '°C' })
+      .Celsius.register('Fahrenheit', (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit);
+
+    expect((registry as any).Celsius.abbreviation).toBe('°C');
+    const converter = getConverter(registry, 'Celsius', 'Fahrenheit');
+    expect(converter).toBeDefined();
   });
 });

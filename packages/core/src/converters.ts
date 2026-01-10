@@ -3,8 +3,7 @@
  * @packageDocumentation
  */
 
-import type { Primitive } from 'type-fest';
-import type { PrimitiveType, Unwrap, WithUnits } from './types';
+import type { PrimitiveType, Unwrap, WithUnits, Relax as BaseRelax } from './types';
 
 /**
  * Unidirectional converter from one unit to another.
@@ -33,13 +32,16 @@ export type Converter<
 
 export type RelaxConverter<ConverterType> =
   ConverterType extends Converter<infer A, infer B>
-    ? (input: Unwrap<A> | A) => Unwrap<B> | B
+    ? (input: BaseRelax<A>) => BaseRelax<B>
     : (input: PrimitiveType) => PrimitiveType;
 
-export type Relax<ConverterType extends Converter<any, any> | BidirectionalConverter<any, any>> =
-  ConverterType extends Converter<infer A, infer B>
-    ? RelaxConverter<ConverterType>
-    : RelaxBidirectionalConverter<ConverterType>;
+export type Relax<
+  T extends PrimitiveType | Converter<any, any> | BidirectionalConverter<any, any>
+> = T extends PrimitiveType
+  ? BaseRelax<T>
+  : T extends Converter<infer A, infer B>
+    ? RelaxConverter<T>
+    : RelaxBidirectionalConverter<T>;
 
 /**
  * Bidirectional converter with forward and reverse transformations.

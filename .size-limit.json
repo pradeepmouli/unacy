@@ -1,12 +1,7 @@
 [
   {
-    "name": "@company/core",
+    "name": "unacy",
     "path": "packages/core/dist/index.js",
     "limit": "10 KB"
-  },
-  {
-    "name": "@company/utils",
-    "path": "packages/utils/dist/index.js",
-    "limit": "15 KB"
   }
 ]
