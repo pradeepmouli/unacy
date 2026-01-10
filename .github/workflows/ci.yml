@@ -60,5 +60,5 @@ jobs:
         continue-on-error: true
 
       - name: Check Bundle Size
-        run: pnpm dlx size-limit
+        run: pnpm exec size-limit
         if: matrix.node-version == '20.x'
