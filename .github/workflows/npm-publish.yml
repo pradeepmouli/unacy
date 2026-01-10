@@ -41,6 +41,6 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
-      - run: pnpm publish -r --no-git-checks --provenance --access public
+      - run: pnpm publish -r --filter='!./packages/**[private=true]' --no-git-checks --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
