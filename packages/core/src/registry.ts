@@ -7,7 +7,6 @@ import type { Converter, BidirectionalConverter, Relax } from './converters';
 import type { OptionalWithUnits, UnitsFor, WithUnits, UnitMetadata } from './types';
 import { ConversionError } from './errors';
 import { findShortestPath, composeConverters } from './utils/graph';
-import type { UnionToTuple } from 'type-fest';
 
 /**
  * Represents a conversion edge from one unit to another
