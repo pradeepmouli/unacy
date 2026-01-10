@@ -4,7 +4,7 @@
  */
 
 // Core types
-export type { WithUnits, WithFormat } from './types';
+export type { WithUnits, WithFormat, UnitMetadata } from './types';
 
 // Converter types
 export type { Converter, BidirectionalConverter } from './converters';

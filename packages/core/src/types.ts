@@ -72,3 +72,21 @@ export type UnitDefinition<T extends PrimitiveType, U, A, F extends string = nev
   abbreviation?: A;
   format?: F;
 };
+
+/**
+ * Metadata that can be attached to units in the registry
+ * Supports common properties like abbreviation, format, description,
+ * and allows arbitrary custom properties via index signature
+ */
+export interface UnitMetadata {
+  /** Short abbreviation for the unit (e.g., "°C", "m", "kg") */
+  abbreviation?: string;
+  /** Format string for displaying values (e.g., "${value}°C") */
+  format?: string;
+  /** Human-readable description of the unit */
+  description?: string;
+  /** Symbol representation of the unit */
+  symbol?: string;
+  /** Allow arbitrary custom metadata properties */
+  [key: string]: unknown;
+}
