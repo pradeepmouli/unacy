@@ -7,7 +7,7 @@
  */
 
 import { createRegistry, type WithUnits } from './src/index';
-import { Celsius, Distance, Feet, Kelvin } from './namespace-export-demo.js';
+import { Celsius } from './namespace-export-demo.js';
 
 console.log('=== Unit Accessor API Demo ===\n');
 
