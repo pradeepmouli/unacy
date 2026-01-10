@@ -3,8 +3,6 @@
  * @packageDocumentation
  */
 
-import type { Primitive, UnwrapTagged } from 'type-fest';
-
 import type { PrimitiveType, Unwrap, WithUnits, Relax as BaseRelax } from './types';
 
 /**
