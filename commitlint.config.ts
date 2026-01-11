@@ -14,7 +14,8 @@ const config: UserConfig = {
     'type-case': [2, 'always', 'lower-case'],
     'type-empty': [2, 'never'],
     'header-max-length': [1, 'always', 150],
-    'body-max-line-length': [1, 'always', 150]
+    'body-max-line-length': [0], // Disable body line length check
+    'body-max-length': [0] // Disable body max length check
   }
 };
 
