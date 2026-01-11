@@ -82,7 +82,7 @@ const invalidTemp: Celsius = fahrenheitTemp; // TypeScript error!
 
 // ❌ Type safety for conversions
 registry.Celsius.to.Fahrenheit(fahrenheitTemp); // TypeScript error!
-// Can't pass a Fahrenheit value to a Celsius converter
+// Can't pass a Fahrenheit value to a converter that expects Celsius
 
 // ❌ Type safety for cross-dimension conversions
 registry.Celsius.to.Meters(temp); // TypeScript error!
