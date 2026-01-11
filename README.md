@@ -4,8 +4,13 @@ Type-safe unit, format and type conversion library for TypeScript
 
 ## Features
 
-- **Compile-Time Type Safety**: Prevents invalid cross-dimension conversions (e.g., Celsius to Meters)
+- **Full Compile-Time Type Safety**:
+  - Prevents invalid value assignments (e.g., can't assign a Fahrenheit value to a Celsius variable)
+  - Prevents invalid conversions (e.g., can't pass a Fahrenheit value to a Celsius converter)
+  - Prevents cross-dimension conversions (e.g., Celsius to Meters)
+  - No explicit type casting needed when registering converters
 - **Unit Accessor API**: Intuitive `registry.Celsius.to.Fahrenheit(value)` syntax
+- **Extensible Units**: Add metadata to units and register new converters dynamically
 - **Auto-Composition**: Multi-hop conversions via BFS shortest path algorithm
 - **Tree-Shakeable**: Export individual unit converters for optimal bundle size
 - **Zero Runtime Overhead**: Type branding uses phantom types with no runtime cost
@@ -50,10 +55,11 @@ type Celsius = WithUnits<number, 'Celsius'>;
 type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
 
 // Create registry and register converters
+// Note: No explicit type casting needed in converter functions!
 const registry = createRegistry()
   .register('Celsius', 'Fahrenheit', {
-    to: (c: Celsius) => ((c * 9 / 5) + 32) as Fahrenheit,
-    from: (f: Fahrenheit) => ((f - 32) * 5 / 9) as Celsius
+    to: (c: Celsius) => (c * 9 / 5) + 32,
+    from: (f: Fahrenheit) => (f - 32) * 5 / 9
   });
 
 // Use the unit accessor API
@@ -62,15 +68,25 @@ const fahrenheit = registry.Celsius.to.Fahrenheit(temp);
 console.log(fahrenheit); // 77
 ```
 
-### Preventing Invalid Conversions
+### Type Safety Guarantees
 
-The type system prevents cross-dimension conversions at compile-time:
+The type system provides comprehensive compile-time safety:
 
 ```typescript
 type Meters = WithUnits<number, 'Meters'>;
 
-// ❌ TypeScript error: Property 'Meters' does not exist
-registry.Celsius.to.Meters(temp);
+// ❌ Type safety for value assignments
+const celsiusTemp = 25 as Celsius;
+const fahrenheitTemp = 77 as Fahrenheit;
+const invalidTemp: Celsius = fahrenheitTemp; // TypeScript error!
+
+// ❌ Type safety for conversions
+registry.Celsius.to.Fahrenheit(fahrenheitTemp); // TypeScript error!
+// Can't pass a Fahrenheit value to a converter that expects Celsius
+
+// ❌ Type safety for cross-dimension conversions
+registry.Celsius.to.Meters(temp); // TypeScript error!
+// Property 'Meters' does not exist
 ```
 
 ### Multi-Hop Conversions
@@ -79,8 +95,8 @@ The registry automatically composes multi-hop conversions via BFS:
 
 ```typescript
 const registry = createRegistry()
-  .register('Celsius', 'Kelvin', (c: Celsius) => (c + 273.15) as Kelvin)
-  .register('Kelvin', 'Fahrenheit', (k: Kelvin) => ((k - 273.15) * 9/5 + 32) as Fahrenheit);
+  .register('Celsius', 'Kelvin', (c: Celsius) => c + 273.15)
+  .register('Kelvin', 'Fahrenheit', (k: Kelvin) => (k - 273.15) * 9/5 + 32);
 
 // Runtime: Celsius → Kelvin → Fahrenheit (automatic)
 const fahrenheit = registry.convert(0 as Celsius, 'Celsius').to('Fahrenheit');
@@ -91,6 +107,57 @@ const typeSafeRegistry = registry.allow('Celsius', 'Fahrenheit');
 
 // Now type-safe:
 const f = typeSafeRegistry.Celsius.to.Fahrenheit(0 as Celsius);
+```
+
+### Recent Enhancements
+
+#### Unit Metadata
+
+Add custom metadata to units for richer context:
+
+```typescript
+import { createRegistry, type WithUnits } from 'unacy';
+
+type Celsius = WithUnits<number, 'Celsius'>;
+type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
+
+const registry = createRegistry()
+  .register('Celsius', 'Fahrenheit', {
+    to: (c: Celsius) => (c * 9 / 5) + 32,
+    from: (f: Fahrenheit) => (f - 32) * 5 / 9
+  })
+  .Celsius.addMetadata({
+    abbreviation: '°C',
+    symbol: '°C',
+    description: 'Degrees Celsius'
+  })
+  .Fahrenheit.addMetadata({
+    abbreviation: '°F',
+    symbol: '°F',
+    description: 'Degrees Fahrenheit'
+  });
+
+// Access metadata properties directly
+console.log(registry.Celsius.symbol); // '°C'
+console.log(registry.Celsius.description); // 'Degrees Celsius'
+console.log(registry.Fahrenheit.abbreviation); // '°F'
+```
+
+#### Dynamic Converter Registration via Unit Accessor
+
+Register new converters using the intuitive unit accessor API:
+
+```typescript
+type Kelvin = WithUnits<number, 'Kelvin'>;
+
+// Register converters directly through the unit accessor
+const updatedRegistry = registry
+  .Celsius.register('Kelvin', (c: Celsius) => c + 273.15)
+  .Kelvin.register('Celsius', (k: Kelvin) => k - 273.15);
+
+// Now use the newly registered converters
+const kelvin = updatedRegistry.Celsius.to.Kelvin(25 as Celsius);
+console.log(kelvin); // 298.15
 ```
 
 ### Tree-Shakeable Exports
@@ -107,11 +174,11 @@ export type Kelvin = WithUnits<number, 'Kelvin'>;
 
 const TemperatureRegistry = createRegistry()
   .register('Celsius', 'Fahrenheit', {
-    to: (c: Celsius) => ((c * 9 / 5) + 32) as Fahrenheit,
-    from: (f: Fahrenheit) => ((f - 32) * 5 / 9) as Celsius
+    to: (c: Celsius) => (c * 9 / 5) + 32,
+    from: (f: Fahrenheit) => (f - 32) * 5 / 9
   })
-  .register('Celsius', 'Kelvin', (c: Celsius) => (c + 273.15) as Kelvin)
-  .register('Kelvin', 'Celsius', (k: Kelvin) => (k - 273.15) as Celsius)
+  .register('Celsius', 'Kelvin', (c: Celsius) => c + 273.15)
+  .register('Kelvin', 'Celsius', (k: Kelvin) => k - 273.15)
   .allow('Kelvin', 'Fahrenheit');
 
 // Export individual converters using destructuring
