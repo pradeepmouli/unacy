@@ -1,5 +1,11 @@
 # unacy
 
+## 0.4.0
+
+### Minor Changes
+
+- fix module resolution
+
 ## 0.3.0
 
 ### Minor Changes
