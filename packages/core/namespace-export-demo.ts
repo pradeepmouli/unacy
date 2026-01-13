@@ -27,9 +27,11 @@ const TemperatureRegistry = createRegistry()
   .allow('Kelvin', 'Fahrenheit');
 
 // Export individual unit converters using destructuring
-export const { Celsius, Fahrenheit, Kelvin } = TemperatureRegistry;
+//export const { Celsius, Fahrenheit, Kelvin } = TemperatureRegistry;
 
 // Or export the entire registry if needed
+export default TemperatureRegistry;
+
 export const Temperature = TemperatureRegistry;
 
 // ============================================================================

@@ -1,9 +1,10 @@
 /**
  * Demo of the unit accessor API
  * This file demonstrates:
- * 1. registry.unit.to.targetUnit(value) API for conversions
- * 2. registry.unit.addMetadata() for attaching metadata to units
- * 3. registry.unit.register() for unit-centric converter registration
+ * 1. registry.unit(value) API for creating branded values
+ * 2. registry.unit.to.targetUnit(value) API for conversions
+ * 3. registry.unit.addMetadata() for attaching metadata to units
+ * 4. registry.unit.register() for unit-centric converter registration
  */
 
 import { createRegistry, type WithUnits } from './src/index';
@@ -13,6 +14,7 @@ console.log('=== Unit Accessor API Demo ===\n');
 
 // Define unit types
 type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
+type Kelvin = WithUnits<number, 'Kelvin'>;
 type Meters = WithUnits<number, 'meters'>;
 type Kilometers = WithUnits<number, 'kilometers'>;
 
@@ -27,8 +29,14 @@ const tempRegistry = createRegistry()
   .register('Fahrenheit', 'Celsius', (f) => ((f - 32) * 5) / 9)
   .allow('Kelvin', 'Fahrenheit'); // Explicitly enable multi-hop path in types
 
-// Test the unit accessor API
-const temp = 25 as Celsius;
+// Create branded values using callable accessors (NEW!)
+console.log('Creating branded values:');
+const temp = tempRegistry.Celsius(25); // NEW: Callable accessor!
+console.log(`  tempRegistry.Celsius(25) = ${temp}°C\n`);
+
+// Compare with old way (still supported)
+const tempOld = 25 as Celsius;
+console.log('Old way (still works): const temp = 25 as Celsius;\n');
 
 // Method 1: convert() method API
 console.log('Method 1 (convert method):');
@@ -39,6 +47,11 @@ console.log(`  ${temp}°C = ${f1}°F`);
 console.log('\nMethod 2 (unit accessor):');
 const f2 = tempRegistry.Celsius.to.Fahrenheit(temp);
 console.log(`  ${temp}°C = ${f2}°F`);
+
+// Method 3: Fluent callable accessor (NEW!)
+console.log('\nMethod 3 (fluent callable accessor - NEW!):');
+const f3 = tempRegistry.Celsius.to.Fahrenheit(tempRegistry.Celsius(30));
+console.log(`  tempRegistry.Celsius.to.Fahrenheit(tempRegistry.Celsius(30)) = ${f3}°F`);
 
 // Test multi-hop with unit accessor
 console.log('\nMulti-hop conversion (Celsius -> Kelvin -> Celsius):');

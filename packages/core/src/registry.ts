@@ -28,8 +28,15 @@ type ToUnitsFor<Edges extends readonly Edge[], FromUnit extends string> = Extrac
 
 /**
  * Type for unit accessor with metadata and conversion methods
+ * Can be called as a function to create branded unit values
  */
 export type UnitAccessor<From extends string, Edges extends readonly Edge[]> = {
+  /**
+   * Create a branded value with this unit
+   * @param value - The numeric value to brand
+   * @returns The value branded with this unit type
+   */
+  (value: number): WithUnits<number, From>;
   to: {
     [To in ToUnitsFor<Edges, From>]: (
       value: OptionalWithUnits<number, From>
@@ -109,28 +116,8 @@ export interface ConverterRegistry<Edges extends Edge[] = []> {
       [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
     >;
 
-  /**
-   * Register a bidirectional converter (both directions)
-   * @deprecated Use register() with BidirectionalConverter instead
-   *
-   * @param from - First unit
-   * @param to - Second unit
-   * @param converter - Bidirectional converter object
-   * @returns New registry instance with both converters registered
-   */
-  /*registerBidirectional<
-    From extends WithUnits<number, string>,
-    To extends WithUnits<number, string>
-  >(
-    from: UnitsFor<From>,
-    to: UnitsFor<To>,
-    converter: Relax<BidirectionalConverter<From, To>>
-  ): ConverterRegistry<
-    [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
-  > &
-    ConverterMap<
-      [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
-    >;*/
+  // Note: registerBidirectional() method was deprecated - use register() with BidirectionalConverter instead
+
   /**
    * Explicitly allow a conversion path in the type system (for multi-hop conversions)
    *
@@ -268,8 +255,11 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
       // Get metadata for this unit
       const unitMetadata = this.metadata.get(fromUnit) || {};
 
+      // Create a callable function that brands a value with the unit
+      const brandFunction = (value: number) => value as WithUnits<number, any>;
+
       // Create unit accessor object with to, addMetadata, register, and metadata properties
-      const unitAccessor: any = {
+      const unitAccessor: any = Object.assign(brandFunction, {
         to: toProxy,
         addMetadata: (metadata: UnitMetadata) => {
           const newMetadata = new Map(this.metadata);
@@ -283,7 +273,7 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
         ) => {
           return this.register(fromUnit as any, to as any, converter as any);
         }
-      };
+      });
 
       // Add metadata properties as direct properties on the accessor
       // Wrap in a Proxy to provide dynamic access to metadata
@@ -530,8 +520,11 @@ function createRegistryFromGraph<Edges extends Edge[] = []>(
       // Get metadata for this unit (may be empty)
       const unitMetadata = target.metadata.get(prop) || {};
 
+      // Create a callable function that brands a value with the unit
+      const brandFunction = (value: number) => value as WithUnits<number, any>;
+
       // Create unit accessor with all methods
-      const dynamicAccessor: any = {
+      const dynamicAccessor: any = Object.assign(brandFunction, {
         to: toProxy,
         addMetadata: (metadata: UnitMetadata) => {
           const newMetadata = new Map(target.metadata) as Map<PropertyKey, UnitMetadata>;
@@ -545,7 +538,7 @@ function createRegistryFromGraph<Edges extends Edge[] = []>(
         ) => {
           return target.register(prop as any, to as any, converter as any);
         }
-      };
+      });
 
       // Wrap in Proxy to provide dynamic access to metadata
       const accessorProxy = new Proxy(dynamicAccessor, {

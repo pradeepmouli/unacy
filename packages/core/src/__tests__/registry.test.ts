@@ -295,6 +295,37 @@ describe('Registry - Unit Accessor API', () => {
     // Type checking note: result is 'any' due to registry cast, but runtime value is correct
   });
 
+  it('unit accessor is callable to create branded values', () => {
+    const registry = createRegistry().register(
+      'Celsius',
+      'Fahrenheit',
+      (c) => ((c * 9) / 5 + 32) as Fahrenheit
+    );
+
+    // Call the unit accessor as a function to brand a value
+    const temp = (registry as any).Celsius(25);
+
+    // Verify it's treated as a branded Celsius value
+    expect(temp).toBe(25);
+
+    // And can be converted
+    const fahrenheit = (registry as any).Celsius.to.Fahrenheit(temp);
+    expect(fahrenheit).toBe(77);
+  });
+
+  it('callable unit accessor works for unit-centric workflow', () => {
+    const registry = createRegistry().register('meters', 'kilometers', {
+      to: (m: Meters) => (m / 1000) as Kilometers,
+      from: (km: Kilometers) => (km * 1000) as Meters
+    });
+
+    // Create branded values by calling the unit accessor
+    const distance = (registry as any).meters(5000);
+    const km = (registry as any).meters.to.kilometers(distance);
+
+    expect(km).toBe(5);
+  });
+
   it('unit accessor API works with bidirectional converters', () => {
     const registry = createRegistry().register('meters', 'kilometers', {
       to: (m: Meters) => (m / 1000) as Kilometers,

@@ -31,16 +31,47 @@ type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
 const tempRegistry = createRegistry()
   .register('Celsius', 'Fahrenheit', (c) => ((c * 9/5) + 32) as Fahrenheit);
 
+// Create branded values using callable accessors (NEW!)
+const temp = tempRegistry.Celsius(25); // Returns Celsius type
+
 // Convert with type safety - two ways:
-const temp: Celsius = 25 as Celsius;
 
 // Method 1: unit accessor API
-const fahrenheit2 = tempRegistry.Celsius.to.Fahrenheit(temp as Celsius) satisfies Fahrenheit;
+const fahrenheit1 = tempRegistry.Celsius.to.Fahrenheit(temp);
 
-console.log(fahrenheit2); // 77
+// Method 2: fluent callable accessor API
+const fahrenheit2 = tempRegistry.Celsius.to.Fahrenheit(tempRegistry.Celsius(30));
+
+console.log(fahrenheit1); // 77
+console.log(fahrenheit2); // 86
+
+// Old way still works (manual casting)
+const tempOld: Celsius = 25 as Celsius;
 ```
 
 ## Usage Examples
+
+### Callable Unit Accessors
+
+Unit accessors are now callable functions that create branded values:
+
+```typescript
+// Create branded values without manual type casting
+const temp = registry.Celsius(25);        // Returns WithUnits<number, 'Celsius'>
+const distance = registry.meters(100);    // Returns WithUnits<number, 'meters'>
+
+// Fluent workflow
+const fahrenheit = registry.Celsius.to.Fahrenheit(registry.Celsius(20));
+
+// Compare with old way (still works)
+const tempOld: Celsius = 25 as Celsius;
+
+// Benefits:
+// - Cleaner syntax
+// - Less verbose than manual casting
+// - Type-safe by design
+// - Works seamlessly with conversions
+```
 
 ### Basic Unit Conversions
 
@@ -51,6 +82,9 @@ const distance: Meters = 10 as Meters;
 // Access units directly via property syntax
 const feet = distanceRegistry.meters.to.feet(distance);
 console.log(feet); // 32.8084
+
+// Or use callable accessors
+const feet2 = distanceRegistry.meters.to.feet(distanceRegistry.meters(10));
 
 // Works in both directions
 const meters = distanceRegistry.feet.to.meters(32.8084 as Feet) satisfies Meters;
@@ -69,6 +103,7 @@ const registry = createRegistry<'meters' | 'kilometers'>()
   .registerBidirectional('meters', 'kilometers', {
     to: (m) => (m / 1000) as Kilometers,
     from: (km) => (km * 1000) as Meters
+  });
   });
 
 // Both directions work automatically
