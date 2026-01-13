@@ -37,7 +37,7 @@ export type UnitAccessor<From extends string, Edges extends readonly Edge[]> = {
    * @returns The value branded with this unit type
    */
   (value: number): WithUnits<number, From>;
-  
+
   to: { /* ... conversion methods ... */ };
   addMetadata: (metadata: UnitMetadata) => /* ... */;
   register: <To extends string>(/* ... */) => /* ... */;
