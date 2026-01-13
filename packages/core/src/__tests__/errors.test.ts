@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { UnacyError, CycleError, MaxDepthError, ConversionError, ParseError } from '../errors';
+import { UnacyError, CycleError, MaxDepthError, ConversionError, ParseError } from '../errors.js';
 
 describe('UnacyError', () => {
   it('creates error with message', () => {

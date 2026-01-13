@@ -3,7 +3,7 @@
  * This file demonstrates how to use registry.Unit(value) to create branded values
  */
 
-import { createRegistry, type WithUnits } from './src/index';
+import { createRegistry, type WithUnits } from './src/index.js';
 
 console.log('=== Callable Unit Accessor Demo ===\n');
 

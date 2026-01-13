@@ -1,6 +1,6 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
-import type { Converter, BidirectionalConverter } from '../converters';
-import type { WithUnits } from '../types';
+import type { Converter, BidirectionalConverter } from '../converters.js';
+import type { WithUnits } from '../types.js';
 
 // Define test unit types
 type Celsius = WithUnits<number, 'Celsius'>;

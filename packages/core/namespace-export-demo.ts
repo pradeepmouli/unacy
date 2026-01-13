@@ -3,7 +3,7 @@
  * This pattern allows users to import only the converters they need
  */
 
-import { createRegistry, type WithUnits } from './src/index';
+import { createRegistry, type WithUnits } from './src/index.js';
 
 // Define unit types
 export type Celsius = WithUnits<number, 'Celsius'>;

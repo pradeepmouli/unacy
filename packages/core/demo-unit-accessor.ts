@@ -7,7 +7,7 @@
  * 4. registry.unit.register() for unit-centric converter registration
  */
 
-import { createRegistry, type WithUnits } from './src/index';
+import { createRegistry, type WithUnits } from './src/index.js';
 import { Celsius } from './namespace-export-demo.js';
 
 console.log('=== Unit Accessor API Demo ===\n');

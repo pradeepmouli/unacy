@@ -3,7 +3,7 @@
  * @packageDocumentation
  */
 
-import type { PrimitiveType, Unwrap, WithUnits, Relax as BaseRelax } from './types';
+import type { PrimitiveType, Unwrap, WithUnits, Relax as BaseRelax } from './types.js';
 
 /**
  * Unidirectional converter from one unit to another.

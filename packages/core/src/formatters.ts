@@ -3,7 +3,7 @@
  * @packageDocumentation
  */
 
-import type { WithFormat } from './types';
+import type { WithFormat } from './types.js';
 
 /**
  * Formatter converts a format-tagged value to a string representation.

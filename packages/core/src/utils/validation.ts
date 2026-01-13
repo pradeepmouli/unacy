@@ -4,9 +4,9 @@
  */
 
 import type { ZodSchema } from 'zod';
-import type { Parser } from '../formatters';
-import type { WithFormat } from '../types';
-import { ParseError } from '../errors';
+import type { Parser } from '../formatters.js';
+import type { WithFormat } from '../types.js';
+import { ParseError } from '../errors.js';
 
 /**
  * Create a parser with Zod schema validation.

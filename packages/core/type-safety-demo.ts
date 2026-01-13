@@ -3,7 +3,7 @@
  * This file shows that invalid conversions are caught at compile-time
  */
 
-import { createRegistry, type WithUnits } from './src/index';
+import { createRegistry, type WithUnits } from './src/index.js';
 
 // Define unit types for different dimensions
 type Celsius = WithUnits<number, 'Celsius'>;

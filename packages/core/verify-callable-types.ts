@@ -3,7 +3,7 @@
  * This file demonstrates compile-time type safety
  */
 
-import { createRegistry, type WithUnits } from './src/index';
+import { createRegistry, type WithUnits } from './src/index.js';
 
 // Define unit types
 type Celsius = WithUnits<number, 'Celsius'>;

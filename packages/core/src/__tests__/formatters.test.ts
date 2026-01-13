@@ -1,7 +1,7 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
-import type { Formatter, Parser, FormatterParser } from '../formatters';
-import type { WithFormat } from '../types';
-import { ParseError } from '../errors';
+import type { Formatter, Parser, FormatterParser } from '../formatters.js';
+import type { WithFormat } from '../types.js';
+import { ParseError } from '../errors.js';
 import { z } from 'zod';
 
 // Define test format types

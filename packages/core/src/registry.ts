@@ -3,10 +3,10 @@
  * @packageDocumentation
  */
 
-import type { Converter, BidirectionalConverter, Relax } from './converters';
-import type { OptionalWithUnits, UnitsFor, WithUnits, UnitMetadata } from './types';
-import { ConversionError } from './errors';
-import { findShortestPath, composeConverters } from './utils/graph';
+import type { Converter, BidirectionalConverter, Relax } from './converters.js';
+import type { OptionalWithUnits, UnitsFor, WithUnits, UnitMetadata } from './types.js';
+import { ConversionError } from './errors.js';
+import { findShortestPath, composeConverters } from './utils/graph.js';
 
 /**
  * Represents a conversion edge from one unit to another

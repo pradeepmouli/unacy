@@ -1,8 +1,8 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
-import { createRegistry } from '../registry';
-import type { Converter } from '../converters';
-import type { WithUnits } from '../types';
-import { CycleError, MaxDepthError, ConversionError } from '../errors';
+import { createRegistry } from '../registry.js';
+import type { Converter } from '../converters.js';
+import type { WithUnits } from '../types.js';
+import { CycleError, MaxDepthError, ConversionError } from '../errors.js';
 
 // Define test unit types
 type Celsius = WithUnits<number, 'Celsius'>;

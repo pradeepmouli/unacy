@@ -3,8 +3,8 @@
  * @packageDocumentation
  */
 
-import { CycleError, MaxDepthError } from '../errors';
-import type { Converter } from '../converters';
+import { CycleError, MaxDepthError } from '../errors.js';
+import type { Converter } from '../converters.js';
 
 /**
  * Maximum allowed conversion path depth to prevent infinite loops

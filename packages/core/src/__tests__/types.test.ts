@@ -1,5 +1,5 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
-import type { WithUnits, WithFormat } from '../types';
+import type { WithUnits, WithFormat } from '../types.js';
 
 describe('WithUnits Type Safety', () => {
   type Celsius = WithUnits<number, 'Celsius'>;

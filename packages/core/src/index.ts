@@ -4,20 +4,20 @@
  */
 
 // Core types
-export type { WithUnits, WithFormat, UnitMetadata } from './types';
+export type { WithUnits, WithFormat, UnitMetadata } from './types.js';
 
 // Converter types
-export type { Converter, BidirectionalConverter } from './converters';
+export type { Converter, BidirectionalConverter } from './converters.js';
 
 // Formatter/Parser types
-export type { Formatter, Parser, FormatterParser } from './formatters';
+export type { Formatter, Parser, FormatterParser } from './formatters.js';
 
 // Registry
-export type { ConverterRegistry } from './registry';
-export { createRegistry } from './registry';
+export type { ConverterRegistry } from './registry.js';
+export { createRegistry } from './registry.js';
 
 // Errors
-export { UnacyError, CycleError, MaxDepthError, ConversionError, ParseError } from './errors';
+export { UnacyError, CycleError, MaxDepthError, ConversionError, ParseError } from './errors.js';
 
 // Utilities
-export { createParserWithSchema } from './utils/validation';
+export { createParserWithSchema } from './utils/validation.js';
