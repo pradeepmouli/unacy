@@ -1,5 +1,11 @@
 # unacy
 
+## 0.5.0
+
+### Minor Changes
+
+- Updated core and tooling dependencies to newer minor/patch versions to align with the broader ecosystem; no breaking changes are expected.
+
 ## 0.4.0
 
 ### Minor Changes
