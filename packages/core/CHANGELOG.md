@@ -1,5 +1,11 @@
 # unacy
 
+## 0.3.0
+
+### Minor Changes
+
+- make units callable
+
 ## 0.2.0
 
 ### Minor Changes
