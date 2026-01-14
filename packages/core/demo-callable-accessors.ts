@@ -16,9 +16,9 @@ type Kilometers = WithUnits<number, 'kilometers'>;
 
 // Create registry with temperature converters
 const registry = createRegistry()
-  .register('Celsius', 'Fahrenheit', (c) => ((c * 9) / 5 + 32) as Fahrenheit)
-  .register('Fahrenheit', 'Celsius', (f) => (((f - 32) * 5) / 9) as Celsius)
-  .register('Celsius', 'Kelvin', (c) => (c + 273.15) as Kelvin)
+  .register('Celsius', 'Fahrenheit', (c) => (c * 9) / 5 + 32)
+  .register('Fahrenheit', 'Celsius', (f) => ((f - 32) * 5) / 9)
+  .register('Celsius', 'Kelvin', (c) => c + 273.15)
   .register('Kelvin', 'Celsius', (k) => k - 273.15)
   .allow('Fahrenheit', 'Kelvin')
   .allow('Kelvin', 'Fahrenheit')
@@ -79,8 +79,8 @@ console.log(`  Kelvin:     ${k}K\n`);
 console.log('Part 4: Distance units\n');
 
 const distanceRegistry = createRegistry().register('meters', 'kilometers', {
-  to: (m: Meters) => (m / 1000) as Kilometers,
-  from: (km: Kilometers) => (km * 1000) as Meters
+  to: (m) => m / 1000,
+  from: (km) => km * 1000
 });
 
 // Create distance values using callable accessors

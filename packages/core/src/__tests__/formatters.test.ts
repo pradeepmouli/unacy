@@ -88,8 +88,8 @@ describe('Parser Type', () => {
     const parsePositive: Parser<WithFormat<number, 'Positive'>> = (input) => {
       const schema = z
         .string()
-        .transform((s) => parseFloat(s))
-        .refine((n) => n > 0);
+        .transform(parseFloat)
+        .refine((n: number) => n > 0);
       try {
         return schema.parse(input) as WithFormat<number, 'Positive'>;
       } catch {
@@ -232,7 +232,7 @@ describe('FormatterParser Type', () => {
         const schema = z
           .string()
           .regex(/^\d+$/)
-          .transform((s) => parseInt(s, 10));
+          .transform((s: string) => parseInt(s, 10));
         try {
           return schema.parse(input) as UnixTimestamp;
         } catch {

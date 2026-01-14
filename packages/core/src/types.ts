@@ -20,7 +20,11 @@ export const DEFINITION: unique symbol = Symbol('DEFINITION');
  * const temp: Celsius = 25 as Celsius;
  * ```
  */
-export type WithUnits<T extends PrimitiveType, U extends string> = Tagged<T, typeof UNITS, U>;
+export type WithUnits<
+  T extends PrimitiveType = number,
+  U extends string = string,
+  M extends Record<string, unknown> = UnitMetadata
+> = Tagged<T, typeof UNITS, U>;
 
 export type WithDefinition<
   T extends PrimitiveType,
@@ -28,7 +32,7 @@ export type WithDefinition<
   D extends UnitDefinition<T, U, unknown, any>
 > = Tagged<WithUnits<T, U>, typeof DEFINITION, D>;
 
-export type PrimitiveType = string | number | boolean | bigint;
+export type PrimitiveType = number;
 
 export type PrimitiveTypeMap = {
   string: string;
@@ -46,8 +50,7 @@ export type OptionalWithUnits<T extends PrimitiveType, U extends string> = T | W
 
 export type Unwrap<T> = T extends WithUnits<infer U, string> ? U : T;
 
-export type Relax<T> = Unwrap<T> | T;
-
+export type Relax<T> = T | Unwrap<T>;
 /**
  * Brand a value with a format identifier for compile-time format safety.
  *

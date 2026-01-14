@@ -1,5 +1,11 @@
 # unacy
 
+## 0.6.0
+
+### Minor Changes
+
+- typing enhancements
+
 ## 0.5.0
 
 ### Minor Changes

@@ -9,6 +9,7 @@
 
 import { createRegistry, type WithUnits } from './src/index.js';
 import { Celsius } from './namespace-export-demo.js';
+import type { Relax } from './src/types.js';
 
 console.log('=== Unit Accessor API Demo ===\n');
 
@@ -107,8 +108,8 @@ console.log(`\nFormatted value: ${formatString.replace('${value}', tempValue.toS
 console.log('\n\nPart 3: Unit-Centric Registration\n');
 
 // Register converters using the unit accessor API with pre-declared edges
-type MeterEdge = readonly ['meters', 'kilometers'];
-type KilometerEdge = readonly ['kilometers', 'meters'];
+type MeterEdge = readonly [Meters, Kilometers];
+type KilometerEdge = readonly [Kilometers, Meters];
 const distanceRegistry = createRegistry<[MeterEdge, KilometerEdge]>()
   // Register bidirectional converter from meters
   .meters.register('kilometers', {
@@ -144,7 +145,7 @@ console.log(
 console.log('\n\nPart 4: Custom Metadata Properties\n');
 
 // Add custom metadata properties
-type CelsiusEdge = readonly ['Celsius', 'Fahrenheit'];
+type CelsiusEdge = readonly [Celsius, Fahrenheit];
 const customRegistry = createRegistry<[CelsiusEdge]>()
   .Celsius.register('Fahrenheit', (c) => ((c * 9) / 5 + 32) as Fahrenheit)
   .Celsius.addMetadata({

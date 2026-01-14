@@ -4,14 +4,27 @@
  */
 
 import type { Converter, BidirectionalConverter, Relax } from './converters.js';
-import type { OptionalWithUnits, UnitsFor, WithUnits, UnitMetadata } from './types.js';
+import type {
+  OptionalWithUnits,
+  UnitsFor,
+  WithUnits,
+  UnitMetadata,
+  PrimitiveType,
+  Relax as RelaxUnits
+} from './types.js';
 import { ConversionError } from './errors.js';
 import { findShortestPath, composeConverters } from './utils/graph.js';
+import type { Simplify } from 'type-fest';
 
 /**
  * Represents a conversion edge from one unit to another
+ * Edges store the unit names as strings, but the type system ensures
+ * they correspond to valid WithUnits types
  */
-type Edge<From extends string = string, To extends string = string> = readonly [From, To];
+type Edge<
+  From extends WithUnits = WithUnits<PrimitiveType, string>,
+  To extends WithUnits = WithUnits<PrimitiveType, string>
+> = readonly [From, To];
 
 /**
  * Extract all unique 'from' units from a list of edges
@@ -21,7 +34,7 @@ type FromUnits<Edges extends readonly Edge[]> = Edges[number][0];
 /**
  * Extract all 'to' units for a specific 'from' unit string
  */
-type ToUnitsFor<Edges extends readonly Edge[], FromUnit extends string> = Extract<
+type ToUnitsFor<Edges extends readonly Edge[], FromUnit extends WithUnits> = Extract<
   Edges[number],
   readonly [FromUnit, any]
 >[1];
@@ -30,17 +43,21 @@ type ToUnitsFor<Edges extends readonly Edge[], FromUnit extends string> = Extrac
  * Type for unit accessor with metadata and conversion methods
  * Can be called as a function to create branded unit values
  */
-export type UnitAccessor<From extends string, Edges extends readonly Edge[]> = {
+export type UnitAccessor<
+  From extends WithUnits<PrimitiveType, FromUnits>,
+  Edges extends readonly Edge[],
+  FromUnits extends string
+> = {
   /**
    * Create a branded value with this unit
    * @param value - The numeric value to brand
    * @returns The value branded with this unit type
    */
-  (value: number): WithUnits<number, From>;
+  (value: number): From;
   to: {
-    [To in ToUnitsFor<Edges, From>]: (
-      value: OptionalWithUnits<number, From>
-    ) /*To avoid having to cast*/ => WithUnits<number, To>;
+    [To in ToUnitsFor<Edges, From> as UnitsFor<To>]: (
+      value: RelaxUnits<From>
+    ) /*To avoid having to cast*/ => WithUnits<PrimitiveType, To>;
   };
   /**
    * Add metadata to this unit
@@ -51,13 +68,13 @@ export type UnitAccessor<From extends string, Edges extends readonly Edge[]> = {
   /**
    * Register a converter from this unit to another unit
    */
-  register<To extends string>(
-    to: To,
-    converter: Relax<Converter<WithUnits<number, From>, WithUnits<number, To>>>
+  register<To extends WithUnits<PrimitiveType, ToUnits>, ToUnits extends string>(
+    to: ToUnits,
+    converter: Relax<Converter<From, To>>
   ): ConverterRegistry<[...Edges, Edge<From, To>]> & ConverterMap<[...Edges, Edge<From, To>]>;
-  register<To extends string>(
-    to: To,
-    converter: Relax<BidirectionalConverter<WithUnits<number, From>, WithUnits<number, To>>>
+  register<To extends WithUnits<PrimitiveType, ToUnits>, ToUnits extends string>(
+    to: ToUnits,
+    converter: Relax<BidirectionalConverter<From, To>>
   ): ConverterRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
     ConverterMap<[...Edges, Edge<From, To>, Edge<To, From>]>;
 } & {
@@ -71,7 +88,11 @@ export type UnitAccessor<From extends string, Edges extends readonly Edge[]> = {
  * Only allows conversions that have been registered
  */
 export type ConverterMap<Edges extends readonly Edge[]> = {
-  [From in FromUnits<Edges>]: UnitAccessor<From, Edges>;
+  [FU in FromUnits<Edges> as UnitsFor<FU>]: UnitAccessor<
+    WithUnits<PrimitiveType, UnitsFor<FU>>,
+    Edges,
+    UnitsFor<FromUnits<Edges>>
+  >;
 };
 
 /**
@@ -87,16 +108,15 @@ export interface ConverterRegistry<Edges extends Edge[] = []> {
    * @returns New registry instance with the converter registered
    */
   register<
-    From extends WithUnits<number, UF>,
-    To extends WithUnits<number, UY>,
+    From extends WithUnits<PrimitiveType, UF>,
+    To extends WithUnits<PrimitiveType, UY>,
     UF extends string,
     UY extends string
   >(
     from: UF,
     to: UY,
-    converter: Relax<Converter<From, To>>
-  ): ConverterRegistry<[...Edges, Edge<UnitsFor<From>, UnitsFor<To>>]> &
-    ConverterMap<[...Edges, Edge<UnitsFor<From>, UnitsFor<To>>]>;
+    converter: Converter<From, RelaxUnits<To>>
+  ): ConverterRegistry<[...Edges, Edge<From, To>]> & ConverterMap<[...Edges, Edge<From, To>]>;
   /**
    * Register a bidirectional converter (both directions)
    *
@@ -105,16 +125,17 @@ export interface ConverterRegistry<Edges extends Edge[] = []> {
    * @param converter - Bidirectional converter object
    * @returns New registry instance with both converters registered
    */
-  register<From extends WithUnits<number, string>, To extends WithUnits<number, string>>(
-    from: UnitsFor<From> | { name: UnitsFor<From> },
-    to: UnitsFor<To> | { name: UnitsFor<To> },
-    converter: Relax<BidirectionalConverter<From, To>>
-  ): ConverterRegistry<
-    [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
-  > &
-    ConverterMap<
-      [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
-    >;
+  register<
+    From extends WithUnits<PrimitiveType, UF>,
+    To extends WithUnits<PrimitiveType, UY>,
+    UF extends string,
+    UY extends string
+  >(
+    from: UF,
+    to: UY,
+    converter: BidirectionalConverter<RelaxUnits<From>, RelaxUnits<To>>
+  ): ConverterRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
+    ConverterMap<[...Edges, Edge<From, To>, Edge<To, From>]>;
 
   // Note: registerBidirectional() method was deprecated - use register() with BidirectionalConverter instead
 
@@ -140,9 +161,14 @@ export interface ConverterRegistry<Edges extends Edge[] = []> {
    * const f = registry.Celsius.to.Fahrenheit(temp);
    * ```
    */
-  allow<From extends string, To extends string>(
-    from: From,
-    to: To
+  allow<
+    From extends WithUnits<PrimitiveType, UF>,
+    To extends WithUnits<PrimitiveType, UY>,
+    UF extends string,
+    UY extends string
+  >(
+    from: UF,
+    to: UY
   ): ConverterRegistry<[...Edges, Edge<From, To>]> & ConverterMap<[...Edges, Edge<From, To>]>;
   /**
    * Get a converter (direct or composed via BFS)
@@ -151,7 +177,10 @@ export interface ConverterRegistry<Edges extends Edge[] = []> {
    * @param to - Destination unit
    * @returns Converter function, or undefined if no path exists
    */
-  getConverter<From extends WithUnits<number, string>, To extends WithUnits<number, string>>(
+  getConverter<
+    From extends WithUnits<PrimitiveType, string>,
+    To extends WithUnits<PrimitiveType, string>
+  >(
     from: UnitsFor<From>,
     to: UnitsFor<To>
   ): Converter<From, To> | undefined;
@@ -162,11 +191,11 @@ export interface ConverterRegistry<Edges extends Edge[] = []> {
    * @param fromUnit - Source unit
    * @returns Object with to() method for conversion
    */
-  convert<From extends WithUnits<number, string>>(
+  convert<From extends WithUnits<PrimitiveType, string>>(
     value: From,
     fromUnit: UnitsFor<From>
   ): {
-    to<To extends WithUnits<number, string>>(unit: UnitsFor<To>): To;
+    to<To extends WithUnits<PrimitiveType, string>>(unit: UnitsFor<To>): To;
   };
 }
 
@@ -256,7 +285,7 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
       const unitMetadata = this.metadata.get(fromUnit) || {};
 
       // Create a callable function that brands a value with the unit
-      const brandFunction = (value: number) => value as WithUnits<number, any>;
+      const brandFunction = (value: number) => value as WithUnits<PrimitiveType, any>;
 
       // Create unit accessor object with to, addMetadata, register, and metadata properties
       const unitAccessor: any = Object.assign(brandFunction, {
@@ -298,7 +327,10 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
     }
   }
 
-  register<From extends WithUnits<number, string>, To extends WithUnits<number, string>>(
+  register<
+    From extends WithUnits<PrimitiveType, string>,
+    To extends WithUnits<PrimitiveType, string>
+  >(
     from: UnitsFor<From> | { name: UnitsFor<From> },
     to: UnitsFor<To> | { name: UnitsFor<To> },
     converter: Converter<From, To> | BidirectionalConverter<From, To>
@@ -332,7 +364,7 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
     newGraph.set(from, fromMap);
 
     // Return new registry instance (immutable) with proxy
-    return createRegistryFromGraph<[...Edges, Edge<UnitsFor<From>, UnitsFor<To>>]>(
+    return createRegistryFromGraph<[...Edges, Edge<From, To>]>(
       newGraph,
       new Map(),
       this.metadata
@@ -340,18 +372,14 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
   }
 
   registerBidirectional<
-    From extends WithUnits<number, string>,
-    To extends WithUnits<number, string>
+    From extends WithUnits<PrimitiveType, string>,
+    To extends WithUnits<PrimitiveType, string>
   >(
     from: UnitsFor<From>,
     to: UnitsFor<To>,
     converter: Relax<BidirectionalConverter<From, To>>
-  ): ConverterRegistry<
-    [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
-  > &
-    ConverterMap<
-      [...Edges, Edge<UnitsFor<From>, UnitsFor<To>>, Edge<UnitsFor<To>, UnitsFor<From>>]
-    > {
+  ): ConverterRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
+    ConverterMap<[...Edges, Edge<From, To>, Edge<To, From>]> {
     return this.register(from, to, converter.to as any).register(
       to as any,
       from as any,
@@ -359,9 +387,14 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
     ) as any;
   }
 
-  allow<From extends string, To extends string>(
-    from: From,
-    to: To
+  allow<
+    From extends WithUnits<PrimitiveType, UF>,
+    To extends WithUnits<PrimitiveType, UY>,
+    UF extends string,
+    UY extends string
+  >(
+    from: UF,
+    to: UY
   ): ConverterRegistry<[...Edges, Edge<From, To>]> & ConverterMap<[...Edges, Edge<From, To>]> {
     // Verify that a conversion path exists at runtime
     const converter = this.getConverter(from as any, to as any);
@@ -374,10 +407,10 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
     return this as any;
   }
 
-  getConverter<From extends WithUnits<number, string>, To extends WithUnits<number, string>>(
-    from: UnitsFor<From>,
-    to: UnitsFor<To>
-  ): Converter<From, To> | undefined {
+  getConverter<
+    From extends WithUnits<PrimitiveType, string>,
+    To extends WithUnits<PrimitiveType, string>
+  >(from: UnitsFor<From>, to: UnitsFor<To>): Converter<From, To> | undefined {
     // Check cache first
     const cacheKey = `${String(from)}->${String(to)}`;
     const cached = this.pathCache.get(cacheKey);
@@ -419,17 +452,17 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
     }
   }
 
-  convert<From extends WithUnits<number, string>>(
+  convert<From extends WithUnits<PrimitiveType, string>>(
     value: From,
     fromUnit: UnitsFor<From> | { name: UnitsFor<From> }
   ): {
-    to<To extends WithUnits<number, string>>(unit: UnitsFor<To>): To;
+    to<To extends WithUnits<PrimitiveType, string>>(unit: UnitsFor<To>): To;
   } {
     if (typeof fromUnit === 'object' && 'name' in fromUnit) {
       fromUnit = fromUnit.name;
     }
     return {
-      to: <To extends WithUnits<number, string>>(unit: UnitsFor<To>): To => {
+      to: <To extends WithUnits<PrimitiveType, string>>(unit: UnitsFor<To>): To => {
         const converter = this.getConverter(fromUnit as any, unit as any);
         if (!converter) {
           throw new ConversionError(fromUnit, unit, 'No converter found');
@@ -448,10 +481,10 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
  *
  * @example
  * ```typescript
- * type Celsius = WithUnits<number, 'Celsius'>;
- * type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
- * type Meters = WithUnits<number, 'meters'>;
- * type Kilometers = WithUnits<number, 'kilometers'>;
+ * type Celsius = WithUnits<PrimitiveType, 'Celsius'>;
+ * type Fahrenheit = WithUnits<PrimitiveType, 'Fahrenheit'>;
+ * type Meters = WithUnits<PrimitiveType, 'meters'>;
+ * type Kilometers = WithUnits<PrimitiveType, 'kilometers'>;
  *
  * // Without pre-declared units
  * const registry = createRegistry()
@@ -521,7 +554,7 @@ function createRegistryFromGraph<Edges extends Edge[] = []>(
       const unitMetadata = target.metadata.get(prop) || {};
 
       // Create a callable function that brands a value with the unit
-      const brandFunction = (value: number) => value as WithUnits<number, any>;
+      const brandFunction = (value: number) => value as WithUnits<PrimitiveType, any>;
 
       // Create unit accessor with all methods
       const dynamicAccessor: any = Object.assign(brandFunction, {

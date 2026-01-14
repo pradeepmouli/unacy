@@ -1,7 +1,7 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
 import { createRegistry } from '../registry.js';
 import type { Converter } from '../converters.js';
-import type { WithUnits } from '../types.js';
+import type { PrimitiveType, WithUnits } from '../types.js';
 import { CycleError, MaxDepthError, ConversionError } from '../errors.js';
 
 // Define test unit types
@@ -18,11 +18,7 @@ const convert = (registry: any, value: any, from: string) => (registry as any).c
 
 describe('Registry - Basic Operations', () => {
   it('register and retrieve direct converter', () => {
-    const registry = createRegistry().register(
-      'Celsius',
-      'Fahrenheit',
-      (c) => ((c * 9) / 5 + 32) as Fahrenheit
-    );
+    const registry = createRegistry().register('Celsius', 'Fahrenheit', (c) => (c * 9) / 5 + 32);
 
     const converter = getConverter(registry, 'Celsius', 'Fahrenheit');
 
@@ -35,8 +31,8 @@ describe('Registry - Basic Operations', () => {
 
   it('registerBidirectional registers both directions', () => {
     const registry = createRegistry().register('meters', 'kilometers', {
-      to: (m: Meters) => (m / 1000) as Kilometers,
-      from: (km: Kilometers) => (km * 1000) as Meters
+      to: (m) => m / 1000,
+      from: (km) => km * 1000
     });
 
     const m2km = getConverter(registry, 'meters', 'kilometers');
@@ -99,12 +95,12 @@ describe('Registry - Multi-Hop Composition', () => {
   it('integration test: 3-unit distance conversion (m→km→mi)', () => {
     const registry = createRegistry()
       .register('meters', 'kilometers', {
-        to: (m: Meters) => (m / 1000) as Kilometers,
-        from: (km: Kilometers) => (km * 1000) as Meters
+        to: (m) => m / 1000,
+        from: (km) => km * 1000
       })
       .register('kilometers', 'miles', {
-        to: (km: Kilometers) => (km * 0.621371) as Miles,
-        from: (mi: Miles) => (mi / 0.621371) as Kilometers
+        to: (km) => km * 0.621371,
+        from: (mi) => mi / 0.621371
       });
 
     const converter = getConverter(registry, 'meters', 'miles');
@@ -315,8 +311,8 @@ describe('Registry - Unit Accessor API', () => {
 
   it('callable unit accessor works for unit-centric workflow', () => {
     const registry = createRegistry().register('meters', 'kilometers', {
-      to: (m: Meters) => (m / 1000) as Kilometers,
-      from: (km: Kilometers) => (km * 1000) as Meters
+      to: (m) => m / 1000,
+      from: (km) => km * 1000
     });
 
     // Create branded values by calling the unit accessor
@@ -328,8 +324,8 @@ describe('Registry - Unit Accessor API', () => {
 
   it('unit accessor API works with bidirectional converters', () => {
     const registry = createRegistry().register('meters', 'kilometers', {
-      to: (m: Meters) => (m / 1000) as Kilometers,
-      from: (km: Kilometers) => (km * 1000) as Meters
+      to: (m) => m / 1000,
+      from: (km) => km * 1000
     });
 
     const meters = 5000 as Meters;
@@ -346,12 +342,12 @@ describe('Registry - Unit Accessor API', () => {
   it('unit accessor API works with multi-hop conversions', () => {
     const registry = createRegistry()
       .register('meters', 'kilometers', {
-        to: (m: Meters) => (m / 1000) as Kilometers,
-        from: (km: Kilometers) => (km * 1000) as Meters
+        to: (m) => m / 1000,
+        from: (km) => km * 1000
       })
       .register('kilometers', 'miles', {
-        to: (km: Kilometers) => (km * 0.621371) as Miles,
-        from: (mi: Miles) => (mi / 0.621371) as Kilometers
+        to: (km) => (km * 0.621371) as Miles,
+        from: (mi) => (mi / 0.621371) as Kilometers
       });
 
     const meters = 5000 as Meters;
@@ -469,10 +465,10 @@ describe('Registry - Metadata Support', () => {
 
 describe('Registry - Unit Accessor Registration', () => {
   it('register method on unit accessor registers converter', () => {
-    type CelsiusEdge = readonly ['Celsius', 'Fahrenheit'];
+    type CelsiusEdge = readonly [Celsius, Fahrenheit];
     const registry = createRegistry<[CelsiusEdge]>().Celsius.register(
       'Fahrenheit',
-      (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit
+      (c) => ((c * 9) / 5 + 32) as Fahrenheit
     );
 
     const converter = getConverter(registry, 'Celsius', 'Fahrenheit');
@@ -483,7 +479,7 @@ describe('Registry - Unit Accessor Registration', () => {
   });
 
   it('unit accessor register supports bidirectional converters', () => {
-    type MeterEdge = readonly ['meters', 'kilometers'];
+    type MeterEdge = readonly [Meters, Kilometers];
     const registry = createRegistry<[MeterEdge]>().meters.register('kilometers', {
       to: (m) => (m / 1000) as Kilometers,
       from: (km) => (km * 1000) as Meters
@@ -502,11 +498,11 @@ describe('Registry - Unit Accessor Registration', () => {
   });
 
   it('unit accessor register can be chained', () => {
-    type CelsiusEdge = readonly ['Celsius', 'Fahrenheit'];
-    type FahrenheitEdge = readonly ['Fahrenheit', 'Kelvin'];
+    type CelsiusEdge = readonly [Celsius, Fahrenheit];
+    type FahrenheitEdge = readonly [Fahrenheit, Kelvin];
     const registry = createRegistry<[CelsiusEdge, FahrenheitEdge]>()
-      .Celsius.register('Fahrenheit', (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit)
-      .Fahrenheit.register('Kelvin', (f: Fahrenheit) => ((f - 32) * (5 / 9) + 273.15) as Kelvin);
+      .Celsius.register('Fahrenheit', (c) => ((c * 9) / 5 + 32) as Fahrenheit)
+      .Fahrenheit.register('Kelvin', (f) => ((f - 32) * (5 / 9) + 273.15) as Kelvin);
 
     const c2f = getConverter(registry, 'Celsius', 'Fahrenheit');
     const f2k = getConverter(registry, 'Fahrenheit', 'Kelvin');
@@ -516,7 +512,11 @@ describe('Registry - Unit Accessor Registration', () => {
   });
 
   it('unit accessor register preserves existing converters', () => {
-    type CEdge = readonly ['C', 'D'];
+    type A = WithUnits<number, 'A'>;
+    type B = WithUnits<number, 'B'>;
+    type C = WithUnits<number, 'C'>;
+    type D = WithUnits<number, 'D'>;
+    type CEdge = readonly [C, A];
     const registry = createRegistry<[CEdge]>()
       .register('A', 'B', (a) => (a * 2) as any)
       .C.register('D', (c: any) => (c * 3) as any);
@@ -529,10 +529,10 @@ describe('Registry - Unit Accessor Registration', () => {
   });
 
   it('unit accessor register works with unit accessor API', () => {
-    type CelsiusEdge = readonly ['Celsius', 'Fahrenheit'];
+    type CelsiusEdge = readonly [Celsius, Fahrenheit];
     const registry = createRegistry<[CelsiusEdge]>().Celsius.register(
       'Fahrenheit',
-      (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit
+      (c) => (c * 9) / 5 + 32
     );
 
     const temp = 0 as Celsius;
@@ -542,10 +542,10 @@ describe('Registry - Unit Accessor Registration', () => {
   });
 
   it('unit accessor register and addMetadata work together', () => {
-    type CelsiusEdge = readonly ['Celsius', 'Fahrenheit'];
+    type CelsiusEdge = readonly [Celsius, Fahrenheit];
     const registry = createRegistry<[CelsiusEdge]>()
       .Celsius.addMetadata({ abbreviation: '°C' })
-      .Celsius.register('Fahrenheit', (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit);
+      .Celsius.register('Fahrenheit', (c) => (c * 9) / 5 + 32);
 
     expect((registry as any).Celsius.abbreviation).toBe('°C');
     const converter = getConverter(registry, 'Celsius', 'Fahrenheit');

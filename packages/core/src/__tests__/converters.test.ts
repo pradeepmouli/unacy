@@ -43,7 +43,7 @@ describe('Converter Type', () => {
 
     const meters: Meters = 100 as Meters;
 
-    // @ts-expect-error - Cannot pass Meters to a Celsius→Fahrenheit converter
+    // @ts-expect-error - Cannot pass Meters to Celsius→Fahrenheit converter
     const result = celsiusToFahrenheit(meters);
 
     expect(result).toBeDefined(); // Runtime still works but types don't match

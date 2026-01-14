@@ -4,7 +4,15 @@
  */
 
 // Core types
-export type { WithUnits, WithFormat, UnitMetadata } from './types.js';
+export type {
+  WithUnits,
+  WithFormat,
+  UnitMetadata,
+  Relax,
+  PrimitiveType,
+  ToPrimitiveType,
+  ToPrimitiveTypeName
+} from './types.js';
 
 // Converter types
 export type { Converter, BidirectionalConverter } from './converters.js';
@@ -13,7 +21,7 @@ export type { Converter, BidirectionalConverter } from './converters.js';
 export type { Formatter, Parser, FormatterParser } from './formatters.js';
 
 // Registry
-export type { ConverterRegistry } from './registry.js';
+export type { ConverterRegistry, ConverterMap, UnitAccessor } from './registry.js';
 export { createRegistry } from './registry.js';
 
 // Errors

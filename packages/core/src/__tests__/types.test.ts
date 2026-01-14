@@ -57,18 +57,18 @@ describe('WithUnits Type Safety', () => {
     expect(temps).toHaveLength(3);
   });
 
-  it('supports different base types', () => {
-    type BigIntMeters = WithUnits<bigint, 'meters'>;
-    type StringCurrency = WithUnits<string, 'USD'>;
+  it('supports numeric base types', () => {
+    type Meters = WithUnits<number, 'meters'>;
+    type USD = WithUnits<number, 'USD'>;
 
-    const distance: BigIntMeters = 1000n as BigIntMeters;
-    const money: StringCurrency = '100.50' as StringCurrency;
+    const distance: Meters = 1000 as Meters;
+    const money: USD = 100.5 as USD;
 
-    expectTypeOf(distance).toEqualTypeOf<BigIntMeters>();
-    expectTypeOf(money).toEqualTypeOf<StringCurrency>();
+    expectTypeOf(distance).toEqualTypeOf<Meters>();
+    expectTypeOf(money).toEqualTypeOf<USD>();
 
-    expect(distance).toBe(1000n);
-    expect(money).toBe('100.50');
+    expect(distance).toBe(1000);
+    expect(money).toBe(100.5);
   });
 
   it('supports string literal as unit identifier', () => {

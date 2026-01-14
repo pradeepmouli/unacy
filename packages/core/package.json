@@ -1,6 +1,6 @@
 {
   "name": "unacy",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Type-safe unit and format conversion library",
   "type": "module",
   "private": false,
@@ -32,10 +32,12 @@
   "devDependencies": {
     "@types/node": "^25.0.8",
     "@typescript/native-preview": "7.0.0-dev.20260113.1",
-    "vitest": "^4.0.17",
-    "zod": "^4.3.5"
+    "vitest": "^4.0.17"
   },
   "engines": {
     "node": ">=20.0.0"
+  },
+  "optionalDependencies": {
+    "zod": "^4.3.5"
   }
 }

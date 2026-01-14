@@ -25,13 +25,10 @@ import type { PrimitiveType, Unwrap, WithUnits, Relax as BaseRelax } from './typ
  *   ((c * 9/5) + 32) as Fahrenheit;
  * ```
  */
-export type Converter<
-  TInput extends WithUnits<PrimitiveType, string>,
-  TOutput extends WithUnits<PrimitiveType, string>
-> = (input: TInput) => TOutput;
+export type Converter<TInput, TOutput> = (input: TInput) => TOutput;
 
 export type RelaxConverter<ConverterType> =
-  ConverterType extends Converter<infer A, infer B>
+  ConverterType extends Converter<infer A extends PrimitiveType, infer B extends PrimitiveType>
     ? (input: BaseRelax<A>) => BaseRelax<B>
     : (input: PrimitiveType) => PrimitiveType;
 
@@ -39,7 +36,7 @@ export type Relax<
   T extends PrimitiveType | Converter<any, any> | BidirectionalConverter<any, any>
 > = T extends PrimitiveType
   ? BaseRelax<T>
-  : T extends Converter<infer A, infer B>
+  : T extends Converter<infer A extends PrimitiveType, infer B extends PrimitiveType>
     ? RelaxConverter<T>
     : RelaxBidirectionalConverter<T>;
 
@@ -65,19 +62,19 @@ export type Relax<
  * };
  * ```
  */
-export type BidirectionalConverter<
-  TInput extends WithUnits<PrimitiveType, string>,
-  TOutput extends WithUnits<PrimitiveType, string>
-> = {
+export type BidirectionalConverter<TInput, TOutput> = {
   to: Converter<TInput, TOutput>;
   from: Converter<TOutput, TInput>;
 };
 
 export type RelaxBidirectionalConverter<ConverterType> =
-  ConverterType extends BidirectionalConverter<infer A, infer B>
+  ConverterType extends BidirectionalConverter<
+    infer A extends PrimitiveType,
+    infer B extends PrimitiveType
+  >
     ? {
-        to: (input: Unwrap<A> | A) => Unwrap<B> | B;
-        from: (input: Unwrap<B> | B) => Unwrap<A> | A;
+        to: (input: BaseRelax<A>) => BaseRelax<B>;
+        from: (input: BaseRelax<B>) => BaseRelax<A>;
       }
     : {
         to: (input: PrimitiveType) => PrimitiveType;

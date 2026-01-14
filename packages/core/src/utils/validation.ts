@@ -3,7 +3,6 @@
  * @packageDocumentation
  */
 
-import type { ZodSchema } from 'zod';
 import type { Parser } from '../formatters.js';
 import type { WithFormat } from '../types.js';
 import { ParseError } from '../errors.js';
@@ -26,7 +25,7 @@ import { ParseError } from '../errors.js';
  * ```
  */
 export function createParserWithSchema<F extends string, T>(
-  schema: ZodSchema<T>,
+  schema: any,
   format: F
 ): Parser<WithFormat<T, F>> {
   return (input: string): WithFormat<T, F> => {
