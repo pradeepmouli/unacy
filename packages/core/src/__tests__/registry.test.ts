@@ -388,94 +388,94 @@ describe('Registry - Metadata Support', () => {
   it('addMetadata attaches metadata to a unit', () => {
     const registry = createRegistry()
       .register('Celsius', 'Fahrenheit', (c) => ((c * 9) / 5 + 32) as Fahrenheit)
-      .Celsius.addMetadata({
+      ['Celsius']?.addMetadata({
         abbreviation: '°C',
         format: '${value}°C',
         description: 'Temperature in Celsius'
       });
 
-    expect((registry as any).Celsius.abbreviation).toBe('°C');
-    expect((registry as any).Celsius.format).toBe('${value}°C');
-    expect((registry as any).Celsius.description).toBe('Temperature in Celsius');
+    expect((registry as any)['Celsius']?.abbreviation).toBe('°C');
+    expect((registry as any)['Celsius']?.format).toBe('${value}°C');
+    expect((registry as any)['Celsius']?.description).toBe('Temperature in Celsius');
   });
 
   it('metadata properties are accessible on unit accessors', () => {
     const registry = createRegistry()
       .register('meters', 'kilometers', (m) => (m / 1000) as Kilometers)
-      .meters.addMetadata({ abbreviation: 'm', symbol: 'm' });
+      ['meters']?.addMetadata({ abbreviation: 'm', symbol: 'm' });
 
-    expect((registry as any).meters.abbreviation).toBe('m');
-    expect((registry as any).meters.symbol).toBe('m');
+    expect((registry as any)['meters']?.abbreviation).toBe('m');
+    expect((registry as any)['meters']?.symbol).toBe('m');
   });
 
   it('addMetadata supports arbitrary custom properties', () => {
     const registry = createRegistry()
       .register('Kelvin', 'Celsius', (k) => (k - 273.15) as Celsius)
-      .Kelvin.addMetadata({
+      ['Kelvin']?.addMetadata({
         abbreviation: 'K',
         customProp: 'custom value',
         numericProp: 42
       });
 
-    expect((registry as any).Kelvin.abbreviation).toBe('K');
-    expect((registry as any).Kelvin.customProp).toBe('custom value');
-    expect((registry as any).Kelvin.numericProp).toBe(42);
+    expect((registry as any)['Kelvin']?.abbreviation).toBe('K');
+    expect((registry as any)['Kelvin']?.customProp).toBe('custom value');
+    expect((registry as any)['Kelvin']?.numericProp).toBe(42);
   });
 
   it('metadata persists across register operations', () => {
     const registry = createRegistry()
       .register('A', 'B', (a) => (a * 2) as any)
-      .A.addMetadata({ abbreviation: 'A' })
+      ['A']?.addMetadata({ abbreviation: 'A' })
       .register('B', 'C', (b) => (b * 3) as any);
 
-    expect((registry as any).A.abbreviation).toBe('A');
+    expect((registry as any)['A']?.abbreviation).toBe('A');
   });
 
   it('addMetadata can update existing metadata', () => {
     const registry = createRegistry()
       .register('meters', 'feet', (m) => (m * 3.28084) as any)
-      .meters.addMetadata({ abbreviation: 'm' })
-      .meters.addMetadata({ description: 'Length in meters' });
+      ['meters']?.addMetadata({ abbreviation: 'm' })
+      ['meters']?.addMetadata({ description: 'Length in meters' });
 
-    expect((registry as any).meters.abbreviation).toBe('m');
-    expect((registry as any).meters.description).toBe('Length in meters');
+    expect((registry as any)['meters']?.abbreviation).toBe('m');
+    expect((registry as any)['meters']?.description).toBe('Length in meters');
   });
 
   it('addMetadata overwrites existing properties', () => {
     const registry = createRegistry()
       .register('grams', 'kilograms', (g) => (g / 1000) as any)
-      .grams.addMetadata({ abbreviation: 'g' })
-      .grams.addMetadata({ abbreviation: 'gram' });
+      ['grams']?.addMetadata({ abbreviation: 'g' })
+      ['grams']?.addMetadata({ abbreviation: 'gram' });
 
-    expect((registry as any).grams.abbreviation).toBe('gram');
+    expect((registry as any)['grams']?.abbreviation).toBe('gram');
   });
 
   it('multiple units can have independent metadata', () => {
     const registry = createRegistry()
       .register('Celsius', 'Fahrenheit', (c) => ((c * 9) / 5 + 32) as Fahrenheit)
       .register('Fahrenheit', 'Celsius', (f) => (((f - 32) * 5) / 9) as Celsius)
-      .Celsius.addMetadata({ abbreviation: '°C' })
-      .Fahrenheit.addMetadata({ abbreviation: '°F' });
+      ['Celsius']?.addMetadata({ abbreviation: '°C' })
+      ['Fahrenheit']?.addMetadata({ abbreviation: '°F' });
 
-    expect((registry as any).Celsius.abbreviation).toBe('°C');
-    expect((registry as any).Fahrenheit.abbreviation).toBe('°F');
+    expect((registry as any)['Celsius']?.abbreviation).toBe('°C');
+    expect((registry as any)['Fahrenheit']?.abbreviation).toBe('°F');
   });
 
   it('metadata returns undefined for non-existent properties', () => {
     const registry = createRegistry()
       .register('meters', 'feet', (m) => (m * 3.28084) as any)
-      .meters.addMetadata({ abbreviation: 'm' });
+      ['meters']?.addMetadata({ abbreviation: 'm' });
 
-    expect((registry as any).meters.abbreviation).toBe('m');
-    expect((registry as any).meters.nonExistent).toBeUndefined();
+    expect((registry as any)['meters']?.abbreviation).toBe('m');
+    expect((registry as any)['meters']?.nonExistent).toBeUndefined();
   });
 
   it('addMetadata returns new registry instance (immutable)', () => {
     const registry1 = createRegistry().register('A', 'B', (a) => (a * 2) as any);
-    const registry2 = (registry1 as any).A.addMetadata({ abbreviation: 'A' });
+    const registry2 = (registry1 as any)['A']?.addMetadata({ abbreviation: 'A' });
 
-    expect((registry1 as any).A.abbreviation).toBeUndefined();
-    expect((registry2 as any).A.abbreviation).toBe('A');
+    expect((registry1 as any)['A']?.abbreviation).toBeUndefined();
+    expect((registry2 as any)['A']?.abbreviation).toBe('A');
   });
 });
 
