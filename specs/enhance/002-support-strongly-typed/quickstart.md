@@ -128,7 +128,7 @@ const ScientificCelsius: ScientificMetadata = {
   instrumentId: 'THERM-001'
 };
 
-type ScientificTemp = WithUnits<number, 'Celsius', ScientificMetadata>;
+type ScientificTemp = WithUnits<number, ScientificMetadata>;
 ```
 
 ---
@@ -139,7 +139,7 @@ Constrain functions to specific metadata types:
 
 ```typescript
 function formatTemperature<M extends { name: 'Celsius' | 'Fahrenheit', symbol: string }>(
-  temp: WithUnits<number, string, M>
+  temp: WithUnits<number, M>
 ): string {
   // Access metadata via registry
   const metadata = registry[temp]; // Conceptual - actual implementation TBD
@@ -159,7 +159,7 @@ type TemperatureMetadata =
   | typeof Fahrenheit
   | typeof Kelvin;
 
-type AnyTemperature = WithUnits<number, string, TemperatureMetadata>;
+type AnyTemperature = WithUnits<number, TemperatureMetadata>;
 ```
 
 ### Pattern 2: Conditional Metadata
@@ -230,10 +230,10 @@ const Bad = { name: 'Celsius' };
 ```typescript
 // ✅ Good - Reusable constant
 const Celsius = { name: 'Celsius' as const, symbol: '°C' } satisfies BaseMetadata;
-type CelsiusUnit = WithUnits<number, 'Celsius', typeof Celsius>;
+type CelsiusUnit = WithUnits<number, typeof Celsius>;
 
 // ❌ Bad - Inline, harder to reuse
-type BadCelsius = WithUnits<number, 'Celsius', { name: 'Celsius', symbol: '°C' }>;
+type BadCelsius = WithUnits<number, { name: 'Celsius', symbol: '°C' }>;
 ```
 
 ---
@@ -242,7 +242,7 @@ type BadCelsius = WithUnits<number, 'Celsius', { name: 'Celsius', symbol: '°C' 
 
 **Phase 1-2 Complete** ✅:
 - `BaseMetadata` type defined
-- `WithUnits<T, U, M>` accepts metadata parameter
+- `WithUnits<T, M>` accepts metadata parameter
 - All related types updated
 - Type inference working
 - Comprehensive type-level tests
@@ -278,8 +278,8 @@ const Fahrenheit = {
 } satisfies BaseMetadata;
 
 // 2. Create typed units
-type CelsiusTemp = WithUnits<number, 'Celsius', typeof Celsius>;
-type FahrenheitTemp = WithUnits<number, 'Fahrenheit', typeof Fahrenheit>;
+type CelsiusTemp = WithUnits<number, typeof Celsius>;
+type FahrenheitTemp = WithUnits<number, typeof Fahrenheit>;
 
 // 3. Create registry with converters
 const registry = createRegistry()
@@ -299,7 +299,7 @@ const freezingF = registry.Celsius.to.Fahrenheit(freezing);
 ## Summary
 
 - **Define**: Create metadata with `satisfies BaseMetadata` and `as const`
-- **Type**: Use `WithUnits<T, U, M>` with metadata type parameter
+- **Type**: Use `WithUnits<T, M>` with metadata type parameter
 - **Store**: Registry stores metadata via `Map<string, BaseMetadata>`
 - **Access**: Use `UnitAccessor` pattern for type-safe property access
 - **Infer**: TypeScript automatically infers all types
