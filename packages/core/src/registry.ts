@@ -63,7 +63,7 @@ export type UnitAccessor<
   to: {
     [To in ToUnitsFor<Edges, From> as UnitsFor<To>]: (
       value: RelaxUnits<From>
-    ) /*To avoid having to cast*/ => ToUnitsFor<Edges, From>;
+    ) => To;
   };
   /**
    * Add metadata to this unit
