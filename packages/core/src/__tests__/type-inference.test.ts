@@ -12,8 +12,6 @@ describe('WithUnits Type Inference with Metadata', () => {
 
     type CelsiusWithMeta = WithUnits<number, typeof CelsiusMetadata>;
 
-    const temp: CelsiusWithMeta = 25 as CelsiusWithMeta;
-
     // Type should preserve the specific metadata type
     expectTypeOf<CelsiusWithMeta>().toMatchTypeOf<WithUnits<number, typeof CelsiusMetadata>>();
   });
