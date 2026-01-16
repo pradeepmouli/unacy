@@ -29,6 +29,7 @@ This feature enables richer unit definitions while preserving the type safety th
 - Q: Should metadata be immutable or allow updates after a unit is created? → A: Immutable with withMetadata() method that returns a new unit instance with updated metadata
 - Q: When performing unit arithmetic operations, how should metadata be handled? → A: Metadata comes from the result's type. MVP: metadata is only known to the type system and at runtime to the registry (not preserved from operands during arithmetic)
 - Q: When creating a unit, how should TypeScript infer the metadata type if not explicitly specified? → A: Infer from provided metadata value - TypeScript infers the specific type from the metadata object passed, falls back to default if not provided. Example: register(Celsius, Kelvin, ...) where const Celsius = {name: 'Celsius' as const, ...} instead of register('Celsius', 'Kelvin', ...)
+- Q: How should the registry internally store and look up metadata at runtime? → A: Map by name property, store full metadata - use metadata.name as key, store complete metadata object as value for efficient lookups
 
 ## Proposed Changes
 - Add a generic metadata type parameter to core Unit types and interfaces (default: `{name: string} & Record<string, unknown>`)
@@ -46,7 +47,7 @@ This feature enables richer unit definitions while preserving the type safety th
 **Files to Modify**:
 - src/types.ts - Add generic metadata type parameter to Unit-related types, migrate tag system to metadata.name
 - src/unit.ts - Add immutable metadata property and accessor methods (getMetadata, withMetadata) to Unit class, replace tag with metadata.name
-- src/registry.ts - Update registry to store and retrieve metadata at runtime, migrate from tag to metadata.name
+- src/registry.ts - Update registry to use Map<string, Metadata> structure (key by metadata.name, store full metadata object), migrate from tag to metadata.name
 - src/converters/*.ts - Ensure converters assign metadata based on result type (metadata comes from result type, not operands)
 - tests/metadata.test.ts - Comprehensive test suite for metadata functionality (creation, access, type safety, immutability, type-level behavior)
 - tests/migration.test.ts - Test migration path from tag system to metadata.name
@@ -64,7 +65,7 @@ This replaces the existing unit tag system with metadata's `name` property. The 
 2. [ ] Add immutable metadata property and accessor methods (getMetadata, withMetadata) to Unit class in src/unit.ts
 3. [ ] Replace existing tag property with metadata.name throughout Unit class, maintaining immutability pattern
 4. [ ] Update unit creation functions to accept optional metadata parameter with automatic type inference (infer from value, fallback to default) and migrate tag parameter to metadata.name
-5. [ ] Update registry to store and retrieve metadata at runtime (type-level and registry-level storage) in src/registry.ts
+5. [ ] Update registry to use Map<string, Metadata> structure (key by metadata.name, store full metadata object) for runtime storage in src/registry.ts
 6. [ ] Ensure converters assign metadata based on result type (metadata from result type, not operands) when creating derived units
 7. [ ] Implement arithmetic operations to get metadata from result type, not from operands
 8. [ ] Add comprehensive unit tests for metadata functionality (creation, access, type safety, immutability, withMetadata behavior, type-level behavior, automatic type inference)
@@ -110,6 +111,7 @@ This replaces the existing unit tag system with metadata's `name` property. The 
 - Default metadata type: `{name: string} & Record<string, unknown>` ensures name is always present
 - Type inference: TypeScript automatically infers metadata type from the provided value; uses default type when metadata is not provided (no explicit type annotation required)
 - MVP: Metadata is type-level and registry-level information (known to type system and runtime registry)
+- Registry storage: Map<string, Metadata> structure where metadata.name is the key and full metadata object is the value for efficient lookups
 - Arithmetic operations: metadata comes from result type, NOT from operands (e.g., velocity * time = distance, distance gets its own metadata based on its type)
 - Ensure metadata doesn't impact performance for users who don't use it
 - Consider providing migration utilities or deprecation warnings for tag system transition
