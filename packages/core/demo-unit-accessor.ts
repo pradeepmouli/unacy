@@ -23,7 +23,7 @@ type Kilometers = WithUnits<number, 'kilometers'>;
 console.log('Part 1: Basic Unit Accessor API\n');
 
 // Create registry with converters using traditional API
-const tempRegistry = createRegistry()
+const tempRegistry = createRegistry<[[Fahrenheit, Kelvin]]>()
   .register('Celsius', 'Kelvin', (c) => c + 273.15)
   .register('Kelvin', 'Celsius', (k) => k - 273.15)
   .register('Celsius', 'Fahrenheit', (c) => (c * 9) / 5 + 32)
@@ -56,14 +56,14 @@ console.log(`  tempRegistry.Celsius.to.Fahrenheit(tempRegistry.Celsius(30)) = ${
 
 // Test multi-hop with unit accessor
 console.log('\nMulti-hop conversion (Celsius -> Kelvin -> Celsius):');
-const kelvinValue = tempRegistry.Celsius.to.Kelvin(temp);
+const kelvinValue = tempRegistry.Celsius.to.Kelvin(100) satisfies Kelvin;
 const backToCelsius = tempRegistry.Kelvin.to.Celsius(kelvinValue);
 console.log(`  ${temp}°C = ${kelvinValue}K = ${backToCelsius}°C`);
 
 // Test composed conversion (Kelvin -> Celsius -> Fahrenheit)
 console.log('\nComposed conversion (Kelvin -> Fahrenheit via Celsius):');
 const kelvin = 300 as Kelvin;
-const fahrenheitFromKelvin = tempRegistry.Kelvin.to.Fahrenheit(kelvin);
+const fahrenheitFromKelvin = tempRegistry.Kelvin.from.Fahrenheit(100) satisfies Kelvin;
 console.log(`  ${kelvin}K = ${fahrenheitFromKelvin}°F`);
 
 // ===== Part 2: Metadata Support =====
@@ -134,12 +134,8 @@ const completeRegistry = distanceRegistry
 
 // Use both distance and temperature conversions (with any for demonstration)
 console.log('\nCombined registry:');
-console.log(
-  `  Temperature: ${temp}°C = ${(completeRegistry as any).Celsius.to.Fahrenheit(temp)}°F`
-);
-console.log(
-  `  Distance: ${distance}m = ${(completeRegistry as any).meters.to.kilometers(distance)}km`
-);
+console.log(`  Temperature: ${temp}°C = ${completeRegistry.Celsius.to.Fahrenheit(temp)}°F`);
+console.log(`  Distance: ${distance}m = ${completeRegistry.meters.to.kilometers(distance)}km`);
 
 // ===== Part 4: Custom Metadata Properties =====
 console.log('\n\nPart 4: Custom Metadata Properties\n');

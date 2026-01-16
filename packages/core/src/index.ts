@@ -21,7 +21,11 @@ export type { Converter, BidirectionalConverter } from './converters.js';
 export type { Formatter, Parser, FormatterParser } from './formatters.js';
 
 // Registry
-export type { ConverterRegistry, ConverterMap, UnitAccessor } from './registry.js';
+export type {
+  UnitRegistry as ConverterRegistry,
+  UnitMap as ConverterMap,
+  UnitAccessor
+} from './registry.js';
 export { createRegistry } from './registry.js';
 
 // Errors

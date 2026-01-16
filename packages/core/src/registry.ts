@@ -10,7 +10,8 @@ import type {
   WithUnits,
   UnitMetadata,
   PrimitiveType,
-  Relax as RelaxUnits
+  Relax as RelaxUnits,
+  MetadataOf
 } from './types.js';
 import { ConversionError } from './errors.js';
 import { findShortestPath, composeConverters } from './utils/graph.js';
@@ -39,6 +40,11 @@ type ToUnitsFor<Edges extends readonly Edge[], FromUnit extends WithUnits> = Ext
   readonly [FromUnit, any]
 >[1];
 
+type FromUnitsFor<Edges extends readonly Edge[], ToUnit extends WithUnits> = Extract<
+  Edges[number],
+  readonly [any, ToUnit]
+>[0];
+
 /**
  * Type for unit accessor with metadata and conversion methods
  * Can be called as a function to create branded unit values
@@ -55,31 +61,29 @@ export type UnitAccessor<
    */
   (value: number): From;
   to: {
-    [To in ToUnitsFor<Edges, From> as UnitsFor<To>]: (
-      value: RelaxUnits<From>
-    ) /*To avoid having to cast*/ => WithUnits<PrimitiveType, To>;
+    [To in ToUnitsFor<Edges, From> as UnitsFor<To>]: (value: RelaxUnits<From>) => To;
+  };
+  from: {
+    [To in FromUnitsFor<Edges, From> as UnitsFor<To>]: (value: RelaxUnits<To>) => From;
   };
   /**
    * Add metadata to this unit
    */
-  addMetadata(
-    metadata: UnitMetadata
-  ): ConverterRegistry<Edges extends readonly (infer E)[] ? E[] : never> & ConverterMap<Edges>;
+  addMetadata<NewM extends Record<string, unknown>>(
+    metadata: NewM
+  ): UnitRegistry<Edges extends readonly (infer E)[] ? E[] : never> & UnitMap<Edges>;
   /**
    * Register a converter from this unit to another unit
    */
   register<To extends WithUnits<PrimitiveType, ToUnits>, ToUnits extends string>(
     to: ToUnits,
     converter: Relax<Converter<From, To>>
-  ): ConverterRegistry<[...Edges, Edge<From, To>]> & ConverterMap<[...Edges, Edge<From, To>]>;
+  ): UnitRegistry<[...Edges, Edge<From, To>]> & UnitMap<[...Edges, Edge<From, To>]>;
   register<To extends WithUnits<PrimitiveType, ToUnits>, ToUnits extends string>(
     to: ToUnits,
     converter: Relax<BidirectionalConverter<From, To>>
-  ): ConverterRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
-    ConverterMap<[...Edges, Edge<From, To>, Edge<To, From>]>;
-} & {
-  // Allow dynamic metadata property access
-  [K: string]: unknown;
+  ): UnitRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
+    UnitMap<[...Edges, Edge<From, To>, Edge<To, From>]>;
 };
 
 /**
@@ -87,7 +91,7 @@ export type UnitAccessor<
  * Provides the shape: registry.Celsius.to.Fahrenheit(value)
  * Only allows conversions that have been registered
  */
-export type ConverterMap<Edges extends readonly Edge[]> = {
+export type UnitMap<Edges extends readonly Edge[]> = {
   [FU in FromUnits<Edges> as UnitsFor<FU>]: UnitAccessor<
     WithUnits<PrimitiveType, UnitsFor<FU>>,
     Edges,
@@ -98,7 +102,7 @@ export type ConverterMap<Edges extends readonly Edge[]> = {
 /**
  * Registry for managing and composing unit converters
  */
-export interface ConverterRegistry<Edges extends Edge[] = []> {
+export interface UnitRegistry<Edges extends Edge[] = []> {
   /**
    * Register a unidirectional converter
    *
@@ -116,7 +120,7 @@ export interface ConverterRegistry<Edges extends Edge[] = []> {
     from: UF,
     to: UY,
     converter: Converter<From, RelaxUnits<To>>
-  ): ConverterRegistry<[...Edges, Edge<From, To>]> & ConverterMap<[...Edges, Edge<From, To>]>;
+  ): UnitRegistry<[...Edges, Edge<From, To>]> & UnitMap<[...Edges, Edge<From, To>]>;
   /**
    * Register a bidirectional converter (both directions)
    *
@@ -134,8 +138,8 @@ export interface ConverterRegistry<Edges extends Edge[] = []> {
     from: UF,
     to: UY,
     converter: BidirectionalConverter<RelaxUnits<From>, RelaxUnits<To>>
-  ): ConverterRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
-    ConverterMap<[...Edges, Edge<From, To>, Edge<To, From>]>;
+  ): UnitRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
+    UnitMap<[...Edges, Edge<From, To>, Edge<To, From>]>;
 
   // Note: registerBidirectional() method was deprecated - use register() with BidirectionalConverter instead
 
@@ -169,7 +173,7 @@ export interface ConverterRegistry<Edges extends Edge[] = []> {
   >(
     from: UF,
     to: UY
-  ): ConverterRegistry<[...Edges, Edge<From, To>]> & ConverterMap<[...Edges, Edge<From, To>]>;
+  ): UnitRegistry<[...Edges, Edge<From, To>]> & UnitMap<[...Edges, Edge<From, To>]>;
   /**
    * Get a converter (direct or composed via BFS)
    *
@@ -202,7 +206,7 @@ export interface ConverterRegistry<Edges extends Edge[] = []> {
 /**
  * Internal implementation of ConverterRegistry
  */
-class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegistry<Edges> {
+class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<Edges> {
   private readonly graph: Map<PropertyKey, Map<PropertyKey, Converter<any, any>>>;
   private readonly pathCache: Map<string, Converter<any, any>>;
   private readonly unitAccessors: Map<PropertyKey, any>;
@@ -334,7 +338,7 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
     from: UnitsFor<From> | { name: UnitsFor<From> },
     to: UnitsFor<To> | { name: UnitsFor<To> },
     converter: Converter<From, To> | BidirectionalConverter<From, To>
-  ): ConverterRegistry<any> & ConverterMap<any> {
+  ): UnitRegistry<any> & UnitMap<any> {
     if (typeof from === 'object' && 'name' in from) {
       from = from.name;
     }
@@ -378,8 +382,8 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
     from: UnitsFor<From>,
     to: UnitsFor<To>,
     converter: Relax<BidirectionalConverter<From, To>>
-  ): ConverterRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
-    ConverterMap<[...Edges, Edge<From, To>, Edge<To, From>]> {
+  ): UnitRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
+    UnitMap<[...Edges, Edge<From, To>, Edge<To, From>]> {
     return this.register(from, to, converter.to as any).register(
       to as any,
       from as any,
@@ -395,7 +399,7 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
   >(
     from: UF,
     to: UY
-  ): ConverterRegistry<[...Edges, Edge<From, To>]> & ConverterMap<[...Edges, Edge<From, To>]> {
+  ): UnitRegistry<[...Edges, Edge<From, To>]> & UnitMap<[...Edges, Edge<From, To>]> {
     // Verify that a conversion path exists at runtime
     const converter = this.getConverter(from as any, to as any);
     if (!converter) {
@@ -499,10 +503,10 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements ConverterRegis
  * console.log(fahrenheit); // 77
  * ```
  */
-export function createRegistry<Edges extends readonly Edge[] = []>(): ConverterRegistry<
+export function createRegistry<Edges extends readonly Edge[] = []>(): UnitRegistry<
   Edges extends readonly (infer E)[] ? E[] : never
 > &
-  ConverterMap<Edges> {
+  UnitMap<Edges> {
   return createRegistryFromGraph<Edges extends readonly (infer E)[] ? E[] : never>() as any;
 }
 
@@ -513,7 +517,7 @@ function createRegistryFromGraph<Edges extends Edge[] = []>(
   graph?: Map<PropertyKey, Map<PropertyKey, Converter<any, any>>>,
   pathCache?: Map<string, Converter<any, any>>,
   metadata?: Map<PropertyKey, UnitMetadata>
-): ConverterRegistry<Edges> & ConverterMap<Edges> {
+): UnitRegistry<Edges> & UnitMap<Edges> {
   const registryImpl = new ConverterRegistryImpl<Edges>(graph, pathCache, metadata);
 
   // Create a Proxy to intercept property access for unit accessors
@@ -593,5 +597,5 @@ function createRegistryFromGraph<Edges extends Edge[] = []>(
 
       return accessorProxy;
     }
-  }) as ConverterRegistry<Edges> & ConverterMap<Edges>;
+  }) as UnitRegistry<Edges> & UnitMap<Edges>;
 }

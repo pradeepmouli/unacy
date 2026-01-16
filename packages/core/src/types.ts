@@ -3,7 +3,7 @@
  * @packageDocumentation
  */
 
-import type { GetTagMetadata, Tagged } from 'type-fest';
+import type { GetTagMetadata, Tagged, UnwrapTagged } from 'type-fest';
 
 export const UNITS: unique symbol = Symbol('UNITS');
 
@@ -20,11 +20,11 @@ export const DEFINITION: unique symbol = Symbol('DEFINITION');
  * const temp: Celsius = 25 as Celsius;
  * ```
  */
-export type WithUnits<
-  T extends PrimitiveType = number,
-  U extends string = string,
-  M extends Record<string, unknown> = UnitMetadata
-> = Tagged<T, typeof UNITS, U>;
+export type WithUnits<T extends PrimitiveType = PrimitiveType, U extends string = string> = Tagged<
+  T,
+  typeof UNITS,
+  U
+>;
 
 export type WithDefinition<
   T extends PrimitiveType,
@@ -48,7 +48,7 @@ export type ToPrimitiveTypeName<T extends PrimitiveType> =
 
 export type OptionalWithUnits<T extends PrimitiveType, U extends string> = T | WithUnits<T, U>;
 
-export type Unwrap<T> = T extends WithUnits<infer U, string> ? U : T;
+export type Unwrap<T> = T extends Tagged<PrimitiveType, any> ? UnwrapTagged<T> : T;
 
 export type Relax<T> = T | Unwrap<T>;
 /**
@@ -75,6 +75,9 @@ export type UnitDefinition<T extends PrimitiveType, U, A, F extends string = nev
   abbreviation?: A;
   format?: F;
 };
+
+export type MetadataOf<T extends WithUnits<PrimitiveType, string>> =
+  T extends WithDefinition<infer P, infer U, infer D> ? D : {};
 
 /**
  * Metadata that can be attached to units in the registry
