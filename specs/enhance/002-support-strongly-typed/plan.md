@@ -7,19 +7,22 @@
 
 ## Summary
 
-Add support for strongly typed metadata that can be associated with units, replacing the existing unit tag system. Metadata will be type-level and registry-level information, with a default type of `{name: string} & Record<string, unknown>`. The implementation includes immutable metadata storage with `getMetadata()` and `withMetadata()` accessors, automatic TypeScript type inference from provided values, and a registry using `Map<string, Metadata>` for efficient runtime lookups. Metadata values will be directly accessible through registry accessors (e.g., `registry.Celsius.name`). In arithmetic operations, metadata comes from the result type, not from operands.
+Add support for strongly typed metadata to the branded type system (`WithUnits<T, U, M>`). Metadata uses `BaseMetadata` = `{name: string} & Record<string, unknown>` as the default type, stored in the registry using `Map<string, BaseMetadata>` for O(1) lookups. The implementation includes a metadata generic parameter on `WithUnits` and related types, automatic TypeScript type inference from provided values, and registry storage with type-safe `UnitAccessor` access patterns (e.g., `registry.Celsius.symbol`).
+
+**Architecture**: Uses branded types (compile-time only), not runtime class instances. Metadata stored in registry, accessed via `UnitAccessor` properties.
 
 ## Technical Context
 
 **Language/Version**: TypeScript 5.x (ESM-only, per constitution)
-**Primary Dependencies**: None (dependency-light per constitution principle II)
-**Storage**: In-memory registry (Map<string, Metadata>) + type-level metadata
+**Architecture**: Branded type system (`WithUnits<T, U, M>`) - compile-time only, no runtime class instances
+**Primary Dependencies**: `type-fest` (already in use for Tagged utility)
+**Storage**: In-memory registry (Map<string, BaseMetadata>) + type-level metadata
 **Testing**: Vitest (TDD required per constitution principle III)
 **Target Platform**: Node.js + Browser (ESM module)
-**Project Type**: Single library project (monorepo workspace)
-**Performance Goals**: Zero runtime overhead for users not using metadata; O(1) registry lookups by name
-**Constraints**: Backward compatible at runtime; breaking at type level (requires major version bump)
-**Scale/Scope**: Small enhancement to core type system (~500 LOC across 5-7 files)
+**Project Type**: Single library project (monorepo workspace at packages/core/)
+**Performance Goals**: Zero runtime overhead for type-only features; O(1) registry lookups by name
+**Constraints**: Breaking change at type level (WithUnits third parameter), requires major version bump
+**Scale/Scope**: Small enhancement to core type system (~300 LOC across 3-4 files)
 
 ## Constitution Check
 
@@ -73,28 +76,18 @@ specs/enhance/002-support-strongly-typed/
 ### Source Code (repository root)
 
 ```text
-src/
-├── types.ts             # Core type definitions (add generic metadata parameter)
-├── unit.ts              # Unit class (add metadata property and accessors)
-├── registry.ts          # Unit registry (update to Map<string, Metadata> structure)
-├── converters/          # Unit converters (ensure metadata from result type)
-│   ├── length.ts
-│   ├── mass.ts
-│   └── temperature.ts
-└── index.ts             # Public exports
+packages/core/src/
+├── types.ts             # Core type definitions (✅ BaseMetadata added, WithUnits updated)
+├── registry.ts          # Registry implementation (Map<string, BaseMetadata> storage)
+└── index.ts             # Public exports (✅ BaseMetadata exported)
 
-tests/
-├── unit/
-│   ├── metadata.test.ts       # Metadata functionality tests
-│   ├── type-inference.test.ts # Type inference tests
-│   └── arithmetic.test.ts     # Arithmetic metadata behavior
-├── integration/
-│   ├── registry.test.ts       # Registry integration tests
-│   └── converters.test.ts     # Converter metadata handling
-└── migration.test.ts          # Tag-to-metadata.name migration tests
+packages/core/src/__tests__/
+├── metadata.test.ts       # ✅ BaseMetadata type constraint tests
+├── type-inference.test.ts # ✅ WithUnits metadata type inference tests
+└── registry.test.ts       # Registry integration tests (pending)
 ```
 
-**Structure Decision**: Single project structure (Option 1). This is a library enhancement affecting core type system and registry. No new directories needed - modifications to existing `src/` files with new test files under `tests/`.
+**Structure Decision**: Single library enhancement in `packages/core/`. This affects the core branded type system (`WithUnits`) and registry. No new directories needed - modifications to existing files with new test files under `__tests__/`.
 
 ## Complexity Tracking
 
@@ -169,19 +162,28 @@ See [quickstart.md](./quickstart.md) for:
 
 ## Phase 2: Task Generation
 
-Use `/speckit.tasks` to generate executable tasks from this plan.
+Tasks generated via `/speckit.tasks` - see [tasks.md](./tasks.md).
 
-Tasks will follow TDD approach:
-1. Write failing tests for metadata functionality
-2. Implement types and interfaces
-3. Implement Unit class metadata support
-4. Update registry with Map structure
-5. Update converters for result-type metadata
-6. Verify all tests pass
-7. Add migration tests
-8. Update documentation
+**Current Status**: Phase 1-2 Complete ✅
+- Phase 1 (Setup): Baseline established (94 tests passing)
+- Phase 2 (Core Types): BaseMetadata type added, WithUnits updated (110 tests passing, 16 new)
+
+**Remaining Tasks** (from tasks.md):
+- Phase 3: Registry Integration (6 tasks)
+- Phase 4: UnitAccessor Enhancement (3 tasks)
+- Phase 5: Documentation & Polish (3 tasks)
+
+**Implementation Approach**: TDD with branded types
+1. ✅ Write type-level tests for BaseMetadata constraints
+2. ✅ Implement BaseMetadata type definition
+3. ✅ Update WithUnits and related types with metadata parameter
+4. ✅ Export BaseMetadata from public API
+5. Update registry with Map<string, BaseMetadata> storage
+6. Enhance UnitAccessor for metadata property access
+7. Update documentation with examples
 
 ---
 
-**Status**: Ready for Phase 0 (Research)
-**Next Command**: Agent will now generate research.md
+**Status**: Phase 0-2 Complete ✅ | Phase 3 In Progress
+**Commit**: 466ae6e "feat: add BaseMetadata type and update WithUnits type system"
+**Next**: Phase 3 (Registry Integration)

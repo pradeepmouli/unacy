@@ -9,7 +9,9 @@
 
 ## Overview
 
-Add strongly typed metadata support to units, replacing the existing tag system. Metadata uses `{name: string} & Record<string, unknown>` as the default type, with automatic TypeScript type inference from provided values. The registry uses `Map<string, Metadata>` for O(1) lookups, and metadata is immutable with `withMetadata()` returning new instances.
+Add strongly typed metadata support to the branded type system (`WithUnits<T, U, M>`). Metadata uses `BaseMetadata` = `{name: string} & Record<string, unknown>` as the default type, with automatic TypeScript type inference from provided values. The registry stores metadata objects using `Map<string, BaseMetadata>` for O(1) lookups, and metadata is accessed via the `UnitAccessor` pattern.
+
+**Architecture**: This codebase uses branded types (`WithUnits`), not runtime class instances. Metadata is stored in the registry and accessed via `UnitAccessor` properties.
 
 **Test-Driven Development**: Per constitution principle III, tests MUST be written BEFORE implementation.
 
@@ -17,203 +19,153 @@ Add strongly typed metadata support to units, replacing the existing tag system.
 
 ## Task Summary
 
-**Total Tasks**: 36
-- **Phase 1 (Setup)**: 2 tasks
-- **Phase 2 (Core Types)**: 6 tasks (foundational)
-- **Phase 3 (Unit Metadata)**: 8 tasks
-- **Phase 4 (Registry Migration)**: 8 tasks
-- **Phase 5 (Converters & Arithmetic)**: 6 tasks
-- **Phase 6 (Documentation & Polish)**: 6 tasks
+**Total Tasks**: 20 (revised for branded type architecture)
+- **Phase 1 (Setup)**: 2 tasks [COMPLETE ✅]
+- **Phase 2 (Core Types)**: 6 tasks [COMPLETE ✅]
+- **Phase 3 (Registry Integration)**: 6 tasks
+- **Phase 4 (UnitAccessor Enhancement)**: 3 tasks
+- **Phase 5 (Documentation & Polish)**: 3 tasks
 
-**Parallel Opportunities**: 15 tasks marked [P] (different files, no dependencies)
+**Parallel Opportunities**: 8 tasks marked [P] (different files, no dependencies)
 
 ---
 
-## Phase 1: Setup & Verification
+## Phase 1: Setup & Verification ✅
 
 **Goal**: Verify project setup and baseline
 
 ### Tasks
 
-- [ ] T001 Run existing test suite to establish baseline (`pnpm test`)
-- [ ] T002 Verify TypeScript compilation passes (`pnpm type-check`)
+- [x] T001 Run existing test suite to establish baseline (`pnpm test`) - **94 passing tests**
+- [x] T002 Verify TypeScript compilation passes (`pnpm type-check`) - **No errors**
 
-**Verification**: All existing tests pass, no TypeScript errors
+**Verification**: ✅ All existing tests pass, no TypeScript errors
+
+**Status**: COMPLETE (2026-01-16)
 
 ---
 
-## Phase 2: Core Type System (Foundational)
+## Phase 2: Core Type System (Foundational) ✅
 
-**Goal**: Add BaseMetadata type and generic type parameter to Unit types
+**Goal**: Add BaseMetadata type and generic type parameter to WithUnits branded type
 
 **This phase MUST complete before other phases** - provides foundation for all metadata functionality.
 
 ### Tasks
 
-- [ ] T003 Write failing test for BaseMetadata type constraint in tests/unit/metadata.test.ts
-- [ ] T004 Define BaseMetadata type as `{name: string} & Record<string, unknown>` in src/types.ts
-- [ ] T005 [P] Write failing test for Unit<TMetadata> generic parameter in tests/unit/type-inference.test.ts
-- [ ] T006 Add generic type parameter `<TMetadata extends BaseMetadata = BaseMetadata>` to Unit interface in src/types.ts
-- [ ] T007 [P] Add generic type parameter to all Unit-related types (UnitValue, UnitOptions, etc.) in src/types.ts
-- [ ] T008 Verify tests T003 and T005 now pass (`pnpm test`)
+- [x] T003 Write failing test for BaseMetadata type constraint in __tests__/metadata.test.ts
+- [x] T004 Define BaseMetadata type as `{name: string} & Record<string, unknown>` in src/types.ts
+- [x] T005 [P] Write failing test for WithUnits<TMetadata> generic parameter in __tests__/type-inference.test.ts
+- [x] T006 Update `WithUnits` type signature to `WithUnits<T, U, M extends BaseMetadata = BaseMetadata>` in src/types.ts
+- [x] T007 [P] Add BaseMetadata constraint to all related types (`WithDefinition`, `OptionalWithUnits`, `UnitsOf`, `UnitsFor`) in src/types.ts
+- [x] T008 Verify tests T003 and T005 now pass (`pnpm test`) - **110 passing tests (16 new)**
+- [x] T009 Export BaseMetadata from public API (src/index.ts)
 
-**Verification**:
+**Verification**: ✅
 - BaseMetadata type enforces `name` property
-- Unit types accept optional TMetadata parameter
-- Default type is BaseMetadata
-- TypeScript provides proper type checking
+- WithUnits accepts optional M type parameter (defaults to BaseMetadata)
+- All related types updated with BaseMetadata constraint
+- TypeScript provides proper type checking and inference
+- Public API exports BaseMetadata for user consumption
+
+**Status**: COMPLETE (2026-01-16)
+**Commit**: 466ae6e "feat: add BaseMetadata type and update WithUnits type system"
 
 ---
 
-## Phase 3: Unit Class Metadata Support
+## Phase 3: Registry Integration
 
-**Goal**: Add metadata storage and accessor methods to Unit class
+**Goal**: Update registry to store and manage metadata objects
 
 ### Tasks
 
-- [ ] T009 Write failing test for Unit constructor accepting metadata parameter in tests/unit/metadata.test.ts
-- [ ] T010 Add private readonly `metadata: TMetadata` property to Unit class in src/unit.ts
-- [ ] T011 Update Unit constructor to accept `metadata: TMetadata` parameter in src/unit.ts
-- [ ] T012 [P] Write failing test for getMetadata() accessor in tests/unit/metadata.test.ts
-- [ ] T013 Implement getMetadata(): TMetadata method in Unit class in src/unit.ts
-- [ ] T014 [P] Write failing test for withMetadata() immutable updater in tests/unit/metadata.test.ts
-- [ ] T015 Implement withMetadata<TNewMetadata>(metadata: TNewMetadata): Unit<TNewMetadata> in src/unit.ts
-- [ ] T016 Write test verifying type inference from metadata value in tests/unit/type-inference.test.ts
+- [ ] T010 Write failing test for registry storing metadata objects in __tests__/registry.test.ts
+- [ ] T011 Add internal `Map<string, BaseMetadata>` storage to registry implementation in src/registry.ts
+- [ ] T012 [P] Write failing test for accessing metadata via registry in __tests__/registry.test.ts
+- [ ] T013 Implement metadata getter methods on registry to retrieve metadata by unit name
+- [ ] T014 [P] Write test for register() accepting metadata objects as first parameter in __tests__/registry.test.ts
+- [ ] T015 Update register() method signature to accept metadata objects (with name property) instead of string unit names
 
 **Verification**:
-- Unit constructor accepts metadata parameter
-- getMetadata() returns typed metadata
-- withMetadata() returns new Unit instance (immutable)
-- TypeScript infers metadata type from provided value
+- Registry stores metadata objects internally using Map<string, BaseMetadata>
+- Metadata can be retrieved by unit name (O(1) lookup)
+- register() method accepts metadata objects with name property
+- TypeScript infers metadata type from registered object
 
 ---
 
-## Phase 4: Registry Migration
+## Phase 4: UnitAccessor Enhancement
 
-**Goal**: Migrate registry from string tags to Map<string, Metadata> structure
+**Goal**: Enable type-safe metadata access via UnitAccessor pattern
 
 ### Tasks
 
-- [ ] T017 Write failing test for registry storing metadata objects in tests/integration/registry.test.ts
-- [ ] T018 Update Registry class to use Map<string, Metadata> internal storage in src/registry.ts
-- [ ] T019 Update register() method to accept metadata object and use metadata.name as key in src/registry.ts
-- [ ] T020 [P] Write failing test for getMetadata(name: string) method in tests/integration/registry.test.ts
-- [ ] T021 Implement getMetadata<T extends BaseMetadata>(name: string): T | undefined in src/registry.ts
-- [ ] T022 [P] Write test for tag property deprecation warning in tests/migration.test.ts
-- [ ] T023 Add deprecated `tag` getter to Unit class returning metadata.name with console.warn in src/unit.ts
-- [ ] T024 Update unit creation functions (createUnit, defineUnit) to accept metadata parameter in src/unit.ts
+- [ ] T016 [P] Write test for UnitAccessor exposing metadata properties in __tests__/registry.test.ts
+- [ ] T017 Update UnitAccessor type definition to expose metadata properties (e.g., `registry.Celsius.symbol`)
+- [ ] T018 Enhance addMetadata() method to properly store and link metadata to unit accessors
 
 **Verification**:
-- Registry stores full metadata objects by name
-- register() accepts metadata objects (not strings)
-- getMetadata() returns metadata by name (O(1) lookup)
-- Deprecated tag property warns users
-- Unit creation functions support metadata
+- UnitAccessor provides type-safe access to metadata properties
+- addMetadata() properly stores metadata objects
+- TypeScript autocomplete works for metadata properties on registry accessors
+- Example: `registry.Celsius.name`, `registry.Celsius.symbol` are fully typed
 
 ---
 
-## Phase 5: Converters & Arithmetic Operations
+## Phase 5: Documentation & Polish
 
-**Goal**: Update converters and arithmetic to get metadata from result type
-
-### Tasks
-
-- [ ] T025 Write failing test for arithmetic operations getting metadata from result type in tests/unit/arithmetic.test.ts
-- [ ] T026 Update arithmetic operations (add, subtract, multiply, divide) to lookup metadata from registry based on result dimensions in src/unit.ts
-- [ ] T027 [P] Write failing test for converter metadata handling in tests/integration/converters.test.ts
-- [ ] T028 [P] Update converters in src/converters/length.ts to assign metadata from result type
-- [ ] T029 [P] Update converters in src/converters/mass.ts to assign metadata from result type
-- [ ] T030 [P] Update converters in src/converters/temperature.ts to assign metadata from result type
-
-**Verification**:
-- Arithmetic results get metadata from registry (not operands)
-- Converters assign metadata based on target unit type
-- All converter tests pass
-
----
-
-## Phase 6: Documentation & Polish
-
-**Goal**: Update documentation, add examples, create changeset
+**Goal**: Update documentation and finalize implementation
 
 ### Tasks
 
-- [ ] T031 [P] Update README.md with metadata usage examples (creation, access, withMetadata)
-- [ ] T032 [P] Add migration guide to README.md or MIGRATION.md (tag → metadata.name)
-- [ ] T033 [P] Update public exports in src/index.ts to include BaseMetadata type
-- [ ] T034 Run full test suite and verify all tests pass (`pnpm test`)
-- [ ] T035 Run type checking and verify no errors (`pnpm type-check`)
-- [ ] T036 Create changeset describing breaking changes and migration path (`pnpm changeset`)
+- [ ] T019 [P] Update README with branded type metadata usage examples
+- [ ] T020 Run full test suite and verify all tests pass (`pnpm test`)
+- [ ] T021 Run type checking and verify no errors (`pnpm type-check`)
 
 **Verification**:
-- README includes metadata examples
-- Migration guide is clear and actionable
-- All quality gates pass (tests, types, lint, format)
-- Changeset documents breaking change
+- README includes clear examples of metadata with branded types
+- Examples show registry pattern with metadata objects
+- All quality gates pass (tests, types)
 
 ---
 
 ## Dependencies
 
 ```
-Phase 1 (Setup)
-  └─> Phase 2 (Core Types) [BLOCKING]
-       └─> Phase 3 (Unit Metadata)
-       └─> Phase 4 (Registry Migration)
-       └─> Phase 5 (Converters & Arithmetic)
-       └─> Phase 6 (Documentation)
+Phase 1 (Setup) ✅
+  └─> Phase 2 (Core Types) ✅ [BLOCKING - COMPLETE]
+       └─> Phase 3 (Registry Integration)
+       └─> Phase 4 (UnitAccessor Enhancement)
+       └─> Phase 5 (Documentation)
 ```
 
-**Critical Path**: Phase 1 → Phase 2 → [Phases 3, 4, 5 in parallel] → Phase 6
+**Critical Path**: Phase 1 ✅ → Phase 2 ✅ → Phase 3 → Phase 4 → Phase 5
 
----
-
-## Parallel Execution Strategy
-
-### After Phase 2 completes, these can run in parallel:
-
-**Track A (Unit Metadata)**:
-- T009-T016 (Phase 3)
-
-**Track B (Registry Migration)**:
-- T017-T024 (Phase 4)
-
-**Track C (Converters)**:
-- T025-T030 (Phase 5)
-
-**Final (Sequential)**:
-- T031-T036 (Phase 6 - after all tracks complete)
+**Parallel Opportunities**: After Phase 2, Phase 3 and Phase 4 can run in parallel
 
 ---
 
 ## Implementation Strategy
 
-### MVP Scope (Minimum Viable Product)
+### Current Status
 
-**Goal**: Core metadata functionality without migration support
+**Completed** ✅:
+- Phase 1: Setup & Verification (T001-T002)
+- Phase 2: Core Type System (T003-T009) - Foundational work complete
 
-**Includes**:
-- Phase 1: Setup
-- Phase 2: Core Types (complete)
-- Phase 3: Unit Metadata (tasks T009-T015, skip T016)
-- Phase 4: Registry Migration (tasks T017-T021, skip deprecation T022-T024)
-- Minimal Phase 6: Just T033-T035
+**In Progress**:
+- Phase 3: Registry Integration
 
-**Excludes** (add in follow-up):
-- Tag deprecation warnings (T022-T023)
-- Type inference tests (T016)
-- Arithmetic metadata (Phase 5)
-- Documentation updates (T031-T032)
-- Changeset (T036)
-
-**MVP Deliverable**: Core metadata system with type safety, ~60% of full scope
+**Remaining**:
+- Phase 4: UnitAccessor Enhancement
+- Phase 5: Documentation & Polish
 
 ### Incremental Delivery
 
-1. **MVP Release**: Core metadata (Phase 2-3, partial Phase 4)
-2. **Increment 1**: Add arithmetic metadata (Phase 5)
-3. **Increment 2**: Add migration support (complete Phase 4)
-4. **Increment 3**: Documentation & polish (complete Phase 6)
+1. **Core Types** ✅: BaseMetadata type and WithUnits integration (Phase 1-2)
+2. **Registry Integration**: Metadata storage and retrieval (Phase 3)
+3. **UnitAccessor Enhancement**: Type-safe metadata access (Phase 4)
+4. **Documentation**: Examples and guides (Phase 5)
 
 ---
 
@@ -224,11 +176,12 @@ Per constitution principle III (TDD), tests MUST be written before implementatio
 - [x] **Test-first approach**: Every implementation task has corresponding test task BEFORE it
 - [x] **Test coverage**: All acceptance criteria have associated tests
 - [x] **Test types**:
-  - Unit tests: metadata.test.ts, type-inference.test.ts, arithmetic.test.ts
-  - Integration tests: registry.test.ts, converters.test.ts
-  - Migration tests: migration.test.ts
+  - Type-level tests: metadata.test.ts (BaseMetadata constraints)
+  - Type inference tests: type-inference.test.ts (WithUnits metadata parameter)
+  - Integration tests: registry.test.ts (metadata storage and access)
 
 **Test Execution**: `pnpm test`
+**Current Status**: 110 passing tests (16 new metadata/type tests)
 
 ---
 
@@ -245,39 +198,35 @@ All tasks must pass these gates before considered complete:
 
 ## File Change Summary
 
-### New Files (6)
-- tests/unit/metadata.test.ts
-- tests/unit/type-inference.test.ts
-- tests/unit/arithmetic.test.ts
-- tests/integration/registry.test.ts
-- tests/integration/converters.test.ts
-- tests/migration.test.ts
+### New Files (2) ✅
+- packages/core/src/__tests__/metadata.test.ts - BaseMetadata type constraint tests
+- packages/core/src/__tests__/type-inference.test.ts - WithUnits metadata type inference tests
 
-### Modified Files (7)
-- src/types.ts (add BaseMetadata, generic parameters)
-- src/unit.ts (add metadata property, getMetadata, withMetadata)
-- src/registry.ts (migrate to Map<string, Metadata>)
-- src/converters/length.ts (update for result-type metadata)
-- src/converters/mass.ts (update for result-type metadata)
-- src/converters/temperature.ts (update for result-type metadata)
-- src/index.ts (export BaseMetadata)
-- README.md (add examples, migration guide)
+### Modified Files (2) ✅
+- packages/core/src/types.ts - Added BaseMetadata type, updated WithUnits and related types with metadata parameter
+- packages/core/src/index.ts - Exported BaseMetadata from public API
+
+### Pending Modifications
+- packages/core/src/registry.ts - Add Map<string, BaseMetadata> storage, update register() signature, enhance UnitAccessor
+- packages/core/src/__tests__/registry.test.ts - Add integration tests for metadata storage/access
+- README.md - Add branded type metadata usage examples
 
 ---
 
 ## Notes
 
-**Breaking Changes**: This enhancement replaces the tag system with metadata.name. Requires major version bump per constitution principle IV.
+**Architecture**: Branded type system (`WithUnits<T, U, M>`) not runtime class instances. Metadata stored in registry, accessed via UnitAccessor.
+
+**Breaking Changes**: WithUnits third parameter now requires BaseMetadata (with name property). Requires major version bump per constitution principle IV.
 
 **Performance**: Zero runtime overhead for users not using metadata. Map lookups are O(1).
 
 **Type Safety**: Full TypeScript type inference from metadata values (no explicit type annotations needed).
 
-**Immutability**: metadata is immutable - withMetadata() returns new Unit instances.
-
-**Arithmetic Behavior**: Result metadata comes from registry lookup by dimensions, NOT from operands.
+**Current Progress**: Phase 1 and Phase 2 complete (core type foundation in place).
 
 ---
 
-**Status**: Ready for implementation
-**Next**: Start with Phase 1 (T001-T002) to establish baseline
+**Status**: Phase 1-2 Complete ✅ | Phase 3 In Progress
+**Next**: Phase 3 (Registry Integration) - Update registry to store and manage metadata objects
+**Commit**: 466ae6e "feat: add BaseMetadata type and update WithUnits type system"
