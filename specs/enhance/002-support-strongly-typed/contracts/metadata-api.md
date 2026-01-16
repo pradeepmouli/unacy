@@ -31,495 +31,481 @@ export type BaseMetadata = {
 
 ---
 
-## Unit Class API
+## Branded Type System
 
-### Constructor
+**Architecture Note**: This library uses a **branded type system**, not runtime class instances. Units are represented as `WithUnits<T, M>` branded types, which are compile-time only. All metadata is stored in the registry and accessed via the `UnitAccessor` pattern.
+
+### WithUnits Type
 
 ```typescript
-class Unit<TMetadata extends BaseMetadata = BaseMetadata> {
-  constructor(
-    value: number,
-    dimensions: Dimensions,
-    metadata: TMetadata
-  );
-}
+export type WithUnits<
+  T extends PrimitiveType = number,
+  M extends BaseMetadata = BaseMetadata
+> = Tagged<T, typeof UNITS, M>;
 ```
 
-**Parameters**:
-- `value`: Numeric value of the unit
-- `dimensions`: Dimensional analysis structure
-- `metadata`: Metadata object (must extend `BaseMetadata`)
+**Type Parameters**:
+- `T`: Primitive type (typically `number`)
+- `M`: Metadata type (must extend `BaseMetadata`)
 
-**Returns**: New `Unit<TMetadata>` instance
+**Contract**:
+- Branded types are compile-time only (no runtime overhead)
+- Values are plain numbers at runtime
+- Type safety enforced by TypeScript's type checker
 
 **Example**:
 ```typescript
-const Celsius = {name: 'Celsius' as const, symbol: '°C'};
-const temp = new Unit(25, dimensions.temperature, Celsius);
-//    ^? Unit<{name: 'Celsius', symbol: string}>
+const Celsius = {name: 'Celsius' as const, symbol: '°C'} satisfies BaseMetadata;
+type Celsius = WithUnits<number, typeof Celsius>;
+
+const temp: Celsius = 25 as Celsius;  // Branded value
+const rawValue: number = temp;         // Still a plain number at runtime
 ```
 
 ---
 
-### getMetadata()
+## UnitAccessor Pattern
+
+### Type Definition
 
 ```typescript
-class Unit<TMetadata extends BaseMetadata = BaseMetadata> {
-  getMetadata(): TMetadata;
-}
+export type UnitAccessor<
+  From extends WithUnits<PrimitiveType, BaseMetadata>,
+  Edges extends readonly Edge[],
+  FromUnits extends string
+> = {
+  (value: number): From;
+  to: {
+    [To in ToUnitsFor<Edges, From> as UnitsFor<To>]: (value: From) => To;
+  };
+  addMetadata(metadata: UnitMetadata): ConverterRegistry<...>;
+  register<To extends WithUnits<PrimitiveType, ToMeta>, ToMeta extends BaseMetadata>(
+    to: UnitsFor<To>,
+    converter: Converter<From, To>
+  ): ConverterRegistry<...>;
+} & ExtractMetadata<From>;
 ```
 
-**Parameters**: None
+**Capabilities**:
+- **Callable**: Brand a number with the unit type
+- **Conversions**: Access `.to.OtherUnit()` for type-safe conversions
+- **Metadata**: Access metadata properties directly on the accessor
+- **Extension**: Add metadata or register converters
 
-**Returns**: The metadata object associated with this unit (typed as `TMetadata`)
+### Accessing Metadata
 
-**Example**:
 ```typescript
-const metadata = temp.getMetadata();
-metadata.name;   // Type: 'Celsius' (if defined with as const)
-metadata.symbol; // Type: string
+// Define metadata with 'as const' for literal types
+const Celsius = {name: 'Celsius' as const, symbol: '°C'} satisfies BaseMetadata;
+type Celsius = WithUnits<number, typeof Celsius>;
+
+// Register with registry
+const registry = createRegistry()
+  .Celsius.addMetadata({name: 'Celsius', symbol: '°C'});
+
+// Access metadata directly on the accessor
+registry.Celsius.name;    // Type: string
+registry.Celsius.symbol;  // Type: string | undefined
 ```
 
 **Behavior**:
-- Returns the exact metadata object passed to constructor
-- Immutable - returned object should not be mutated
-- Type-safe - TypeScript infers the exact metadata type
+- Metadata stored in registry's internal `Map<PropertyKey, UnitMetadata>`
+- Accessed via Proxy on the `UnitAccessor`
+- Type-safe via intersection with `ExtractMetadata<From>`
+- Returns `undefined` for properties not in metadata
 
 ---
 
-### withMetadata()
+### Creating Branded Values
 
 ```typescript
-class Unit<TMetadata extends BaseMetadata = BaseMetadata> {
-  withMetadata<TNewMetadata extends BaseMetadata>(
-    metadata: TNewMetadata
-  ): Unit<TNewMetadata>;
-}
+// Using the accessor as a function
+const temp = registry.Celsius(25);
+//    ^? Celsius (branded type)
+
+// Manual branding (less convenient)
+const temp2: Celsius = 25 as Celsius;
 ```
 
-**Parameters**:
-- `metadata`: New metadata object (must extend `BaseMetadata`)
+**Contract**:
+- Accessor callable returns branded value with correct type
+- Value is a plain number at runtime (zero overhead)
+- Type checker enforces unit safety
 
-**Returns**: NEW `Unit` instance with type `Unit<TNewMetadata>` (different type parameter)
+---
 
-**Example**:
+### Type-Safe Conversions
+
 ```typescript
-const tempC = new Unit(25, dimensions.temperature, Celsius);
-const tempF = tempC.withMetadata(Fahrenheit);
+const Fahrenheit = {name: 'Fahrenheit' as const, symbol: '°F'} satisfies BaseMetadata;
+type Fahrenheit = WithUnits<number, typeof Fahrenheit>;
 
-tempC.getMetadata().name; // 'Celsius'
-tempF.getMetadata().name; // 'Fahrenheit'
+const registry = createRegistry()
+  .register('Celsius', 'Fahrenheit', {
+    to: (c) => ((c * 9/5) + 32) as Fahrenheit,
+    from: (f) => ((f - 32) * 5/9) as Celsius
+  });
 
-// Types are different
-tempC; // Unit<typeof Celsius>
-tempF; // Unit<typeof Fahrenheit>
+const tempC: Celsius = 25 as Celsius;
+const tempF = registry.Celsius.to.Fahrenheit(tempC);
+//    ^? Fahrenheit (strongly typed)
 ```
 
 **Behavior**:
-- Immutable operation - original unit unchanged
-- Returns new instance with same value and dimensions
-- Type parameter changes to reflect new metadata type
-- Enables type-safe metadata transformations
-
----
-
-### Deprecated: tag Property
-
-```typescript
-class Unit<TMetadata extends BaseMetadata = BaseMetadata> {
-  /**
-   * @deprecated Use getMetadata().name instead
-   */
-  get tag(): string;
-}
-```
-
-**Returns**: `this.metadata.name` (string)
-
-**Deprecation Notice**:
-- Logs warning to console when accessed
-- Compatibility layer only - will be removed in next major version
-- Migrate to `getMetadata().name` or registry accessors
+- `.to` object contains all registered target units
+- Type-safe: only allows conversions that have been registered
+- Returns branded value with target unit type
+- Throws `ConversionError` if path not found (multi-hop uses BFS)
 
 ---
 
 ## Registry API
 
+### createRegistry()
+
+```typescript
+export function createRegistry<Edges extends readonly Edge[] = []>(): 
+  ConverterRegistry<Edges> & ConverterMap<Edges>;
+```
+
+**Returns**: New empty registry with unit accessor proxies
+
+**Example**:
+```typescript
+const registry = createRegistry();
+```
+
+**Behavior**:
+- Creates new registry instance with empty converter graph
+- Returns proxy that provides dynamic unit accessors
+- Immutable - all methods return new registry instances
+
+---
+
 ### register()
 
 ```typescript
-class Registry {
-  register<T extends BaseMetadata>(
-    metadata: T,
-    ...converters: ConverterFn[]
-  ): void;
+interface ConverterRegistry<Edges extends Edge[] = []> {
+  register<From extends WithUnits<PrimitiveType, FromMeta>,
+           To extends WithUnits<PrimitiveType, ToMeta>,
+           FromMeta extends BaseMetadata,
+           ToMeta extends BaseMetadata>(
+    from: UnitsFor<From>,
+    to: UnitsFor<To>,
+    converter: Converter<From, To> | BidirectionalConverter<From, To>
+  ): ConverterRegistry<[...Edges, Edge<From, To>]> & ConverterMap<[...Edges, Edge<From, To>]>;
 }
 ```
 
 **Parameters**:
-- `metadata`: Metadata object for the unit being registered
-- `converters`: Conversion functions to/from other units
+- `from`: Source unit name (string)
+- `to`: Destination unit name (string)
+- `converter`: Converter function or bidirectional converter object
 
-**Returns**: `void`
-
-**Throws**: Error if `metadata.name` already registered
+**Returns**: New registry instance with converter registered
 
 **Example**:
 ```typescript
-const Celsius = {name: 'Celsius' as const, symbol: '°C'};
-registry.register(Celsius, /* converters */);
+type Celsius = WithUnits<number, {name: 'Celsius', symbol: '°C'}>;
+type Fahrenheit = WithUnits<number, {name: 'Fahrenheit', symbol: '°F'}>;
+
+const registry = createRegistry()
+  .register('Celsius', 'Fahrenheit', {
+    to: (c) => ((c * 9/5) + 32) as Fahrenheit,
+    from: (f) => ((f - 32) * 5/9) as Celsius
+  });
 ```
 
 **Behavior**:
-- Stores metadata in internal `Map<string, BaseMetadata>`
-- Key is `metadata.name`
-- Value is the complete metadata object
-- Enables later lookup by name
-
-**Contract**:
-- `metadata.name` MUST be unique (throws if duplicate)
-- `metadata.name` MUST be non-empty string
-- Metadata object stored by reference (not cloned)
+- Immutable: returns NEW registry instance
+- Bidirectional converters register both directions automatically
+- Updates type system to include new conversion edges
+- Converter graph stored in `Map<PropertyKey, Map<PropertyKey, Converter>>`
 
 ---
 
-### getMetadata()
+### addMetadata()
 
 ```typescript
-class Registry {
-  getMetadata<T extends BaseMetadata = BaseMetadata>(
-    name: string
-  ): T | undefined;
+// Available on UnitAccessor
+unitAccessor.addMetadata(metadata: UnitMetadata): ConverterRegistry<Edges>;
+```
+
+**Parameters**:
+- `metadata`: Metadata object with optional properties (abbreviation, symbol, format, etc.)
+
+**Returns**: New registry instance with metadata attached
+
+**Example**:
+```typescript
+const registry = createRegistry()
+  .Celsius.addMetadata({
+    name: 'Celsius',
+    symbol: '°C',
+    description: 'Temperature in Celsius'
+  });
+
+// Access metadata via accessor
+registry.Celsius.symbol; // '°C'
+registry.Celsius.description; // 'Temperature in Celsius'
+```
+
+**Behavior**:
+- Merges metadata with existing metadata for the unit
+- Stored in registry's `Map<PropertyKey, UnitMetadata>`
+- Accessible via proxy on UnitAccessor
+- Returns `undefined` for non-existent properties
+
+---
+
+### allow()
+
+```typescript
+interface ConverterRegistry<Edges extends Edge[] = []> {
+  allow<From extends WithUnits<PrimitiveType, FromMeta>,
+        To extends WithUnits<PrimitiveType, ToMeta>,
+        FromMeta extends BaseMetadata,
+        ToMeta extends BaseMetadata>(
+    from: UnitsFor<From>,
+    to: UnitsFor<To>
+  ): ConverterRegistry<[...Edges, Edge<From, To>]> & ConverterMap<[...Edges, Edge<From, To>]>;
 }
 ```
 
 **Parameters**:
-- `name`: Unit name to lookup
+- `from`: Source unit name
+- `to`: Destination unit name
 
-**Returns**: Metadata object if found, `undefined` if not registered
+**Returns**: New registry instance with multi-hop path exposed in types
+
+**Throws**: `ConversionError` if no path exists between units
 
 **Example**:
 ```typescript
-const metadata = registry.getMetadata('Celsius');
-if (metadata) {
-  metadata.name; // 'Celsius'
-}
+const registry = createRegistry()
+  .register('Celsius', 'Kelvin', c => (c + 273.15) as Kelvin)
+  .register('Kelvin', 'Fahrenheit', k => ((k - 273.15) * 9/5 + 32) as Fahrenheit)
+  .allow('Celsius', 'Fahrenheit'); // Enable multi-hop in types
+
+// Now type-safe:
+const f = registry.Celsius.to.Fahrenheit(tempC);
 ```
 
 **Behavior**:
-- O(1) lookup using internal Map
-- Returns `undefined` for unknown names (not error)
-- Type assertion may be needed for specific metadata types
+- Verifies conversion path exists at runtime via BFS
+- Adds edge to type system (no new converter stored)
+- Enables type-safe accessor for multi-hop conversions
+- Actual conversion uses BFS-composed converter
 
 ---
 
-### has()
+### getConverter()
 
 ```typescript
-class Registry {
-  has(name: string): boolean;
+interface ConverterRegistry<Edges extends Edge[] = []> {
+  getConverter<From extends WithUnits<PrimitiveType, BaseMetadata>,
+               To extends WithUnits<PrimitiveType, BaseMetadata>>(
+    from: UnitsFor<From>,
+    to: UnitsFor<To>
+  ): Converter<From, To> | undefined;
 }
 ```
 
 **Parameters**:
-- `name`: Unit name to check
+- `from`: Source unit name
+- `to`: Destination unit name
 
-**Returns**: `true` if registered, `false` otherwise
-
-**Example**:
-```typescript
-if (registry.has('Celsius')) {
-  // Celsius is registered
-}
-```
-
----
-
-### getAllNames()
-
-```typescript
-class Registry {
-  getAllNames(): string[];
-}
-```
-
-**Parameters**: None
-
-**Returns**: Array of all registered unit names
+**Returns**: Converter function, or `undefined` if no path exists
 
 **Example**:
 ```typescript
-const names = registry.getAllNames();
-// ['Celsius', 'Kelvin', 'Fahrenheit', ...]
+const converter = registry.getConverter('Celsius', 'Fahrenheit');
+if (converter) {
+  const result = converter(25 as Celsius);
+}
 ```
 
 **Behavior**:
-- Returns new array (defensive copy)
-- Order not guaranteed (Map iteration order)
-- Useful for enumeration or debugging
+- O(1) for direct conversions (Map lookup)
+- Falls back to BFS for multi-hop paths
+- Caches composed converters for performance
+- Returns `undefined` if no path exists
 
 ---
 
-### Direct Accessor Pattern (Declaration Merging)
+### convert()
 
 ```typescript
-// User-defined metadata
-const Celsius = {name: 'Celsius' as const, symbol: '°C'};
-const Kelvin = {name: 'Kelvin' as const, symbol: 'K'};
-
-// Declaration merging for type-safe registry accessors
-interface Registry {
-  Celsius: typeof Celsius;
-  Kelvin: typeof Kelvin;
+interface ConverterRegistry<Edges extends Edge[] = []> {
+  convert<From extends WithUnits<PrimitiveType, BaseMetadata>>(
+    value: From,
+    fromUnit: UnitsFor<From>
+  ): {
+    to<To extends WithUnits<PrimitiveType, BaseMetadata>>(unit: UnitsFor<To>): To;
+  };
 }
-
-// Now fully typed
-registry.Celsius.name;   // Type: 'Celsius'
-registry.Celsius.symbol; // Type: string
-registry.Kelvin.name;    // Type: 'Kelvin'
-registry.Kelvin.symbol;  // Type: string
-```
-
-**Contract**:
-- User MUST augment `Registry` interface for type safety
-- Property name MUST match `metadata.name`
-- Type MUST match the metadata object type
-- Accessor returns the stored metadata object
-
----
-
-## Unit Creation Functions
-
-### createUnit()
-
-```typescript
-export function createUnit<TMetadata extends BaseMetadata = BaseMetadata>(
-  value: number,
-  dimensions: Dimensions,
-  metadata: TMetadata
-): Unit<TMetadata>;
 ```
 
 **Parameters**:
-- `value`: Numeric value
-- `dimensions`: Dimensional structure
-- `metadata`: Metadata object
+- `value`: Branded value to convert
+- `fromUnit`: Source unit name
 
-**Returns**: `Unit<TMetadata>` instance
-
-**Example**:
-```typescript
-const temp = createUnit(25, dimensions.temperature, {
-  name: 'Celsius' as const,
-  symbol: '°C'
-});
-```
-
-**Type Inference**:
-- `TMetadata` inferred from `metadata` argument
-- No explicit type annotation needed
-- Fully type-safe
-
----
-
-### defineUnit()
-
-```typescript
-export function defineUnit<TMetadata extends BaseMetadata>(
-  metadata: TMetadata,
-  ...converters: ConverterFn[]
-): {
-  create(value: number): Unit<TMetadata>;
-  metadata: TMetadata;
-};
-```
-
-**Parameters**:
-- `metadata`: Metadata for this unit definition
-- `converters`: Conversion functions
-
-**Returns**: Object with `create()` factory and `metadata` property
+**Returns**: Object with `to()` method for fluent conversion
 
 **Example**:
 ```typescript
-const CelsiusUnit = defineUnit(
-  {name: 'Celsius' as const, symbol: '°C'},
-  /* converters */
-);
-
-const temp = CelsiusUnit.create(25);
-//    ^? Unit<{name: 'Celsius', symbol: string}>
-
-CelsiusUnit.metadata.name;   // 'Celsius'
-CelsiusUnit.metadata.symbol; // '°C'
+const tempC: Celsius = 25 as Celsius;
+const tempF = registry.convert(tempC, 'Celsius').to('Fahrenheit');
 ```
 
 **Behavior**:
-- Registers unit with registry (calls `registry.register`)
-- Returns factory for convenient unit creation
-- Encapsulates metadata with factory
+- Alternative fluent API for conversions
+- Less type-safe than accessor pattern (uses runtime strings)
+- Throws `ConversionError` if no converter found
 
 ---
 
-## Arithmetic Operations
+## Type Helpers
 
-### Result Metadata Contract
-
-**Rule**: Arithmetic operations return units with metadata determined by the result's unit type, NOT from operands.
+### UnitsFor<T>
 
 ```typescript
-interface Unit<TMetadata extends BaseMetadata = BaseMetadata> {
-  // Arithmetic operations
-  add(other: Unit): Unit<BaseMetadata>;      // Result metadata from registry
-  subtract(other: Unit): Unit<BaseMetadata>; // Result metadata from registry
-  multiply(other: Unit): Unit<BaseMetadata>; // Result metadata from registry
-  divide(other: Unit): Unit<BaseMetadata>;   // Result metadata from registry
+export type UnitsFor<T extends WithUnits<PrimitiveType, BaseMetadata>> =
+  T extends WithUnits<infer A, infer M extends BaseMetadata> ? ExtractName<M> : never;
+```
+
+**Purpose**: Extract the unit name from a branded type
+
+**Example**:
+```typescript
+type Celsius = WithUnits<number, {name: 'Celsius', symbol: '°C'}>;
+type Name = UnitsFor<Celsius>; // 'Celsius'
+```
+
+---
+
+### UnitsOf<T>
+
+```typescript
+export type UnitsOf<T extends WithUnits<PrimitiveType, BaseMetadata>> = 
+  GetTagMetadata<T, typeof UNITS>;
+```
+
+**Purpose**: Extract the full metadata type from a branded type
+
+**Example**:
+```typescript
+type Celsius = WithUnits<number, {name: 'Celsius', symbol: '°C'}>;
+type Metadata = UnitsOf<Celsius>; // {name: 'Celsius', symbol: '°C'}
+```
+
+---
+
+### Relax<T>
+
+```typescript
+export type Relax<T> = T | Unwrap<T>;
+```
+
+**Purpose**: Allow both branded and unbranded values
+
+**Example**:
+```typescript
+function acceptTemp(temp: Relax<Celsius>) {
+  // Accepts both Celsius and plain number
 }
 ```
-
-**Behavior**:
-1. Compute result dimensions (existing logic)
-2. Lookup metadata from registry based on result dimensions
-3. If no metadata found, use default `{name: 'unknown'}`
-4. Return new Unit with looked-up metadata
-
-**Example**:
-```typescript
-// Velocity × Time = Distance
-const velocity = createUnit(5, dimensions.velocity, VelocityMeta);
-const time = createUnit(10, dimensions.time, TimeMeta);
-
-const distance = velocity.multiply(time);
-//    ^? Unit<BaseMetadata> (metadata from distance unit in registry)
-
-distance.getMetadata(); // Returns DistanceMeta from registry, NOT VelocityMeta or TimeMeta
-```
-
-**Contract**:
-- Operand metadata is IGNORED
-- Result metadata comes from registry lookup by dimensions
-- Type parameter becomes `BaseMetadata` (not specific)
 
 ---
 
 ## Converter API
 
-### Converter Function Signature
+### Converter Type
 
 ```typescript
-type ConverterFn<TFrom extends BaseMetadata, TTo extends BaseMetadata> = (
-  unit: Unit<TFrom>
-) => Unit<TTo>;
+export type Converter<From, To> = (value: From) => To;
 ```
 
 **Parameters**:
-- `unit`: Source unit to convert
+- `value`: Source branded value
 
-**Returns**: Converted unit with target metadata
+**Returns**: Target branded value
 
 **Example**:
 ```typescript
-const celsiusToFahrenheit: ConverterFn<typeof Celsius, typeof Fahrenheit> = (unit) => {
-  const fahrenheitValue = unit.getValue() * 9/5 + 32;
-  return createUnit(fahrenheitValue, unit.getDimensions(), Fahrenheit);
+type CelsiusToFahrenheit = Converter<Celsius, Fahrenheit>;
+
+const toFahrenheit: CelsiusToFahrenheit = (c) => {
+  return ((c * 9/5) + 32) as Fahrenheit;
 };
 ```
 
-**Contract**:
-- MUST preserve dimensions (or convert to compatible dimensions)
-- MUST use target metadata type (not source)
-- MAY transform value
-
 ---
 
-## Type Guards
-
-### isUnit()
+### BidirectionalConverter Type
 
 ```typescript
-export function isUnit<TMetadata extends BaseMetadata = BaseMetadata>(
-  value: unknown
-): value is Unit<TMetadata>;
+export type BidirectionalConverter<From, To> = {
+  to: Converter<From, To>;
+  from: Converter<To, From>;
+};
 ```
 
-**Parameters**:
-- `value`: Value to check
-
-**Returns**: Type predicate - `true` if `value` is a Unit
+**Properties**:
+- `to`: Converter from `From` to `To`
+- `from`: Converter from `To` to `From`
 
 **Example**:
 ```typescript
-if (isUnit(someValue)) {
-  // TypeScript knows someValue is Unit<BaseMetadata>
-  someValue.getMetadata();
-}
+const celsiusFahrenheit: BidirectionalConverter<Celsius, Fahrenheit> = {
+  to: (c) => ((c * 9/5) + 32) as Fahrenheit,
+  from: (f) => ((f - 32) * 5/9) as Celsius
+};
+
+// Register both directions automatically
+const registry = createRegistry()
+  .register('Celsius', 'Fahrenheit', celsiusFahrenheit);
 ```
 
----
-
-## Validation
-
-### validateMetadata()
-
-```typescript
-export function validateMetadata(
-  metadata: unknown
-): metadata is BaseMetadata;
-```
-
-**Parameters**:
-- `metadata`: Value to validate
-
-**Returns**: Type predicate - `true` if valid `BaseMetadata`
-
-**Validation Rules**:
-- Has `name` property
-- `name` is non-empty string
-- Object type (not null/undefined)
-
-**Example**:
-```typescript
-if (validateMetadata(userInput)) {
-  // TypeScript knows userInput is BaseMetadata
-  registry.register(userInput, ...);
-}
-```
+**Behavior**:
+- Registers both conversion directions
+- More convenient than two separate `register()` calls
+- Ensures bidirectional consistency
 
 ---
 
 ## Error Types
 
-### DuplicateMetadataNameError
+### ConversionError
 
 ```typescript
-export class DuplicateMetadataNameError extends Error {
-  constructor(name: string);
-  readonly name: 'DuplicateMetadataNameError';
-  readonly unitName: string;
+export class ConversionError extends Error {
+  constructor(from: PropertyKey, to: PropertyKey, message?: string);
+  readonly name: 'ConversionError';
+  readonly from: PropertyKey;
+  readonly to: PropertyKey;
 }
 ```
 
-**Thrown by**: `registry.register()` when `metadata.name` already exists
+**Thrown by**: 
+- `registry.getConverter()` when no path exists
+- `registry.convert().to()` when no converter found
+- `unitAccessor.to.Unit()` when no converter found
 
 **Properties**:
-- `unitName`: The duplicate name that caused the error
+- `from`: Source unit name
+- `to`: Destination unit name
 
----
-
-### InvalidMetadataError
-
+**Example**:
 ```typescript
-export class InvalidMetadataError extends Error {
-  constructor(reason: string);
-  readonly name: 'InvalidMetadataError';
-  readonly reason: string;
+try {
+  const result = registry.Celsius.to.Unknown(temp);
+} catch (error) {
+  if (error instanceof ConversionError) {
+    console.log(`Cannot convert from ${error.from} to ${error.to}`);
+  }
 }
 ```
-
-**Thrown by**: Functions validating metadata structure
-
-**Properties**:
-- `reason`: Human-readable explanation of validation failure
 
 ---
 
@@ -527,15 +513,17 @@ export class InvalidMetadataError extends Error {
 
 | API | Input | Output | Side Effects |
 |-----|-------|--------|--------------|
-| `Unit.getMetadata()` | None | `TMetadata` | None |
-| `Unit.withMetadata(m)` | Metadata | New `Unit<T>` | None (immutable) |
-| `Unit.tag` (deprecated) | None | `string` | Console warning |
-| `registry.register(m, ...)` | Metadata, converters | `void` | Stores in registry |
-| `registry.getMetadata(name)` | Name string | Metadata or `undefined` | None |
-| `registry.has(name)` | Name string | `boolean` | None |
-| `registry.getAllNames()` | None | `string[]` | None |
-| `createUnit(v, d, m)` | Value, dims, metadata | `Unit<T>` | None |
-| `defineUnit(m, ...)` | Metadata, converters | Factory object | Registers unit |
+| `WithUnits<T, M>` | Type parameters | Branded type | None (compile-time) |
+| `createRegistry()` | None | Registry instance | None |
+| `registry.register(from, to, converter)` | Unit names, converter | New registry | None (immutable) |
+| `unitAccessor(value)` | Number | Branded value | None |
+| `unitAccessor.to.Unit(value)` | Branded value | Converted value | None |
+| `unitAccessor.addMetadata(m)` | Metadata object | New registry | None (immutable) |
+| `unitAccessor.register(to, converter)` | Unit name, converter | New registry | None (immutable) |
+| `unitAccessor.property` | None | Metadata value | None |
+| `registry.allow(from, to)` | Unit names | New registry | Verifies path exists |
+| `registry.getConverter(from, to)` | Unit names | Converter or `undefined` | Caches composed path |
+| `registry.convert(value, from).to(to)` | Branded value, unit names | Converted value | None |
 
 ---
 
