@@ -435,7 +435,7 @@ describe('Registry - Metadata Support', () => {
     const registry = createRegistry()
       .register('meters', 'feet', (m) => (m * 3.28084) as any)
       ['meters']?.addMetadata({ abbreviation: 'm' })
-      ['meters']?.addMetadata({ description: 'Length in meters' });
+      ?.['meters']?.addMetadata({ description: 'Length in meters' });
 
     expect((registry as any)['meters']?.abbreviation).toBe('m');
     expect((registry as any)['meters']?.description).toBe('Length in meters');
@@ -445,7 +445,7 @@ describe('Registry - Metadata Support', () => {
     const registry = createRegistry()
       .register('grams', 'kilograms', (g) => (g / 1000) as any)
       ['grams']?.addMetadata({ abbreviation: 'g' })
-      ['grams']?.addMetadata({ abbreviation: 'gram' });
+      ?.['grams']?.addMetadata({ abbreviation: 'gram' });
 
     expect((registry as any)['grams']?.abbreviation).toBe('gram');
   });
