@@ -98,9 +98,6 @@ describe('WithUnits Type Inference with Metadata', () => {
     type CelsiusUnit = WithUnits<number, typeof Celsius>;
     type FahrenheitUnit = WithUnits<number, typeof Fahrenheit>;
 
-    const c: CelsiusUnit = 0 as CelsiusUnit;
-    const f: FahrenheitUnit = 32 as FahrenheitUnit;
-
     // Different metadata types should be preserved
     expectTypeOf<CelsiusUnit>().not.toEqualTypeOf<FahrenheitUnit>();
   });
