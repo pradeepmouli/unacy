@@ -22,8 +22,14 @@ Currently, there's no standardized way to attach metadata to units in a type-saf
 
 This feature enables richer unit definitions while preserving the type safety that makes unacy valuable.
 
+## Clarifications
+
+### Session 2026-01-16
+- Q: What should be the default type for the metadata generic parameter when not explicitly specified? → A: Record<string, unknown>, but should consider combining with the current unit tag system, in which case it should extend {name: string} & Record<string, unknown>
+
 ## Proposed Changes
-- Add a generic metadata type parameter to core Unit types and interfaces
+- Add a generic metadata type parameter to core Unit types and interfaces (default: `Record<string, unknown>`)
+- Evaluate integration with existing unit tag system; if combined, metadata type should extend `{name: string} & Record<string, unknown>`
 - Implement metadata storage and accessor methods on Unit class
 - Update unit creation functions (createUnit, defineUnit, etc.) to accept optional metadata
 - Ensure metadata is properly typed and accessible throughout the unit lifecycle
@@ -37,20 +43,21 @@ This feature enables richer unit definitions while preserving the type safety th
 - tests/metadata.test.ts - Comprehensive test suite for metadata functionality
 
 **Breaking Changes**: [x] Yes | [ ] No
-This adds a generic type parameter to Unit types, but it's optional with a default value (e.g., `unknown` or `Record<string, unknown>`), so existing code will continue to work without modifications. The change is technically breaking at the type level but maintains runtime compatibility.
+This adds a generic type parameter to Unit types with a default value of `Record<string, unknown>` (or `{name: string} & Record<string, unknown>` if integrating with tag system). Existing code will continue to work without modifications. The change is technically breaking at the type level but maintains runtime compatibility.
 
 ## Implementation Plan
 
 **Phase 1: Implementation**
 
 **Tasks**:
-1. [ ] Define metadata type interfaces and add generic type parameter to Unit types in src/types.ts
-2. [ ] Add metadata property and accessor methods (getMetadata, withMetadata) to Unit class in src/unit.ts
-3. [ ] Update unit creation functions to accept and store optional metadata parameter
-4. [ ] Ensure converters and unit operations properly handle and preserve metadata
-5. [ ] Add comprehensive unit tests for metadata functionality (creation, access, type safety)
-6. [ ] Update README or documentation with metadata usage examples
-7. [ ] Verify all existing tests pass and backward compatibility is maintained
+1. [ ] Investigate existing unit tag system and determine if metadata should integrate with or replace it
+2. [ ] Define metadata type interfaces and add generic type parameter to Unit types in src/types.ts (default: Record<string, unknown> or {name: string} & Record<string, unknown> if integrating with tags)
+3. [ ] Add metadata property and accessor methods (getMetadata, withMetadata) to Unit class in src/unit.ts
+4. [ ] Update unit creation functions to accept and store optional metadata parameter
+5. [ ] Ensure converters and unit operations properly handle and preserve metadata
+6. [ ] Add comprehensive unit tests for metadata functionality (creation, access, type safety)
+7. [ ] Update README or documentation with metadata usage examples
+8. [ ] Verify all existing tests pass and backward compatibility is maintained
 
 **Acceptance Criteria**:
 - [ ] Units can be created with strongly typed metadata using an optional metadata parameter
