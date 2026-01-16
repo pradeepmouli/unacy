@@ -41,6 +41,11 @@ type ToUnitsFor<Edges extends readonly Edge[], FromUnit extends WithUnits> = Ext
 >[1];
 
 /**
+ * Extract metadata type from a WithUnits type
+ */
+type ExtractMetadata<T> = T extends WithUnits<any, infer M extends BaseMetadata> ? M : BaseMetadata;
+
+/**
  * Type for unit accessor with metadata and conversion methods
  * Can be called as a function to create branded unit values
  */
@@ -78,10 +83,7 @@ export type UnitAccessor<
     converter: Relax<BidirectionalConverter<From, To>>
   ): ConverterRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
     ConverterMap<[...Edges, Edge<From, To>, Edge<To, From>]>;
-} & {
-  // Allow dynamic metadata property access
-  [K: string]: unknown;
-};
+} & ExtractMetadata<From>;
 
 /**
  * Type for unit-based conversion accessors
