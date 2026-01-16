@@ -31,12 +31,16 @@ This feature enables richer unit definitions while preserving the type safety th
 - Q: When creating a unit, how should TypeScript infer the metadata type if not explicitly specified? → A: Infer from provided metadata value - TypeScript infers the specific type from the metadata object passed, falls back to default if not provided. Example: register(Celsius, Kelvin, ...) where const Celsius = {name: 'Celsius' as const, ...} instead of register('Celsius', 'Kelvin', ...)
 - Q: How should the registry internally store and look up metadata at runtime? → A: Map by name property, store full metadata - use metadata.name as key, store complete metadata object as value for efficient lookups
 
+**Additional Context**:
+- Metadata values should be directly accessible on the unit accessors in a strongly typed way (not just through getMetadata())
+
 ## Proposed Changes
 - Add a generic metadata type parameter to core Unit types and interfaces (default: `{name: string} & Record<string, unknown>`)
 - Replace existing unit tag system with metadata's `name` property (metadata.name takes place of current tag)
 - Implement metadata as type-level and registry-level information (MVP: metadata known to type system and runtime registry)
 - Update registry to accept metadata objects instead of string literals (e.g., `register(Celsius, Kelvin, ...)` where `const Celsius = {name: 'Celsius' as const, ...}`)
 - Implement immutable metadata storage with accessor methods on Unit class (`getMetadata()`, `withMetadata()`)
+- Metadata values should be directly accessible on unit accessors in a strongly typed way (beyond just getMetadata())
 - Update unit creation functions (createUnit, defineUnit, etc.) to accept optional metadata parameter with automatic type inference
 - TypeScript infers metadata type from provided value; falls back to default type if not provided
 - Ensure metadata is properly typed and accessible throughout the unit lifecycle
@@ -78,6 +82,7 @@ This replaces the existing unit tag system with metadata's `name` property. The 
 - [ ] Units can be created with strongly typed metadata using an optional metadata parameter with default type `{name: string} & Record<string, unknown>`
 - [ ] Metadata is immutable - `withMetadata()` returns a new unit instance with updated metadata
 - [ ] Metadata is accessible via type-safe accessor methods (getMetadata, withMetadata) with proper TypeScript inference
+- [ ] Metadata values are directly accessible on unit accessors in a strongly typed way
 - [ ] TypeScript automatically infers metadata type from provided value; falls back to default if not provided
 - [ ] Metadata is known to type system and runtime registry (MVP implementation)
 - [ ] Arithmetic operations get metadata from result type, not from operands
@@ -112,6 +117,7 @@ This replaces the existing unit tag system with metadata's `name` property. The 
 - Type inference: TypeScript automatically infers metadata type from the provided value; uses default type when metadata is not provided (no explicit type annotation required)
 - MVP: Metadata is type-level and registry-level information (known to type system and runtime registry)
 - Registry storage: Map<string, Metadata> structure where metadata.name is the key and full metadata object is the value for efficient lookups
+- Direct accessibility: Metadata values should be directly accessible on unit accessors in a strongly typed way (not just through getMetadata())
 - Arithmetic operations: metadata comes from result type, NOT from operands (e.g., velocity * time = distance, distance gets its own metadata based on its type)
 - Ensure metadata doesn't impact performance for users who don't use it
 - Consider providing migration utilities or deprecation warnings for tag system transition
