@@ -1,10 +1,11 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
 import type { WithUnits, WithFormat } from '../types.js';
+import { CelsiusMetadata, FahrenheitMetadata, MetersMetadata } from './test-metadata.js';
 
 describe('WithUnits Type Safety', () => {
-  type Celsius = WithUnits<number, 'Celsius'>;
-  type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
-  type Meters = WithUnits<number, 'meters'>;
+  type Celsius = WithUnits<number, typeof CelsiusMetadata>;
+  type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
+  type Meters = WithUnits<number, typeof MetersMetadata>;
 
   it('allows assignment with explicit cast', () => {
     const temp: Celsius = 25 as Celsius;
@@ -58,8 +59,9 @@ describe('WithUnits Type Safety', () => {
   });
 
   it('supports numeric base types', () => {
-    type Meters = WithUnits<number, 'meters'>;
-    type USD = WithUnits<number, 'USD'>;
+    const USDMetadata = { name: 'USD' as const, symbol: '$' };
+    type Meters = WithUnits<number, typeof MetersMetadata>;
+    type USD = WithUnits<number, typeof USDMetadata>;
 
     const distance: Meters = 1000 as Meters;
     const money: USD = 100.5 as USD;
@@ -71,8 +73,9 @@ describe('WithUnits Type Safety', () => {
     expect(money).toBe(100.5);
   });
 
-  it('supports string literal as unit identifier', () => {
-    type CustomUnit = WithUnits<number, 'CustomUnit'>;
+  it('supports custom metadata with unit identifier', () => {
+    const CustomUnitMetadata = { name: 'CustomUnit' as const };
+    type CustomUnit = WithUnits<number, typeof CustomUnitMetadata>;
 
     const value: CustomUnit = 42 as CustomUnit;
 
@@ -158,7 +161,7 @@ describe('WithFormat Type Safety', () => {
 });
 
 describe('WithUnits and WithFormat Interaction', () => {
-  type CelsiusNumber = WithUnits<number, 'Celsius'>;
+  type CelsiusNumber = WithUnits<number, typeof CelsiusMetadata>;
   type ISO8601Date = WithFormat<Date, 'ISO8601'>;
 
   it('units and formats are independent type brands', () => {
@@ -174,7 +177,7 @@ describe('WithUnits and WithFormat Interaction', () => {
 
   it('can apply both brands (theoretical, but should type-check)', () => {
     // This is possible but unusual - a value with both unit AND format brands
-    type BrandedNumber = WithFormat<WithUnits<number, 'Celsius'>, 'Scientific'>;
+    type BrandedNumber = WithFormat<WithUnits<number, typeof CelsiusMetadata>, 'Scientific'>;
 
     const value: BrandedNumber = 25 as any as BrandedNumber;
 

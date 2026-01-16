@@ -1,13 +1,20 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
 import type { Converter, BidirectionalConverter } from '../converters.js';
 import type { WithUnits } from '../types.js';
+import {
+  CelsiusMetadata,
+  FahrenheitMetadata,
+  KelvinMetadata,
+  MetersMetadata,
+  FeetMetadata
+} from './test-metadata.js';
 
 // Define test unit types
-type Celsius = WithUnits<number, 'Celsius'>;
-type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
-type Kelvin = WithUnits<number, 'Kelvin'>;
-type Meters = WithUnits<number, 'meters'>;
-type Feet = WithUnits<number, 'feet'>;
+type Celsius = WithUnits<number, typeof CelsiusMetadata>;
+type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
+type Kelvin = WithUnits<number, typeof KelvinMetadata>;
+type Meters = WithUnits<number, typeof MetersMetadata>;
+type Feet = WithUnits<number, typeof FeetMetadata>;
 
 describe('Converter Type', () => {
   it('unidirectional converter returns correct type', () => {
