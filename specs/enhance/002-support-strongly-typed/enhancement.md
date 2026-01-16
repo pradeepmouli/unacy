@@ -32,7 +32,7 @@ This feature enables richer unit definitions while preserving the type safety th
 - Q: How should the registry internally store and look up metadata at runtime? → A: Map by name property, store full metadata - use metadata.name as key, store complete metadata object as value for efficient lookups
 
 **Additional Context**:
-- Metadata values should be directly accessible on the unit accessors in a strongly typed way (not just through getMetadata())
+- Metadata values should be directly accessible on the unit accessors in a strongly typed way (not just through getMetadata()). Example: `registry.Celsius.name` directly accesses the name property
 
 ## Proposed Changes
 - Add a generic metadata type parameter to core Unit types and interfaces (default: `{name: string} & Record<string, unknown>`)
@@ -117,7 +117,7 @@ This replaces the existing unit tag system with metadata's `name` property. The 
 - Type inference: TypeScript automatically infers metadata type from the provided value; uses default type when metadata is not provided (no explicit type annotation required)
 - MVP: Metadata is type-level and registry-level information (known to type system and runtime registry)
 - Registry storage: Map<string, Metadata> structure where metadata.name is the key and full metadata object is the value for efficient lookups
-- Direct accessibility: Metadata values should be directly accessible on unit accessors in a strongly typed way (not just through getMetadata())
+- Direct accessibility: Metadata values should be directly accessible on unit accessors in a strongly typed way (e.g., `registry.Celsius.name`)
 - Arithmetic operations: metadata comes from result type, NOT from operands (e.g., velocity * time = distance, distance gets its own metadata based on its type)
 - Ensure metadata doesn't impact performance for users who don't use it
 - Consider providing migration utilities or deprecation warnings for tag system transition
