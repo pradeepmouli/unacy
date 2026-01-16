@@ -2,14 +2,15 @@
 
 **Date**: 2026-01-16
 **Feature**: Strongly Typed Unit Metadata
-**Architecture**: Branded Types (`WithUnits<T, U, M>`)
+**Architecture**: Branded Types (`WithUnits<T, M>`)
 
 ## Overview
 
 This guide shows how to use strongly typed metadata with unacy's branded type system. Metadata is stored in the registry and accessed via type-safe `UnitAccessor` properties.
 
 **Key Concepts**:
-- Branded types (`WithUnits<T, U, M>`) are compile-time only - no runtime class instances
+- Branded types (`WithUnits<T, M>`) use metadata objects as the tag - compile-time only, no runtime class instances
+- Unit name is automatically extracted from the metadata's `name` property
 - Metadata stored in registry using `Map<string, BaseMetadata>`
 - Metadata accessed via `registry.UnitName.property` pattern
 - Full TypeScript type inference and autocomplete
@@ -47,14 +48,14 @@ const Fahrenheit = {
 
 ### 2. Create Branded Types with Metadata
 
-Use the metadata type parameter in `WithUnits`:
+Pass the metadata object to `WithUnits` - the unit name is automatically extracted:
 
 ```typescript
 import type { WithUnits } from 'unacy';
 
-// Type with metadata
-type CelsiusTemp = WithUnits<number, 'Celsius', typeof Celsius>;
-type FahrenheitTemp = WithUnits<number, 'Fahrenheit', typeof Fahrenheit>;
+// Type with metadata - unit name extracted from Celsius.name
+type CelsiusTemp = WithUnits<number, typeof Celsius>;
+type FahrenheitTemp = WithUnits<number, typeof Fahrenheit>;
 
 // TypeScript infers the full metadata type
 const temp: CelsiusTemp = 25 as CelsiusTemp;
@@ -62,8 +63,9 @@ const temp: CelsiusTemp = 25 as CelsiusTemp;
 
 **Type Inference**:
 ```typescript
-// TypeScript knows CelsiusTemp has metadata type:
-// { name: 'Celsius', symbol: string, description: string }
+// TypeScript knows:
+// - CelsiusTemp has metadata type: { name: 'Celsius', symbol: string, description: string }
+// - Unit name 'Celsius' is extracted from Celsius.name
 ```
 
 ---

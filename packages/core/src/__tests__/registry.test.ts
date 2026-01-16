@@ -3,14 +3,30 @@ import { createRegistry } from '../registry.js';
 import type { Converter } from '../converters.js';
 import type { PrimitiveType, WithUnits } from '../types.js';
 import { CycleError, MaxDepthError, ConversionError } from '../errors.js';
+import {
+  CelsiusMetadata,
+  FahrenheitMetadata,
+  KelvinMetadata,
+  MetersMetadata,
+  KilometersMetadata,
+  MilesMetadata,
+  AMetadata,
+  BMetadata,
+  CMetadata,
+  DMetadata
+} from './test-metadata.js';
 
 // Define test unit types
-type Celsius = WithUnits<number, 'Celsius'>;
-type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
-type Kelvin = WithUnits<number, 'Kelvin'>;
-type Meters = WithUnits<number, 'meters'>;
-type Kilometers = WithUnits<number, 'kilometers'>;
-type Miles = WithUnits<number, 'miles'>;
+type Celsius = WithUnits<number, typeof CelsiusMetadata>;
+type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
+type Kelvin = WithUnits<number, typeof KelvinMetadata>;
+type Meters = WithUnits<number, typeof MetersMetadata>;
+type Kilometers = WithUnits<number, typeof KilometersMetadata>;
+type Miles = WithUnits<number, typeof MilesMetadata>;
+type A = WithUnits<number, typeof AMetadata>;
+type B = WithUnits<number, typeof BMetadata>;
+type C = WithUnits<number, typeof CMetadata>;
+type D = WithUnits<number, typeof DMetadata>;
 
 const getConverter = (registry: any, from: string, to: string) =>
   (registry as any).getConverter(from, to);
@@ -512,10 +528,10 @@ describe('Registry - Unit Accessor Registration', () => {
   });
 
   it('unit accessor register preserves existing converters', () => {
-    type A = WithUnits<number, 'A'>;
-    type B = WithUnits<number, 'B'>;
-    type C = WithUnits<number, 'C'>;
-    type D = WithUnits<number, 'D'>;
+    type A = WithUnits<number, typeof AMetadata>;
+    type B = WithUnits<number, typeof BMetadata>;
+    type C = WithUnits<number, typeof CMetadata>;
+    type D = WithUnits<number, typeof DMetadata>;
     type CEdge = readonly [C, A];
     const registry = createRegistry<[CEdge]>()
       .register('A', 'B', (a) => (a * 2) as any)
