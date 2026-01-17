@@ -10,14 +10,30 @@
 // ============================================================================
 
 /*
-import { createRegistry, type WithUnits } from '@unacy/core';
+import { createRegistry, type WithUnits, type BaseMetadata } from '@unacy/core';
 
-/*
-import { createRegistry, type WithUnits } from '@unacy/core';
+// Define metadata for each unit
+const CelsiusMetadata = {
+  name: 'Celsius' as const,
+  symbol: '°C',
+  description: 'Temperature in Celsius'
+} satisfies BaseMetadata;
 
-type Celsius = WithUnits<number, 'Celsius'>;
-type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
-type Kelvin = WithUnits<number, 'Kelvin'>;
+const FahrenheitMetadata = {
+  name: 'Fahrenheit' as const,
+  symbol: '°F',
+  description: 'Temperature in Fahrenheit'
+} satisfies BaseMetadata;
+
+const KelvinMetadata = {
+  name: 'Kelvin' as const,
+  symbol: 'K',
+  description: 'Absolute temperature in Kelvin'
+} satisfies BaseMetadata;
+
+type Celsius = WithUnits<number, typeof CelsiusMetadata>;
+type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
+type Kelvin = WithUnits<number, typeof KelvinMetadata>;
 
 const registry = createRegistry()
   .register('Celsius', 'Fahrenheit', {

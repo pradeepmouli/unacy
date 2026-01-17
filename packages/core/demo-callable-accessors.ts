@@ -3,16 +3,47 @@
  * This file demonstrates how to use registry.Unit(value) to create branded values
  */
 
-import { createRegistry, type WithUnits } from './src/index.js';
+import { createRegistry, type WithUnits, type BaseMetadata } from './src/index.js';
 
 console.log('=== Callable Unit Accessor Demo ===\n');
 
-// Define unit types
-type Celsius = WithUnits<number, 'Celsius'>;
-type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
-type Kelvin = WithUnits<number, 'Kelvin'>;
-type Meters = WithUnits<number, 'meters'>;
-type Kilometers = WithUnits<number, 'kilometers'>;
+// Define metadata for each unit
+const CelsiusMetadata = {
+  name: 'Celsius' as const,
+  symbol: '°C',
+  description: 'Temperature in Celsius'
+} satisfies BaseMetadata;
+
+const FahrenheitMetadata = {
+  name: 'Fahrenheit' as const,
+  symbol: '°F',
+  description: 'Temperature in Fahrenheit'
+} satisfies BaseMetadata;
+
+const KelvinMetadata = {
+  name: 'Kelvin' as const,
+  symbol: 'K',
+  description: 'Absolute temperature'
+} satisfies BaseMetadata;
+
+const MetersMetadata = {
+  name: 'meters' as const,
+  symbol: 'm',
+  description: 'Distance in meters'
+} satisfies BaseMetadata;
+
+const KilometersMetadata = {
+  name: 'kilometers' as const,
+  symbol: 'km',
+  description: 'Distance in kilometers'
+} satisfies BaseMetadata;
+
+// Define unit types with metadata
+type Celsius = WithUnits<number, typeof CelsiusMetadata>;
+type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
+type Kelvin = WithUnits<number, typeof KelvinMetadata>;
+type Meters = WithUnits<number, typeof MetersMetadata>;
+type Kilometers = WithUnits<number, typeof KilometersMetadata>;
 
 // Create registry with temperature converters
 const registry = createRegistry()

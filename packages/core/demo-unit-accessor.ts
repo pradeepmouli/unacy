@@ -7,17 +7,42 @@
  * 4. registry.unit.register() for unit-centric converter registration
  */
 
-import { createRegistry, type WithUnits } from './src/index.js';
-import { Celsius } from './namespace-export-demo.js';
+import { createRegistry, type WithUnits, type BaseMetadata } from './src/index.js';
+import { Celsius, CelsiusMetadata } from './namespace-export-demo.js';
 import type { Relax } from './src/types.js';
 
 console.log('=== Unit Accessor API Demo ===\n');
 
-// Define unit types
-type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
-type Kelvin = WithUnits<number, 'Kelvin'>;
-type Meters = WithUnits<number, 'meters'>;
-type Kilometers = WithUnits<number, 'kilometers'>;
+// Define metadata for units
+const FahrenheitMetadata = {
+  name: 'Fahrenheit' as const,
+  symbol: '°F',
+  description: 'Temperature in Fahrenheit'
+} satisfies BaseMetadata;
+
+const KelvinMetadata = {
+  name: 'Kelvin' as const,
+  symbol: 'K',
+  description: 'Absolute temperature'
+} satisfies BaseMetadata;
+
+const MetersMetadata = {
+  name: 'meters' as const,
+  symbol: 'm',
+  description: 'Distance in meters'
+} satisfies BaseMetadata;
+
+const KilometersMetadata = {
+  name: 'kilometers' as const,
+  symbol: 'km',
+  description: 'Distance in kilometers'
+} satisfies BaseMetadata;
+
+// Define unit types with metadata
+type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
+type Kelvin = WithUnits<number, typeof KelvinMetadata>;
+type Meters = WithUnits<number, typeof MetersMetadata>;
+type Kilometers = WithUnits<number, typeof KilometersMetadata>;
 
 // ===== Part 1: Basic Unit Accessor API =====
 console.log('Part 1: Basic Unit Accessor API\n');
@@ -56,14 +81,14 @@ console.log(`  tempRegistry.Celsius.to.Fahrenheit(tempRegistry.Celsius(30)) = ${
 
 // Test multi-hop with unit accessor
 console.log('\nMulti-hop conversion (Celsius -> Kelvin -> Celsius):');
-const kelvinValue = tempRegistry.Celsius.to.Kelvin(100) satisfies Kelvin;
+const kelvinValue = tempRegistry.Celsius.to.Kelvin(100 as Celsius);
 const backToCelsius = tempRegistry.Kelvin.to.Celsius(kelvinValue);
-console.log(`  ${temp}°C = ${kelvinValue}K = ${backToCelsius}°C`);
+console.log(`  100°C = ${kelvinValue}K = ${backToCelsius}°C`);
 
-// Test composed conversion (Kelvin -> Celsius -> Fahrenheit)
-console.log('\nComposed conversion (Kelvin -> Fahrenheit via Celsius):');
+// Test multi-hop conversion (Kelvin -> Fahrenheit via Celsius)
+console.log('\nMulti-hop conversion (Kelvin -> Fahrenheit via Celsius):');
 const kelvin = 300 as Kelvin;
-const fahrenheitFromKelvin = tempRegistry.Kelvin.from.Fahrenheit(100) satisfies Kelvin;
+const fahrenheitFromKelvin = tempRegistry.Kelvin.to.Fahrenheit(kelvin);
 console.log(`  ${kelvin}K = ${fahrenheitFromKelvin}°F`);
 
 // ===== Part 2: Metadata Support =====
@@ -107,14 +132,11 @@ console.log(`\nFormatted value: ${formatString.replace('${value}', tempValue.toS
 // ===== Part 3: Unit-Centric Registration =====
 console.log('\n\nPart 3: Unit-Centric Registration\n');
 
-// Register converters using the unit accessor API with pre-declared edges
-type MeterEdge = readonly [Meters, Kilometers];
-type KilometerEdge = readonly [Kilometers, Meters];
-const distanceRegistry = createRegistry<[MeterEdge, KilometerEdge]>()
-  // Register bidirectional converter from meters
-  .meters.register('kilometers', {
-    to: (m) => m / 1000,
-    from: (km) => km * 1000
+// Register converters using bidirectional API
+const distanceRegistry = createRegistry()
+  .register('meters', 'kilometers', {
+    to: (m) => (m / 1000) as Kilometers,
+    from: (km) => (km * 1000) as Meters
   })
   // Add metadata using method chaining
   .meters.addMetadata({ abbreviation: 'm', description: 'Length in meters' })
@@ -122,7 +144,7 @@ const distanceRegistry = createRegistry<[MeterEdge, KilometerEdge]>()
 
 // Test the conversions
 const distance = 5000 as Meters;
-const distanceKm = (distanceRegistry as any).meters.to.kilometers(distance);
+const distanceKm = distanceRegistry.meters.to.kilometers(distance);
 console.log(
   `Distance conversion: ${distance}${(distanceRegistry as any).meters.abbreviation} = ${distanceKm}${(distanceRegistry as any).kilometers.abbreviation}`
 );

@@ -3,13 +3,35 @@
  * This file shows that invalid conversions are caught at compile-time
  */
 
-import { createRegistry, type WithUnits } from './src/index.js';
+import { createRegistry, type WithUnits, type BaseMetadata } from './src/index.js';
+
+// Define metadata for temperature units
+const CelsiusMetadata = {
+  name: 'Celsius' as const,
+  symbol: '°C'
+} satisfies BaseMetadata;
+
+const FahrenheitMetadata = {
+  name: 'Fahrenheit' as const,
+  symbol: '°F'
+} satisfies BaseMetadata;
+
+// Define metadata for distance units
+const MetersMetadata = {
+  name: 'Meters' as const,
+  symbol: 'm'
+} satisfies BaseMetadata;
+
+const FeetMetadata = {
+  name: 'Feet' as const,
+  symbol: 'ft'
+} satisfies BaseMetadata;
 
 // Define unit types for different dimensions
-type Celsius = WithUnits<number, 'Celsius'>;
-type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
-type Meters = WithUnits<number, 'Meters'>;
-type Feet = WithUnits<number, 'Feet'>;
+type Celsius = WithUnits<number, typeof CelsiusMetadata>;
+type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
+type Meters = WithUnits<number, typeof MetersMetadata>;
+type Feet = WithUnits<number, typeof FeetMetadata>;
 
 // Create separate registries for temperature and distance
 const tempRegistry = createRegistry().register('Celsius', 'Fahrenheit', {

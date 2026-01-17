@@ -3,15 +3,53 @@
  * This pattern allows users to import only the converters they need
  */
 
-import { createRegistry, type WithUnits } from './src/index.js';
+import { createRegistry, type WithUnits, type BaseMetadata } from './src/index.js';
 
-// Define unit types
-export type Celsius = WithUnits<number, 'Celsius'>;
-export type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
-export type Kelvin = WithUnits<number, 'Kelvin'>;
-export type Meters = WithUnits<number, 'Meters'>;
-export type Feet = WithUnits<number, 'Feet'>;
-export type Kilometers = WithUnits<number, 'Kilometers'>;
+// Define metadata for temperature units
+export const CelsiusMetadata = {
+  name: 'Celsius' as const,
+  symbol: '°C',
+  description: 'Temperature in Celsius'
+} satisfies BaseMetadata;
+
+export const FahrenheitMetadata = {
+  name: 'Fahrenheit' as const,
+  symbol: '°F',
+  description: 'Temperature in Fahrenheit'
+} satisfies BaseMetadata;
+
+export const KelvinMetadata = {
+  name: 'Kelvin' as const,
+  symbol: 'K',
+  description: 'Absolute temperature'
+} satisfies BaseMetadata;
+
+// Define metadata for distance units
+export const MetersMetadata = {
+  name: 'Meters' as const,
+  symbol: 'm',
+  description: 'Distance in meters'
+} satisfies BaseMetadata;
+
+export const FeetMetadata = {
+  name: 'Feet' as const,
+  symbol: 'ft',
+  description: 'Distance in feet'
+} satisfies BaseMetadata;
+
+export const KilometersMetadata = {
+  name: 'Kilometers' as const,
+  symbol: 'km',
+  description: 'Distance in kilometers'
+} satisfies BaseMetadata;
+
+// Define unit types with metadata
+export type Celsius = WithUnits<number, typeof CelsiusMetadata>;
+export type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
+export type Kelvin = WithUnits<number, typeof KelvinMetadata>;
+export type Meters = WithUnits<number, typeof MetersMetadata>;
+export type Feet = WithUnits<number, typeof FeetMetadata>;
+export type Kilometers = WithUnits<number, typeof KilometersMetadata>;
 
 // ============================================================================
 // Temperature Converters (would be in a separate file like 'temperature.ts')

@@ -21,11 +21,22 @@ pnpm add @unacy/core
 ## Quick Start
 
 ```typescript
-import { createRegistry, type WithUnits } from '@unacy/core';
+import { createRegistry, type WithUnits, type BaseMetadata } from '@unacy/core';
 
-// Define your unit types
-type Celsius = WithUnits<number, 'Celsius'>;
-type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
+// Define metadata for your units
+const CelsiusMetadata = {
+  name: 'Celsius' as const,
+  symbol: '°C'
+} satisfies BaseMetadata;
+
+const FahrenheitMetadata = {
+  name: 'Fahrenheit' as const,
+  symbol: '°F'
+} satisfies BaseMetadata;
+
+// Define your unit types with metadata
+type Celsius = WithUnits<number, typeof CelsiusMetadata>;
+type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
 
 // Create a registry
 const tempRegistry = createRegistry()
@@ -94,16 +105,25 @@ console.log(meters); // 10
 ### Bidirectional Converters
 
 ```typescript
-import { createRegistry, type WithUnits } from '@unacy/core';
+import { createRegistry, type WithUnits, type BaseMetadata } from '@unacy/core';
 
-type Meters = WithUnits<number, 'meters'>;
-type Kilometers = WithUnits<number, 'kilometers'>;
+const MetersMetadata = {
+  name: 'meters' as const,
+  symbol: 'm'
+} satisfies BaseMetadata;
 
-const registry = createRegistry<'meters' | 'kilometers'>()
-  .registerBidirectional('meters', 'kilometers', {
+const KilometersMetadata = {
+  name: 'kilometers' as const,
+  symbol: 'km'
+} satisfies BaseMetadata;
+
+type Meters = WithUnits<number, typeof MetersMetadata>;
+type Kilometers = WithUnits<number, typeof KilometersMetadata>;
+
+const registry = createRegistry()
+  .register('meters', 'kilometers', {
     to: (m) => (m / 1000) as Kilometers,
     from: (km) => (km * 1000) as Meters
-  });
   });
 
 // Both directions work automatically
@@ -116,16 +136,20 @@ const m = registry.convert(5 as Kilometers, 'kilometers').to('meters'); // 5000
 The registry automatically composes converters via shortest path:
 
 ```typescript
-type Meters = WithUnits<number, 'meters'>;
-type Kilometers = WithUnits<number, 'kilometers'>;
-type Miles = WithUnits<number, 'miles'>;
+const MetersMetadata = { name: 'meters' as const, symbol: 'm' } satisfies BaseMetadata;
+const KilometersMetadata = { name: 'kilometers' as const, symbol: 'km' } satisfies BaseMetadata;
+const MilesMetadata = { name: 'miles' as const, symbol: 'mi' } satisfies BaseMetadata;
 
-const registry = createRegistry<'meters' | 'kilometers' | 'miles'>()
-  .registerBidirectional('meters', 'kilometers', {
+type Meters = WithUnits<number, typeof MetersMetadata>;
+type Kilometers = WithUnits<number, typeof KilometersMetadata>;
+type Miles = WithUnits<number, typeof MilesMetadata>;
+
+const registry = createRegistry()
+  .register('meters', 'kilometers', {
     to: (m) => (m / 1000) as Kilometers,
     from: (km) => (km * 1000) as Meters
   })
-  .registerBidirectional('kilometers', 'miles', {
+  .register('kilometers', 'miles', {
     to: (km) => (km * 0.621371) as Miles,
     from: (mi) => (mi / 0.621371) as Kilometers
   });
