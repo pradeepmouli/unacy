@@ -568,3 +568,83 @@ describe('Registry - Unit Accessor Registration', () => {
     expect(converter).toBeDefined();
   });
 });
+
+describe('Registry - Metadata Object Support', () => {
+  it('registers converters with metadata objects', () => {
+    const registry = createRegistry().register(CelsiusMetadata, FahrenheitMetadata, {
+      to: (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit,
+      from: (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius
+    });
+
+    const converter = getConverter(registry, 'Celsius', 'Fahrenheit');
+    expect(converter).toBeDefined();
+    if (converter) {
+      expect(converter(0 as Celsius)).toBe(32);
+    }
+  });
+
+  it('stores metadata from metadata objects automatically', () => {
+    const registry = createRegistry().register(CelsiusMetadata, FahrenheitMetadata, {
+      to: (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit,
+      from: (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius
+    });
+
+    expect((registry as any)['Celsius']!['symbol']).toBe('°C');
+    expect((registry as any)['Fahrenheit']!['symbol']).toBe('°F');
+  });
+
+  it('supports mixed string and metadata object registration', () => {
+    const registry = createRegistry()
+      .register('Celsius', FahrenheitMetadata, (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit)
+      .register(CelsiusMetadata, 'Kelvin', (c: Celsius) => (c + 273.15) as Kelvin);
+
+    const c2f = getConverter(registry, 'Celsius', 'Fahrenheit');
+    const c2k = getConverter(registry, 'Celsius', 'Kelvin');
+
+    expect(c2f).toBeDefined();
+    expect(c2k).toBeDefined();
+    expect((registry as any)['Fahrenheit']!['symbol']).toBe('°F');
+    expect((registry as any)['Celsius']!['symbol']).toBe('°C');
+  });
+
+  it('unit accessor register accepts metadata objects', () => {
+    const registry = createRegistry()
+      .register(CelsiusMetadata, FahrenheitMetadata, {
+        to: (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit,
+        from: (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius
+      })
+      .Celsius.register(KelvinMetadata, (c: Celsius) => (c + 273.15) as Kelvin);
+
+    const converter = getConverter(registry, 'Celsius', 'Kelvin');
+    expect(converter).toBeDefined();
+    expect((registry as any)['Kelvin']!['symbol']).toBe('K');
+  });
+
+  it('allow method accepts metadata objects', () => {
+    const registry = createRegistry()
+      .register(CelsiusMetadata, KelvinMetadata, (c: Celsius) => (c + 273.15) as Kelvin)
+      .register(KelvinMetadata, FahrenheitMetadata, (k: Kelvin) => ((k - 273.15) * 9) / 5 + 32)
+      .allow(CelsiusMetadata, FahrenheitMetadata);
+
+    const converter = getConverter(registry, 'Celsius', 'Fahrenheit');
+    expect(converter).toBeDefined();
+    if (converter) {
+      const result = converter(0 as Celsius);
+      expect(result).toBeCloseTo(32, 5);
+    }
+  });
+
+  it('maintains backward compatibility with string registration', () => {
+    const registry = createRegistry().register(
+      'Celsius',
+      'Fahrenheit',
+      (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit
+    );
+
+    const converter = getConverter(registry, 'Celsius', 'Fahrenheit');
+    expect(converter).toBeDefined();
+    if (converter) {
+      expect(converter(25 as Celsius)).toBe(77);
+    }
+  });
+});

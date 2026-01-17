@@ -76,11 +76,11 @@ export type UnitAccessor<
    * Register a converter from this unit to another unit
    */
   register<To extends WithUnits<PrimitiveType, ToMeta>, ToMeta extends BaseMetadata>(
-    to: UnitsFor<To>,
+    to: UnitsFor<To> | ToMeta,
     converter: Relax<Converter<From, To>>
   ): UnitRegistry<[...Edges, Edge<From, To>]> & UnitMap<[...Edges, Edge<From, To>]>;
   register<To extends WithUnits<PrimitiveType, ToMeta>, ToMeta extends BaseMetadata>(
-    to: UnitsFor<To>,
+    to: UnitsFor<To> | ToMeta,
     converter: Relax<BidirectionalConverter<From, To>>
   ): UnitRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
     UnitMap<[...Edges, Edge<From, To>, Edge<To, From>]>;
@@ -102,8 +102,8 @@ export interface UnitRegistry<Edges extends Edge[] = []> {
   /**
    * Register a unidirectional converter
    *
-   * @param from - Source unit
-   * @param to - Destination unit
+   * @param from - Source unit (string name or metadata object)
+   * @param to - Destination unit (string name or metadata object)
    * @param converter - Converter function
    * @returns New registry instance with the converter registered
    */
@@ -113,15 +113,15 @@ export interface UnitRegistry<Edges extends Edge[] = []> {
     FromMeta extends BaseMetadata,
     ToMeta extends BaseMetadata
   >(
-    from: UnitsFor<From>,
-    to: UnitsFor<To>,
+    from: UnitsFor<From> | FromMeta,
+    to: UnitsFor<To> | ToMeta,
     converter: Converter<From, RelaxUnits<To>>
   ): UnitRegistry<[...Edges, Edge<From, To>]> & UnitMap<[...Edges, Edge<From, To>]>;
   /**
    * Register a bidirectional converter (both directions)
    *
-   * @param from - First unit
-   * @param to - Second unit
+   * @param from - First unit (string name or metadata object)
+   * @param to - Second unit (string name or metadata object)
    * @param converter - Bidirectional converter object
    * @returns New registry instance with both converters registered
    */
@@ -131,8 +131,8 @@ export interface UnitRegistry<Edges extends Edge[] = []> {
     FromMeta extends BaseMetadata,
     ToMeta extends BaseMetadata
   >(
-    from: UnitsFor<From>,
-    to: UnitsFor<To>,
+    from: UnitsFor<From> | FromMeta,
+    to: UnitsFor<To> | ToMeta,
     converter: BidirectionalConverter<RelaxUnits<From>, RelaxUnits<To>>
   ): UnitRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
     UnitMap<[...Edges, Edge<From, To>, Edge<To, From>]>;
@@ -145,8 +145,8 @@ export interface UnitRegistry<Edges extends Edge[] = []> {
    * This method verifies that a conversion path exists at runtime (via BFS) and adds it
    * to the type system so it can be used with type-safe accessor syntax.
    *
-   * @param from - Source unit string
-   * @param to - Destination unit string
+   * @param from - Source unit (string name or metadata object)
+   * @param to - Destination unit (string name or metadata object)
    * @returns New registry instance with the conversion path enabled in types
    * @throws ConversionError if no path exists between the units
    *
@@ -167,8 +167,8 @@ export interface UnitRegistry<Edges extends Edge[] = []> {
     FromMeta extends BaseMetadata,
     ToMeta extends BaseMetadata
   >(
-    from: UnitsFor<From>,
-    to: UnitsFor<To>
+    from: UnitsFor<From> | FromMeta,
+    to: UnitsFor<To> | ToMeta
   ): UnitRegistry<[...Edges, Edge<From, To>]> & UnitMap<[...Edges, Edge<From, To>]>;
   /**
    * Get a converter (direct or composed via BFS)
@@ -335,12 +335,29 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
     to: UnitsFor<To> | { name: UnitsFor<To> },
     converter: Converter<From, To> | BidirectionalConverter<From, To>
   ): UnitRegistry<any> & UnitMap<any> {
+    // Extract metadata if provided and store unit names
+    let fromName: UnitsFor<From>;
+    let toName: UnitsFor<To>;
+    const newMetadata = new Map(this.metadata);
+
     if (typeof from === 'object' && 'name' in from) {
-      from = from.name;
+      fromName = from.name;
+      // Store metadata for the from unit
+      const existingFromMetadata = newMetadata.get(fromName) || {};
+      newMetadata.set(fromName, { ...existingFromMetadata, ...from });
+    } else {
+      fromName = from;
     }
+
     if (typeof to === 'object' && 'name' in to) {
-      to = to.name;
+      toName = to.name;
+      // Store metadata for the to unit
+      const existingToMetadata = newMetadata.get(toName) || {};
+      newMetadata.set(toName, { ...existingToMetadata, ...to });
+    } else {
+      toName = to;
     }
+
     // Check if it's a bidirectional converter
     if (typeof converter === 'object' && 'to' in converter && 'from' in converter) {
       // Handle bidirectional converter
@@ -355,19 +372,19 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
     // Handle unidirectional converter
     const newGraph = new Map(this.graph);
 
-    if (!newGraph.has(from)) {
-      newGraph.set(from, new Map());
+    if (!newGraph.has(fromName)) {
+      newGraph.set(fromName, new Map());
     }
 
-    const fromMap = new Map(newGraph.get(from)!);
-    fromMap.set(to, converter as Converter<From, To>);
-    newGraph.set(from, fromMap);
+    const fromMap = new Map(newGraph.get(fromName)!);
+    fromMap.set(toName, converter as Converter<From, To>);
+    newGraph.set(fromName, fromMap);
 
     // Return new registry instance (immutable) with proxy
     return createRegistryFromGraph<[...Edges, Edge<From, To>]>(
       newGraph,
       new Map(),
-      this.metadata
+      newMetadata
     ) as any;
   }
 
@@ -393,13 +410,17 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
     FromMeta extends BaseMetadata,
     ToMeta extends BaseMetadata
   >(
-    from: UnitsFor<From>,
-    to: UnitsFor<To>
+    from: UnitsFor<From> | FromMeta,
+    to: UnitsFor<To> | ToMeta
   ): UnitRegistry<[...Edges, Edge<From, To>]> & UnitMap<[...Edges, Edge<From, To>]> {
+    // Extract unit names from metadata objects if provided
+    const fromName = typeof from === 'object' && 'name' in from ? from.name : from;
+    const toName = typeof to === 'object' && 'name' in to ? to.name : to;
+
     // Verify that a conversion path exists at runtime
-    const converter = this.getConverter(from as any, to as any);
+    const converter = this.getConverter(fromName as any, toName as any);
     if (!converter) {
-      throw new ConversionError(from, to, 'No conversion path exists');
+      throw new ConversionError(fromName, toName, 'No conversion path exists');
     }
 
     // Return the same registry instance with updated type information

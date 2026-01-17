@@ -48,16 +48,29 @@ pnpm install
 ### Basic Usage
 
 ```typescript
-import { createRegistry, type WithUnits } from 'unacy';
+import { createRegistry, type WithUnits, type BaseMetadata } from 'unacy';
 
-// Define unit types
-type Celsius = WithUnits<number, 'Celsius'>;
-type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
+// Define metadata for units
+const CelsiusMetadata = {
+  name: 'Celsius' as const,
+  symbol: '°C',
+  description: 'Temperature in Celsius'
+} satisfies BaseMetadata;
 
-// Create registry and register converters
+const FahrenheitMetadata = {
+  name: 'Fahrenheit' as const,
+  symbol: '°F',
+  description: 'Temperature in Fahrenheit'
+} satisfies BaseMetadata;
+
+// Define unit types with metadata
+type Celsius = WithUnits<number, typeof CelsiusMetadata>;
+type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
+
+// Create registry and register converters using metadata objects
 // Note: No explicit type casting needed in converter functions!
 const registry = createRegistry()
-  .register('Celsius', 'Fahrenheit', {
+  .register(CelsiusMetadata, FahrenheitMetadata, {
     to: (c: Celsius) => (c * 9 / 5) + 32,
     from: (f: Fahrenheit) => (f - 32) * 5 / 9
   });
@@ -94,16 +107,22 @@ registry.Celsius.to.Meters(temp); // TypeScript error!
 The registry automatically composes multi-hop conversions via BFS:
 
 ```typescript
+// Define metadata
+const KelvinMetadata = {
+  name: 'Kelvin' as const,
+  symbol: 'K'
+} satisfies BaseMetadata;
+
 const registry = createRegistry()
-  .register('Celsius', 'Kelvin', (c: Celsius) => c + 273.15)
-  .register('Kelvin', 'Fahrenheit', (k: Kelvin) => (k - 273.15) * 9/5 + 32);
+  .register(CelsiusMetadata, KelvinMetadata, (c: Celsius) => c + 273.15)
+  .register(KelvinMetadata, FahrenheitMetadata, (k: Kelvin) => (k - 273.15) * 9/5 + 32);
 
 // Runtime: Celsius → Kelvin → Fahrenheit (automatic)
 const fahrenheit = registry.convert(0 as Celsius, 'Celsius').to('Fahrenheit');
 console.log(fahrenheit); // 32
 
 // To enable type-safe accessor syntax for multi-hop paths, use allow():
-const typeSafeRegistry = registry.allow('Celsius', 'Fahrenheit');
+const typeSafeRegistry = registry.allow(CelsiusMetadata, FahrenheitMetadata);
 
 // Now type-safe:
 const f = typeSafeRegistry.Celsius.to.Fahrenheit(0 as Celsius);
@@ -116,25 +135,31 @@ const f = typeSafeRegistry.Celsius.to.Fahrenheit(0 as Celsius);
 Add custom metadata to units for richer context:
 
 ```typescript
-import { createRegistry, type WithUnits } from 'unacy';
+import { createRegistry, type WithUnits, type BaseMetadata } from 'unacy';
 
-type Celsius = WithUnits<number, 'Celsius'>;
-type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
+// Define metadata objects with unit information
+const CelsiusMetadata = {
+  name: 'Celsius' as const,
+  symbol: '°C',
+  abbreviation: '°C',
+  description: 'Degrees Celsius'
+} satisfies BaseMetadata;
 
+const FahrenheitMetadata = {
+  name: 'Fahrenheit' as const,
+  symbol: '°F',
+  abbreviation: '°F',
+  description: 'Degrees Fahrenheit'
+} satisfies BaseMetadata;
+
+type Celsius = WithUnits<number, typeof CelsiusMetadata>;
+type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
+
+// Register converters with metadata objects - metadata is automatically stored
 const registry = createRegistry()
-  .register('Celsius', 'Fahrenheit', {
+  .register(CelsiusMetadata, FahrenheitMetadata, {
     to: (c: Celsius) => (c * 9 / 5) + 32,
     from: (f: Fahrenheit) => (f - 32) * 5 / 9
-  })
-  .Celsius.addMetadata({
-    abbreviation: '°C',
-    symbol: '°C',
-    description: 'Degrees Celsius'
-  })
-  .Fahrenheit.addMetadata({
-    abbreviation: '°F',
-    symbol: '°F',
-    description: 'Degrees Fahrenheit'
   });
 
 // Access metadata properties directly
@@ -148,12 +173,19 @@ console.log(registry.Fahrenheit.abbreviation); // '°F'
 Register new converters using the intuitive unit accessor API:
 
 ```typescript
-type Kelvin = WithUnits<number, 'Kelvin'>;
+// Define Kelvin metadata
+const KelvinMetadata = {
+  name: 'Kelvin' as const,
+  symbol: 'K',
+  description: 'Absolute temperature'
+} satisfies BaseMetadata;
 
-// Register converters directly through the unit accessor
+type Kelvin = WithUnits<number, typeof KelvinMetadata>;
+
+// Register converters directly through the unit accessor using metadata objects
 const updatedRegistry = registry
-  .Celsius.register('Kelvin', (c: Celsius) => c + 273.15)
-  .Kelvin.register('Celsius', (k: Kelvin) => k - 273.15);
+  .Celsius.register(KelvinMetadata, (c: Celsius) => c + 273.15)
+  .Kelvin.register(CelsiusMetadata, (k: Kelvin) => k - 273.15);
 
 // Now use the newly registered converters
 const kelvin = updatedRegistry.Celsius.to.Kelvin(25 as Celsius);
@@ -166,20 +198,36 @@ Export individual unit converters for optimal bundle size:
 
 ```typescript
 // temperature.ts
-import { createRegistry, type WithUnits } from 'unacy';
+import { createRegistry, type WithUnits, type BaseMetadata } from 'unacy';
 
-export type Celsius = WithUnits<number, 'Celsius'>;
-export type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
-export type Kelvin = WithUnits<number, 'Kelvin'>;
+// Define and export metadata
+export const CelsiusMetadata = {
+  name: 'Celsius' as const,
+  symbol: '°C'
+} satisfies BaseMetadata;
+
+export const FahrenheitMetadata = {
+  name: 'Fahrenheit' as const,
+  symbol: '°F'
+} satisfies BaseMetadata;
+
+export const KelvinMetadata = {
+  name: 'Kelvin' as const,
+  symbol: 'K'
+} satisfies BaseMetadata;
+
+export type Celsius = WithUnits<number, typeof CelsiusMetadata>;
+export type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
+export type Kelvin = WithUnits<number, typeof KelvinMetadata>;
 
 const TemperatureRegistry = createRegistry()
-  .register('Celsius', 'Fahrenheit', {
+  .register(CelsiusMetadata, FahrenheitMetadata, {
     to: (c: Celsius) => (c * 9 / 5) + 32,
     from: (f: Fahrenheit) => (f - 32) * 5 / 9
   })
-  .register('Celsius', 'Kelvin', (c: Celsius) => c + 273.15)
-  .register('Kelvin', 'Celsius', (k: Kelvin) => k - 273.15)
-  .allow('Kelvin', 'Fahrenheit');
+  .register(CelsiusMetadata, KelvinMetadata, (c: Celsius) => c + 273.15)
+  .register(KelvinMetadata, CelsiusMetadata, (k: Kelvin) => k - 273.15)
+  .allow(KelvinMetadata, FahrenheitMetadata);
 
 // Export individual converters using destructuring
 export const { Celsius, Fahrenheit, Kelvin } = TemperatureRegistry;

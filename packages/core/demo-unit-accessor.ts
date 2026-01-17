@@ -47,12 +47,12 @@ type Kilometers = WithUnits<number, typeof Kilometers>;
 // ===== Part 1: Basic Unit Accessor API =====
 console.log('Part 1: Basic Unit Accessor API\n');
 
-// Create registry with converters using traditional API
+// Create registry with converters using metadata objects
 const tempRegistry = createRegistry()
-  .register(Celsius, Kelvin, (c) => c + 273.15)
-  .register(Kelvin, Celsius, (k) => k - 273.15)
-  .register(Celsius, Fahrenheit, (c) => (c * 9) / 5 + 32)
-  .register(Fahrenheit, Celsius, (f) => ((f - 32) * 5) / 9)
+  .register(CelsiusMetadata, Kelvin, (c) => c + 273.15)
+  .register(Kelvin, CelsiusMetadata, (k) => k - 273.15)
+  .register(CelsiusMetadata, Fahrenheit, (c) => (c * 9) / 5 + 32)
+  .register(Fahrenheit, CelsiusMetadata, (f) => ((f - 32) * 5) / 9)
   .allow(Kelvin, Fahrenheit); // Explicitly enable multi-hop path in types
 // Create branded values using callable accessors (NEW!)
 console.log('Creating branded values:');
@@ -131,9 +131,9 @@ console.log(`\nFormatted value: ${formatString.replace('${value}', tempValue.toS
 // ===== Part 3: Unit-Centric Registration =====
 console.log('\n\nPart 3: Unit-Centric Registration\n');
 
-// Register converters using bidirectional API
+// Register converters using bidirectional API with metadata objects
 const distanceRegistry = createRegistry()
-  .register('meters', 'kilometers', {
+  .register(Meters, Kilometers, {
     to: (m) => (m / 1000) as Kilometers,
     from: (km) => (km * 1000) as Meters
   })
@@ -150,8 +150,8 @@ console.log(
 
 // Demonstrate using register() and then working with the result
 const completeRegistry = distanceRegistry
-  .register('Celsius', 'Fahrenheit', (c) => ((c * 9) / 5 + 32) as Fahrenheit)
-  .register('Fahrenheit', 'Celsius', (f) => (((f - 32) * 5) / 9) as Celsius);
+  .register(CelsiusMetadata, Fahrenheit, (c) => ((c * 9) / 5 + 32) as Fahrenheit)
+  .register(Fahrenheit, CelsiusMetadata, (f) => (((f - 32) * 5) / 9) as Celsius);
 
 // Use both distance and temperature conversions (with any for demonstration)
 console.log('\nCombined registry:');
@@ -164,7 +164,7 @@ console.log('\n\nPart 4: Custom Metadata Properties\n');
 // Add custom metadata properties
 type CelsiusEdge = readonly [Celsius, Fahrenheit];
 const customRegistry = createRegistry<[CelsiusEdge]>()
-  .Celsius.register('Fahrenheit', (c) => ((c * 9) / 5 + 32) as Fahrenheit)
+  .Celsius.register(Fahrenheit, (c) => ((c * 9) / 5 + 32) as Fahrenheit)
   .Celsius.addMetadata({
     abbreviation: '°C',
     description: 'Temperature in Celsius',

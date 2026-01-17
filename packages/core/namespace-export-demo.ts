@@ -56,13 +56,13 @@ export type Kilometers = WithUnits<number, typeof KilometersMetadata>;
 // ============================================================================
 
 const TemperatureRegistry = createRegistry()
-  .register('Celsius', 'Fahrenheit', {
+  .register(CelsiusMetadata, FahrenheitMetadata, {
     to: (c) => (c * 9) / 5 + 32,
     from: (f) => ((f - 32) * 5) / 9
   })
-  .register('Celsius', 'Kelvin', (c) => c + 273.15)
-  .register('Kelvin', 'Celsius', (k) => k - 273.15)
-  .allow('Kelvin', 'Fahrenheit');
+  .register(CelsiusMetadata, KelvinMetadata, (c) => c + 273.15)
+  .register(KelvinMetadata, CelsiusMetadata, (k) => k - 273.15)
+  .allow(KelvinMetadata, FahrenheitMetadata);
 
 // Export individual unit converters using destructuring
 export const { Celsius, Fahrenheit, Kelvin } = TemperatureRegistry;
@@ -77,13 +77,13 @@ export const Temperature = TemperatureRegistry;
 // ============================================================================
 
 const DistanceRegistry = createRegistry()
-  .register('Meters', 'Feet', {
+  .register(MetersMetadata, FeetMetadata, {
     to: (m) => m * 3.28084,
     from: (ft) => ft / 3.28084
   })
-  .register('Meters', 'Kilometers', (m) => m / 1000)
-  .register('Kilometers', 'Meters', (km) => km * 1000)
-  .allow('Kilometers', 'Feet');
+  .register(MetersMetadata, KilometersMetadata, (m) => m / 1000)
+  .register(KilometersMetadata, MetersMetadata, (km) => km * 1000)
+  .allow(KilometersMetadata, FeetMetadata);
 
 // Export individual unit converters using destructuring
 export const { Meters, Feet, Kilometers } = DistanceRegistry;
