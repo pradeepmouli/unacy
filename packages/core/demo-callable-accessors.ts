@@ -47,12 +47,12 @@ type Kilometers = WithUnits<number, typeof KilometersMetadata>;
 
 // Create registry with temperature converters
 const registry = createRegistry()
-  .register('Celsius', 'Fahrenheit', (c) => (c * 9) / 5 + 32)
-  .register('Fahrenheit', 'Celsius', (f) => ((f - 32) * 5) / 9)
-  .register('Celsius', 'Kelvin', (c) => c + 273.15)
-  .register('Kelvin', 'Celsius', (k) => k - 273.15)
-  .allow('Fahrenheit', 'Kelvin')
-  .allow('Kelvin', 'Fahrenheit')
+  .register(CelsiusMetadata, FahrenheitMetadata, (c) => (c * 9) / 5 + 32)
+  .register(FahrenheitMetadata, CelsiusMetadata, (f) => ((f - 32) * 5) / 9)
+  .register(CelsiusMetadata, KelvinMetadata, (c) => c + 273.15)
+  .register(KelvinMetadata, CelsiusMetadata, (k) => k - 273.15)
+  .allow(FahrenheitMetadata, KelvinMetadata)
+  .allow(KelvinMetadata, FahrenheitMetadata)
   .Celsius.addMetadata({
     abbreviation: '°C',
     format: '${value}°C',
@@ -109,7 +109,7 @@ console.log(`  Kelvin:     ${k}K\n`);
 // ===== Part 4: Distance units with callable accessors =====
 console.log('Part 4: Distance units\n');
 
-const distanceRegistry = createRegistry().register('meters', 'kilometers', {
+const distanceRegistry = createRegistry().register(MetersMetadata, KilometersMetadata, {
   to: (m) => m / 1000,
   from: (km) => km * 1000
 });

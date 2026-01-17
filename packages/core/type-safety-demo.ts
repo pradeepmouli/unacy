@@ -34,12 +34,12 @@ type Meters = WithUnits<number, typeof MetersMetadata>;
 type Feet = WithUnits<number, typeof FeetMetadata>;
 
 // Create separate registries for temperature and distance
-const tempRegistry = createRegistry().register('Celsius', 'Fahrenheit', {
+const tempRegistry = createRegistry().register(CelsiusMetadata, FahrenheitMetadata, {
   to: (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit,
   from: (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius
 });
 
-const distanceRegistry = createRegistry().register('Meters', 'Feet', {
+const distanceRegistry = createRegistry().register(MetersMetadata, FeetMetadata, {
   to: (m: Meters) => (m * 3.28084) as Feet,
   from: (ft: Feet) => (ft / 3.28084) as Meters
 });
@@ -62,11 +62,11 @@ console.log(`${distance}m = ${feet}ft`);
 
 // ✅ Valid: Combining registries (mixed dimensions)
 const mixedRegistry = createRegistry()
-  .register('Celsius', 'Fahrenheit', {
+  .register(CelsiusMetadata, FahrenheitMetadata, {
     to: (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit,
     from: (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius
   })
-  .register('Meters', 'Feet', {
+  .register(MetersMetadata, FeetMetadata, {
     to: (m: Meters) => (m * 3.28084) as Feet,
     from: (ft: Feet) => (ft / 3.28084) as Meters
   });
