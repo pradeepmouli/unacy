@@ -7,6 +7,7 @@
 export type {
   WithUnits,
   WithFormat,
+  BaseMetadata,
   UnitMetadata,
   Relax,
   PrimitiveType,
