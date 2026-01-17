@@ -14,47 +14,46 @@ import type { Relax } from './src/types.js';
 console.log('=== Unit Accessor API Demo ===\n');
 
 // Define metadata for units
-const FahrenheitMetadata = {
+const Fahrenheit = {
   name: 'Fahrenheit' as const,
   symbol: '°F',
   description: 'Temperature in Fahrenheit'
 } satisfies BaseMetadata;
 
-const KelvinMetadata = {
+const Kelvin = {
   name: 'Kelvin' as const,
   symbol: 'K',
   description: 'Absolute temperature'
 } satisfies BaseMetadata;
 
-const MetersMetadata = {
+const Meters = {
   name: 'meters' as const,
   symbol: 'm',
   description: 'Distance in meters'
 } satisfies BaseMetadata;
 
-const KilometersMetadata = {
+const Kilometers = {
   name: 'kilometers' as const,
   symbol: 'km',
   description: 'Distance in kilometers'
 } satisfies BaseMetadata;
 
 // Define unit types with metadata
-type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
-type Kelvin = WithUnits<number, typeof KelvinMetadata>;
-type Meters = WithUnits<number, typeof MetersMetadata>;
-type Kilometers = WithUnits<number, typeof KilometersMetadata>;
+type Fahrenheit = WithUnits<number, typeof Fahrenheit>;
+type Kelvin = WithUnits<number, typeof Kelvin>;
+type Meters = WithUnits<number, typeof Meters>;
+type Kilometers = WithUnits<number, typeof Kilometers>;
 
 // ===== Part 1: Basic Unit Accessor API =====
 console.log('Part 1: Basic Unit Accessor API\n');
 
 // Create registry with converters using traditional API
-const tempRegistry = createRegistry<[[Fahrenheit, Kelvin]]>()
-  .register('Celsius', 'Kelvin', (c) => c + 273.15)
-  .register('Kelvin', 'Celsius', (k) => k - 273.15)
-  .register('Celsius', 'Fahrenheit', (c) => (c * 9) / 5 + 32)
-  .register('Fahrenheit', 'Celsius', (f) => ((f - 32) * 5) / 9)
-  .allow('Kelvin', 'Fahrenheit'); // Explicitly enable multi-hop path in types
-
+const tempRegistry = createRegistry()
+  .register(Celsius, Kelvin, (c) => c + 273.15)
+  .register(Kelvin, Celsius, (k) => k - 273.15)
+  .register(Celsius, Fahrenheit, (c) => (c * 9) / 5 + 32)
+  .register(Fahrenheit, Celsius, (f) => ((f - 32) * 5) / 9)
+  .allow(Kelvin, Fahrenheit); // Explicitly enable multi-hop path in types
 // Create branded values using callable accessors (NEW!)
 console.log('Creating branded values:');
 const temp = tempRegistry.Celsius(25); // NEW: Callable accessor!
