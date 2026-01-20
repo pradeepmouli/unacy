@@ -3,48 +3,43 @@
  * This file demonstrates how to use registry.Unit(value) to create branded values
  */
 
-import { createRegistry, type WithUnits, type BaseMetadata } from './src/index.js';
+import { createRegistry } from './src/index.js';
+import type { WithTypedUnits } from './src/types.js';
 
 console.log('=== Callable Unit Accessor Demo ===\n');
 
 // Define metadata for each unit
 const CelsiusMetadata = {
-  name: 'Celsius' as const,
-  symbol: '°C',
-  description: 'Temperature in Celsius'
-} satisfies BaseMetadata;
+  name: 'Celsius',
+  type: 'number'
+} as const;
 
 const FahrenheitMetadata = {
-  name: 'Fahrenheit' as const,
-  symbol: '°F',
-  description: 'Temperature in Fahrenheit'
-} satisfies BaseMetadata;
+  name: 'Fahrenheit',
+  type: 'number'
+} as const;
 
 const KelvinMetadata = {
-  name: 'Kelvin' as const,
-  symbol: 'K',
-  description: 'Absolute temperature'
-} satisfies BaseMetadata;
+  name: 'Kelvin',
+  type: 'number'
+} as const;
 
 const MetersMetadata = {
   name: 'meters' as const,
-  symbol: 'm',
-  description: 'Distance in meters'
-} satisfies BaseMetadata;
+  type: 'number' as const
+};
 
 const KilometersMetadata = {
   name: 'kilometers' as const,
-  symbol: 'km',
-  description: 'Distance in kilometers'
-} satisfies BaseMetadata;
+  type: 'number' as const
+};
 
 // Define unit types with metadata
-type Celsius = WithUnits<number, typeof CelsiusMetadata>;
-type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
-type Kelvin = WithUnits<number, typeof KelvinMetadata>;
-type Meters = WithUnits<number, typeof MetersMetadata>;
-type Kilometers = WithUnits<number, typeof KilometersMetadata>;
-
+type Celsius = WithTypedUnits<typeof CelsiusMetadata>;
+type Fahrenheit = WithTypedUnits<typeof FahrenheitMetadata>;
+type Kelvin = WithTypedUnits<typeof KelvinMetadata>;
+type Meters = WithTypedUnits<typeof MetersMetadata>;
+type Kilometers = WithTypedUnits<typeof KilometersMetadata>;
 // Create registry with temperature converters
 const registry = createRegistry()
   .register(CelsiusMetadata, FahrenheitMetadata, (c) => (c * 9) / 5 + 32)
@@ -145,4 +140,13 @@ console.log(`  Value: ${displayTemp}`);
 console.log(`  Abbreviation: ${abbrev}`);
 console.log(`  Formatted: ${format.replace('${value}', displayTemp.toString())}\n`);
 
-console.log('=== Demo Complete ===');
+// ===== Part 7: Metadata-driven approach with addMetadata =====
+console.log('\nPart 7: Metadata-driven units');
+
+const customMetadata = registry.Celsius.addMetadata({
+  customProperty: 'custom-value'
+});
+
+console.log(`  Added custom metadata to Celsius`);
+
+console.log('\n=== Demo Complete ===');

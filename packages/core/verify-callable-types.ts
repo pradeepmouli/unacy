@@ -3,19 +3,24 @@
  * This file demonstrates compile-time type safety
  */
 
-import { createRegistry, type WithUnits } from './src/index.js';
+import {
+  Celsius as CelsiusMetadata,
+  Fahrenheit as FahrenheitMetadata,
+  Kelvin as KelvinMetadata
+} from './namespace-export-demo.js';
+import { createRegistry, type WithUnits, type WithTypedUnits } from './src/index.js';
 
 // Define unit types
-type Celsius = WithUnits<number, 'Celsius'>;
-type Fahrenheit = WithUnits<number, 'Fahrenheit'>;
-type Kelvin = WithUnits<number, 'Kelvin'>;
+type Celsius = WithTypedUnits<typeof CelsiusMetadata>;
+type Fahrenheit = WithTypedUnits<typeof FahrenheitMetadata>;
+type Kelvin = WithTypedUnits<typeof KelvinMetadata>;
 
 // Create registry
 const registry = createRegistry()
-  .register('Celsius', 'Fahrenheit', (c) => ((c * 9) / 5 + 32) as Fahrenheit)
-  .register('Fahrenheit', 'Celsius', (f) => (((f - 32) * 5) / 9) as Celsius)
-  .register('Celsius', 'Kelvin', (c) => (c + 273.15) as Kelvin)
-  .register('Kelvin', 'Celsius', (k) => (k - 273.15) as Celsius)
+  .register(CelsiusMetadata, FahrenheitMetadata, (c) => ((c * 9) / 5 + 32) as Fahrenheit)
+  .register('Fahrenheit', 'Celsius', (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius)
+  .register('Celsius', 'Kelvin', (c: Celsius) => (c + 273.15) as Kelvin)
+  .register('Kelvin', 'Celsius', (k: Kelvin) => (k - 273.15) as Celsius)
   .allow('Fahrenheit', 'Kelvin')
   .allow('Kelvin', 'Fahrenheit');
 

@@ -6,8 +6,10 @@
 // Core types
 export type {
   WithUnits,
+  WithTypedUnits,
   WithFormat,
   BaseMetadata,
+  TypedMetadata,
   UnitMetadata,
   Relax,
   PrimitiveType,
@@ -22,11 +24,7 @@ export type { Converter, BidirectionalConverter } from './converters.js';
 export type { Formatter, Parser, FormatterParser } from './formatters.js';
 
 // Registry
-export type {
-  UnitRegistry as ConverterRegistry,
-  UnitMap as ConverterMap,
-  UnitAccessor
-} from './registry.js';
+export type { UnitRegistry, UnitMap, UnitAccessor } from './registry.js';
 export { createRegistry } from './registry.js';
 
 // Errors

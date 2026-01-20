@@ -8,6 +8,11 @@ import type {
   OptionalWithUnits,
   UnitsFor,
   WithUnits,
+  TypedMetadata,
+  NameFor,
+  WithTypedUnits,
+  UnitsOf,
+  Unwrap,
   UnitMetadata,
   BaseMetadata,
   PrimitiveType,
@@ -16,7 +21,6 @@ import type {
 } from './types.js';
 import { ConversionError } from './errors.js';
 import { findShortestPath, composeConverters } from './utils/graph.js';
-import type { Simplify } from 'type-fest';
 
 /**
  * Represents a conversion edge from one unit to another
@@ -24,8 +28,8 @@ import type { Simplify } from 'type-fest';
  * they correspond to valid WithUnits types
  */
 type Edge<
-  From extends WithUnits = WithUnits<PrimitiveType, BaseMetadata>,
-  To extends WithUnits = WithUnits<PrimitiveType, BaseMetadata>
+  From extends WithTypedUnits<any> | unknown = WithTypedUnits<TypedMetadata<PrimitiveType>>,
+  To extends WithTypedUnits<any> | unknown = WithTypedUnits<TypedMetadata<PrimitiveType>>
 > = readonly [From, To];
 
 /**
@@ -36,7 +40,7 @@ type FromUnits<Edges extends readonly Edge[]> = Edges[number][0];
 /**
  * Extract all 'to' units for a specific 'from' unit string
  */
-type ToUnitsFor<Edges extends readonly Edge[], FromUnit extends WithUnits> = Extract<
+type ToUnitsFor<Edges extends readonly Edge[], FromUnit extends WithTypedUnits<any>> = Extract<
   Edges[number],
   readonly [FromUnit, any]
 >[1];
@@ -51,7 +55,7 @@ type ExtractMetadata<T> = T extends WithUnits<any, infer M extends BaseMetadata>
  * Can be called as a function to create branded unit values
  */
 export type UnitAccessor<
-  From extends WithUnits<PrimitiveType, BaseMetadata>,
+  From extends WithTypedUnits<TypedMetadata>,
   Edges extends readonly Edge[],
   FromUnits extends string
 > = {
@@ -64,7 +68,7 @@ export type UnitAccessor<
   to: {
     [To in ToUnitsFor<Edges, From> as UnitsFor<To>]: (
       value: RelaxUnits<From>
-    ) /*To avoid having to cast*/ => WithUnits<PrimitiveType, To>;
+    ) /*To avoid having to cast*/ => To;
   };
   /**
    * Add metadata to this unit
@@ -75,11 +79,11 @@ export type UnitAccessor<
   /**
    * Register a converter from this unit to another unit
    */
-  register<To extends WithUnits<PrimitiveType, ToMeta>, ToMeta extends BaseMetadata>(
+  register<To extends WithTypedUnits<ToMeta>, ToMeta extends TypedMetadata<PrimitiveType>>(
     to: UnitsFor<To> | ToMeta,
     converter: Relax<Converter<From, To>>
   ): UnitRegistry<[...Edges, Edge<From, To>]> & UnitMap<[...Edges, Edge<From, To>]>;
-  register<To extends WithUnits<PrimitiveType, ToMeta>, ToMeta extends BaseMetadata>(
+  register<To extends WithTypedUnits<ToMeta>, ToMeta extends TypedMetadata<PrimitiveType>>(
     to: UnitsFor<To> | ToMeta,
     converter: Relax<BidirectionalConverter<From, To>>
   ): UnitRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
@@ -108,10 +112,10 @@ export interface UnitRegistry<Edges extends Edge[] = []> {
    * @returns New registry instance with the converter registered
    */
   register<
-    From extends WithUnits<PrimitiveType, FromMeta>,
-    To extends WithUnits<PrimitiveType, ToMeta>,
-    FromMeta extends BaseMetadata,
-    ToMeta extends BaseMetadata
+    From extends WithTypedUnits<FromMeta>,
+    To extends WithTypedUnits<ToMeta>,
+    FromMeta extends TypedMetadata<PrimitiveType>,
+    ToMeta extends TypedMetadata<PrimitiveType>
   >(
     from: UnitsFor<From> | FromMeta,
     to: UnitsFor<To> | ToMeta,
@@ -126,10 +130,10 @@ export interface UnitRegistry<Edges extends Edge[] = []> {
    * @returns New registry instance with both converters registered
    */
   register<
-    From extends WithUnits<PrimitiveType, FromMeta>,
-    To extends WithUnits<PrimitiveType, ToMeta>,
-    FromMeta extends BaseMetadata,
-    ToMeta extends BaseMetadata
+    From extends WithTypedUnits<FromMeta>,
+    To extends WithTypedUnits<ToMeta>,
+    FromMeta extends TypedMetadata<PrimitiveType>,
+    ToMeta extends TypedMetadata<PrimitiveType>
   >(
     from: UnitsFor<From> | FromMeta,
     to: UnitsFor<To> | ToMeta,
@@ -162,10 +166,10 @@ export interface UnitRegistry<Edges extends Edge[] = []> {
    * ```
    */
   allow<
-    From extends WithUnits<PrimitiveType, FromMeta>,
-    To extends WithUnits<PrimitiveType, ToMeta>,
-    FromMeta extends BaseMetadata,
-    ToMeta extends BaseMetadata
+    From extends WithTypedUnits<FromMeta>,
+    To extends WithTypedUnits<ToMeta>,
+    FromMeta extends TypedMetadata<PrimitiveType>,
+    ToMeta extends TypedMetadata<PrimitiveType>
   >(
     from: UnitsFor<From> | FromMeta,
     to: UnitsFor<To> | ToMeta
@@ -328,8 +332,10 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
   }
 
   register<
-    From extends WithUnits<PrimitiveType, BaseMetadata>,
-    To extends WithUnits<PrimitiveType, BaseMetadata>
+    From extends WithTypedUnits<FromMeta>,
+    To extends WithTypedUnits<ToMeta>,
+    FromMeta extends TypedMetadata<PrimitiveType>,
+    ToMeta extends TypedMetadata<PrimitiveType>
   >(
     from: UnitsFor<From> | { name: UnitsFor<From> },
     to: UnitsFor<To> | { name: UnitsFor<To> },
@@ -389,8 +395,10 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
   }
 
   registerBidirectional<
-    From extends WithUnits<PrimitiveType, BaseMetadata>,
-    To extends WithUnits<PrimitiveType, BaseMetadata>
+    From extends WithTypedUnits<FromMeta>,
+    To extends WithTypedUnits<ToMeta>,
+    FromMeta extends TypedMetadata<PrimitiveType>,
+    ToMeta extends TypedMetadata<PrimitiveType>
   >(
     from: UnitsFor<From>,
     to: UnitsFor<To>,
@@ -405,10 +413,10 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
   }
 
   allow<
-    From extends WithUnits<PrimitiveType, FromMeta>,
-    To extends WithUnits<PrimitiveType, ToMeta>,
-    FromMeta extends BaseMetadata,
-    ToMeta extends BaseMetadata
+    From extends WithTypedUnits<FromMeta>,
+    To extends WithTypedUnits<ToMeta>,
+    FromMeta extends TypedMetadata<PrimitiveType>,
+    ToMeta extends TypedMetadata<PrimitiveType>
   >(
     from: UnitsFor<From> | FromMeta,
     to: UnitsFor<To> | ToMeta

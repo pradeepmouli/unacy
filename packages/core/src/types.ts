@@ -3,7 +3,7 @@
  * @packageDocumentation
  */
 
-import type { GetTagMetadata, Tagged, UnwrapTagged } from 'type-fest';
+import type { GetTagMetadata, Simplify, Tagged, UnwrapTagged } from 'type-fest';
 
 export const UNITS: unique symbol = Symbol('UNITS');
 
@@ -14,6 +14,8 @@ export const DEFINITION: unique symbol = Symbol('DEFINITION');
  * @internal
  */
 type ExtractName<M extends BaseMetadata> = M extends { name: infer N extends string } ? N : string;
+
+export type WithTypedUnits<M extends TypedMetadata<any>> = WithUnits<ToPrimitiveType<M['type']>, M>;
 
 /**
  * Brand a value with a unit identifier for compile-time unit safety.
@@ -28,18 +30,13 @@ type ExtractName<M extends BaseMetadata> = M extends { name: infer N extends str
  * const temp: Celsius = 25 as Celsius;
  * ```
  */
-export type WithUnits<
-  T extends PrimitiveType = number,
-  M extends BaseMetadata = BaseMetadata
-> = Tagged<T, typeof UNITS, M>;
+export type WithUnits<T extends PrimitiveType, M extends BaseMetadata = TypedMetadata<T>> = Tagged<
+  T,
+  typeof UNITS,
+  M
+>;
 
-export type WithDefinition<
-  T extends PrimitiveType,
-  M extends BaseMetadata,
-  D extends UnitDefinition<T, ExtractName<M>, unknown, any>
-> = Tagged<WithUnits<T, M>, typeof DEFINITION, D>;
-
-export type PrimitiveType = number;
+export type PrimitiveType = number | string | boolean | bigint;
 
 export type PrimitiveTypeMap = {
   string: string;
@@ -56,8 +53,8 @@ export type ToPrimitiveTypeName<T extends PrimitiveType> =
 export type OptionalWithUnits<T extends PrimitiveType, M extends BaseMetadata = BaseMetadata> =
   | T
   | WithUnits<T, M>;
-
-export type Unwrap<T> = T extends WithUnits<infer U, BaseMetadata> ? U : T;
+``;
+export type Unwrap<T> = T extends WithUnits<PrimitiveType, any> ? UnwrapTagged<T> : T;
 
 export type Relax<T> = T | Unwrap<T>;
 /**
@@ -79,17 +76,21 @@ export type UnitsOf<T extends WithUnits<PrimitiveType, BaseMetadata>> = GetTagMe
   typeof UNITS
 >;
 
-export type UnitsFor<T extends WithUnits<PrimitiveType, BaseMetadata>> =
+export type NameFor<T extends WithUnits<PrimitiveType, BaseMetadata>> =
   T extends WithUnits<infer A, infer M extends BaseMetadata> ? ExtractName<M> : never;
+
+/** Alias for NameFor - returns the unit name type */
+export type UnitsFor<T extends WithUnits<PrimitiveType, BaseMetadata>> = NameFor<T>;
+
+/** Extract metadata from a WithUnits type */
+export type MetadataOf<T extends WithUnits<PrimitiveType, BaseMetadata>> =
+  T extends WithUnits<any, infer M extends BaseMetadata> ? M : BaseMetadata;
 export type UnitDefinition<T extends PrimitiveType, U, A, F extends string = never> = {
   type: ToPrimitiveTypeName<T>;
   name: U;
   abbreviation?: A;
   format?: F;
 };
-
-export type MetadataOf<T extends WithUnits<PrimitiveType, BaseMetadata>> =
-  T extends WithDefinition<infer P, infer M extends BaseMetadata, infer D> ? D : {};
 
 /**
  * Base metadata type that all unit metadata must extend.
@@ -107,8 +108,13 @@ export type MetadataOf<T extends WithUnits<PrimitiveType, BaseMetadata>> =
 export type BaseMetadata = {
   /** Unique identifier for the unit (replaces tag) */
   name: string;
-} & Record<string, unknown>;
+};
 
+export type TypedMetadata<T extends PrimitiveType = number> = Simplify<{
+  name: string;
+  /** Data type name (e.g., "number", "string") */
+  type: ToPrimitiveTypeName<T>;
+}>;
 /**
  * Metadata that can be attached to units in the registry
  * Supports common properties like abbreviation, format, description,

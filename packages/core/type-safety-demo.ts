@@ -8,24 +8,28 @@ import { createRegistry, type WithUnits, type BaseMetadata } from './src/index.j
 // Define metadata for temperature units
 const CelsiusMetadata = {
   name: 'Celsius' as const,
+  type: 'number' as const,
   symbol: '°C'
-} satisfies BaseMetadata;
+};
 
 const FahrenheitMetadata = {
   name: 'Fahrenheit' as const,
+  type: 'number' as const,
   symbol: '°F'
-} satisfies BaseMetadata;
+};
 
 // Define metadata for distance units
 const MetersMetadata = {
   name: 'Meters' as const,
+  type: 'number' as const,
   symbol: 'm'
-} satisfies BaseMetadata;
+};
 
 const FeetMetadata = {
   name: 'Feet' as const,
+  type: 'number' as const,
   symbol: 'ft'
-} satisfies BaseMetadata;
+};
 
 // Define unit types for different dimensions
 type Celsius = WithUnits<number, typeof CelsiusMetadata>;
@@ -35,13 +39,13 @@ type Feet = WithUnits<number, typeof FeetMetadata>;
 
 // Create separate registries for temperature and distance
 const tempRegistry = createRegistry().register(CelsiusMetadata, FahrenheitMetadata, {
-  to: (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit,
-  from: (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius
+  to: (c: number) => (c * 9) / 5 + 32,
+  from: (f: number) => ((f - 32) * 5) / 9
 });
 
 const distanceRegistry = createRegistry().register(MetersMetadata, FeetMetadata, {
-  to: (m: Meters) => (m * 3.28084) as Feet,
-  from: (ft: Feet) => (ft / 3.28084) as Meters
+  to: (m: number) => (m * 3.28084) as Feet,
+  from: (ft: number) => (ft / 3.28084) as Meters
 });
 
 // ✅ Valid: Converting within the same dimension
@@ -63,12 +67,12 @@ console.log(`${distance}m = ${feet}ft`);
 // ✅ Valid: Combining registries (mixed dimensions)
 const mixedRegistry = createRegistry()
   .register(CelsiusMetadata, FahrenheitMetadata, {
-    to: (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit,
-    from: (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius
+    to: (c: number) => ((c * 9) / 5 + 32) as Fahrenheit,
+    from: (f: number) => (((f - 32) * 5) / 9) as Celsius
   })
   .register(MetersMetadata, FeetMetadata, {
-    to: (m: Meters) => (m * 3.28084) as Feet,
-    from: (ft: Feet) => (ft / 3.28084) as Meters
+    to: (m: number) => (m * 3.28084) as Feet,
+    from: (ft: number) => (ft / 3.28084) as Meters
   });
 
 // Both conversions work in the mixed registry

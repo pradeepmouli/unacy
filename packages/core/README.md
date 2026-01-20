@@ -11,6 +11,7 @@ Type-safe unit and format conversion library with automatic multi-hop compositio
 - 🛡️ **Cycle detection** - Prevents infinite conversion loops
 - 📦 **Tree-shakeable** - Only bundle converters you use
 - ✨ **Fluent API** - Clean, readable conversion syntax
+- 🎯 **Typed Metadata** - Native support for `number`, `string`, `boolean`, and `bigint` units
 
 ## Installation
 
@@ -21,26 +22,27 @@ pnpm add @unacy/core
 ## Quick Start
 
 ```typescript
-import { createRegistry, type WithUnits, type BaseMetadata } from '@unacy/core';
+import { createRegistry } from '@unacy/core';
+import type { WithTypedUnits } from '@unacy/core';
 
-// Define metadata for your units
+// Define metadata for your units (name + type)
 const CelsiusMetadata = {
   name: 'Celsius' as const,
-  symbol: '°C'
-} satisfies BaseMetadata;
+  type: 'number' as const
+};
 
 const FahrenheitMetadata = {
   name: 'Fahrenheit' as const,
-  symbol: '°F'
-} satisfies BaseMetadata;
+  type: 'number' as const
+};
 
 // Define your unit types with metadata
-type Celsius = WithUnits<number, typeof CelsiusMetadata>;
-type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
+type Celsius = WithTypedUnits<typeof CelsiusMetadata>;
+type Fahrenheit = WithTypedUnits<typeof FahrenheitMetadata>;
 
-// Create a registry
+// Create a registry and register converters
 const tempRegistry = createRegistry()
-  .register('Celsius', 'Fahrenheit', (c) => ((c * 9/5) + 32) as Fahrenheit);
+  .register(CelsiusMetadata, FahrenheitMetadata, (c) => ((c * 9/5) + 32));
 
 // Create branded values using callable accessors (NEW!)
 const temp = tempRegistry.Celsius(25); // Returns Celsius type
@@ -68,8 +70,8 @@ Unit accessors are now callable functions that create branded values:
 
 ```typescript
 // Create branded values without manual type casting
-const temp = registry.Celsius(25);        // Returns WithUnits<number, 'Celsius'>
-const distance = registry.meters(100);    // Returns WithUnits<number, 'meters'>
+const temp = registry.Celsius(25);        // Returns WithTypedUnits<typeof CelsiusMetadata>
+const distance = registry.meters(100);    // Returns WithTypedUnits<typeof MetersMetadata>
 
 // Fluent workflow
 const fahrenheit = registry.Celsius.to.Fahrenheit(registry.Celsius(20));
@@ -82,6 +84,27 @@ const tempOld: Celsius = 25 as Celsius;
 // - Less verbose than manual casting
 // - Type-safe by design
 // - Works seamlessly with conversions
+```
+
+### Typed Metadata
+
+Define metadata with minimal required fields (name + type):
+
+```typescript
+const CelsiusMetadata = {
+  name: 'Celsius' as const,
+  type: 'number' as const
+};
+
+const EtherMetadata = {
+  name: 'ether' as const,
+  type: 'bigint' as const
+};
+
+const FlagMetadata = {
+  name: 'enabled' as const,
+  type: 'boolean' as const
+};
 ```
 
 ### Basic Unit Conversions
@@ -105,25 +128,26 @@ console.log(meters); // 10
 ### Bidirectional Converters
 
 ```typescript
-import { createRegistry, type WithUnits, type BaseMetadata } from '@unacy/core';
+import { createRegistry } from '@unacy/core';
+import type { WithTypedUnits } from '@unacy/core';
 
 const MetersMetadata = {
   name: 'meters' as const,
-  symbol: 'm'
-} satisfies BaseMetadata;
+  type: 'number' as const
+};
 
 const KilometersMetadata = {
   name: 'kilometers' as const,
-  symbol: 'km'
-} satisfies BaseMetadata;
+  type: 'number' as const
+};
 
-type Meters = WithUnits<number, typeof MetersMetadata>;
-type Kilometers = WithUnits<number, typeof KilometersMetadata>;
+type Meters = WithTypedUnits<typeof MetersMetadata>;
+type Kilometers = WithTypedUnits<typeof KilometersMetadata>;
 
 const registry = createRegistry()
-  .register('meters', 'kilometers', {
-    to: (m) => (m / 1000) as Kilometers,
-    from: (km) => (km * 1000) as Meters
+  .register(MetersMetadata, KilometersMetadata, {
+    to: (m: number) => (m / 1000),
+    from: (km: number) => (km * 1000)
   });
 
 // Both directions work automatically
@@ -136,22 +160,22 @@ const m = registry.convert(5 as Kilometers, 'kilometers').to('meters'); // 5000
 The registry automatically composes converters via shortest path:
 
 ```typescript
-const MetersMetadata = { name: 'meters' as const, symbol: 'm' } satisfies BaseMetadata;
-const KilometersMetadata = { name: 'kilometers' as const, symbol: 'km' } satisfies BaseMetadata;
-const MilesMetadata = { name: 'miles' as const, symbol: 'mi' } satisfies BaseMetadata;
+const MetersMetadata = { name: 'meters' as const, type: 'number' as const };
+const KilometersMetadata = { name: 'kilometers' as const, type: 'number' as const };
+const MilesMetadata = { name: 'miles' as const, type: 'number' as const };
 
-type Meters = WithUnits<number, typeof MetersMetadata>;
-type Kilometers = WithUnits<number, typeof KilometersMetadata>;
-type Miles = WithUnits<number, typeof MilesMetadata>;
+type Meters = WithTypedUnits<typeof MetersMetadata>;
+type Kilometers = WithTypedUnits<typeof KilometersMetadata>;
+type Miles = WithTypedUnits<typeof MilesMetadata>;
 
 const registry = createRegistry()
-  .register('meters', 'kilometers', {
-    to: (m) => (m / 1000) as Kilometers,
-    from: (km) => (km * 1000) as Meters
+  .register(MetersMetadata, KilometersMetadata, {
+    to: (m: number) => (m / 1000),
+    from: (km: number) => (km * 1000)
   })
-  .register('kilometers', 'miles', {
-    to: (km) => (km * 0.621371) as Miles,
-    from: (mi) => (mi / 0.621371) as Kilometers
+  .register(KilometersMetadata, MilesMetadata, {
+    to: (km: number) => (km * 0.621371),
+    from: (mi: number) => (mi / 0.621371)
   });
 
 // No direct meters→miles converter registered!
@@ -193,12 +217,32 @@ const date = iso8601.parse('2026-01-06T12:00:00.000Z');
 
 ### Types
 
+#### `WithTypedUnits<M extends TypedMetadata<T>>`
+Brand a value with strongly-typed metadata for compile-time unit safety.
+
+```typescript
+const CelsiusMetadata = { name: 'Celsius' as const, type: 'number' as const };
+type Celsius = WithTypedUnits<typeof CelsiusMetadata>;
+const temp: Celsius = tempRegistry.Celsius(25);
+```
+
 #### `WithUnits<T, U>`
-Brand a value with a unit identifier for compile-time safety.
+Legacy: Brand a value with a unit identifier for compile-time safety.
 
 ```typescript
 type Celsius = WithUnits<number, 'Celsius'>;
 const temp: Celsius = 25 as Celsius;
+```
+
+#### `TypedMetadata<T>`
+Minimal metadata type with name and type information.
+
+```typescript
+type NumericMetadata = TypedMetadata<number>;
+// { name: string; type: 'number' }
+
+type StringMetadata = TypedMetadata<string>;
+// { name: string; type: 'string' }
 ```
 
 #### `WithFormat<T, F>`
@@ -222,8 +266,8 @@ Pair of converters for two-way transformations.
 
 ```typescript
 const meterKm: BidirectionalConverter<Meters, Kilometers> = {
-  to: (m) => (m / 1000) as Kilometers,
-  from: (km) => (km * 1000) as Meters
+  to: (m: number) => (m / 1000),
+  from: (km: number) => (km * 1000)
 };
 ```
 
@@ -240,14 +284,14 @@ const registry = createRegistry<'A' | 'B' | 'C'>();
 Register a unidirectional converter.
 
 ```typescript
-registry.register('Celsius', 'Fahrenheit', celsiusToFahrenheit);
+registry.register(CelsiusMetadata, FahrenheitMetadata, celsiusToFahrenheit);
 ```
 
-#### `registerBidirectional(from, to, converter)`
+#### `register(from, to, converter)` (bidirectional)
 Register both directions at once.
 
 ```typescript
-registry.registerBidirectional('meters', 'kilometers', meterKm);
+registry.register(MetersMetadata, KilometersMetadata, meterKm);
 ```
 
 #### `convert(value, fromUnit).to(toUnit)`
@@ -267,11 +311,12 @@ const result = registry.convert(value, 'Celsius').to('Fahrenheit');
 
 ## Best Practices
 
-1. **Define unit types at module boundaries** for consistency
+1. **Define metadata as const at module boundaries** for consistency
 2. **Use bidirectional converters** when both directions are needed
 3. **Document precision loss** in converters
 4. **Cache registries** for performance
-5. **Validate with Zod** in parsers
+5. **Use `WithTypedUnits`** for brand-new code; leverage type inference
+6. **Validate with Zod** in parsers
 
 ## Performance
 

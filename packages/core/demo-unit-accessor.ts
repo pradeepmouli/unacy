@@ -7,57 +7,59 @@
  * 4. registry.unit.register() for unit-centric converter registration
  */
 
-import { createRegistry, type WithUnits, type BaseMetadata } from './src/index.js';
-import { Celsius, CelsiusMetadata } from './namespace-export-demo.js';
-import type { Relax } from './src/types.js';
+import { createRegistry } from './src/index.js';
+import type { WithTypedUnits } from './src/types.js';
 
 console.log('=== Unit Accessor API Demo ===\n');
 
-// Define metadata for units
-const Fahrenheit = {
+// Define metadata for temperature units (minimal: name + type)
+const CelsiusMetadata = {
+  name: 'Celsius' as const,
+  type: 'number' as const
+};
+
+const FahrenheitMetadata = {
   name: 'Fahrenheit' as const,
-  symbol: '°F',
-  description: 'Temperature in Fahrenheit'
-} satisfies BaseMetadata;
+  type: 'number' as const
+};
 
-const Kelvin = {
+const KelvinMetadata = {
   name: 'Kelvin' as const,
-  symbol: 'K',
-  description: 'Absolute temperature'
-} satisfies BaseMetadata;
+  type: 'number' as const
+};
 
-const Meters = {
+// Define metadata for distance units
+const MetersMetadata = {
   name: 'meters' as const,
-  symbol: 'm',
-  description: 'Distance in meters'
-} satisfies BaseMetadata;
+  type: 'number' as const
+};
 
-const Kilometers = {
+const KilometersMetadata = {
   name: 'kilometers' as const,
-  symbol: 'km',
-  description: 'Distance in kilometers'
-} satisfies BaseMetadata;
+  type: 'number' as const
+};
 
 // Define unit types with metadata
-type Fahrenheit = WithUnits<number, typeof Fahrenheit>;
-type Kelvin = WithUnits<number, typeof Kelvin>;
-type Meters = WithUnits<number, typeof Meters>;
-type Kilometers = WithUnits<number, typeof Kilometers>;
+type Celsius = WithTypedUnits<typeof CelsiusMetadata>;
+type Fahrenheit = WithTypedUnits<typeof FahrenheitMetadata>;
+type Kelvin = WithTypedUnits<typeof KelvinMetadata>;
+type Meters = WithTypedUnits<typeof MetersMetadata>;
+type Kilometers = WithTypedUnits<typeof KilometersMetadata>;
 
 // ===== Part 1: Basic Unit Accessor API =====
 console.log('Part 1: Basic Unit Accessor API\n');
 
-// Create registry with converters using metadata objects
+// Create registry with converters using traditional API
 const tempRegistry = createRegistry()
-  .register(CelsiusMetadata, Kelvin, (c) => c + 273.15)
-  .register(Kelvin, CelsiusMetadata, (k) => k - 273.15)
-  .register(CelsiusMetadata, Fahrenheit, (c) => (c * 9) / 5 + 32)
-  .register(Fahrenheit, CelsiusMetadata, (f) => ((f - 32) * 5) / 9)
-  .allow(Kelvin, Fahrenheit); // Explicitly enable multi-hop path in types
+  .register(CelsiusMetadata, FahrenheitMetadata, (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit)
+  .register(FahrenheitMetadata, CelsiusMetadata, (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius)
+  .register(CelsiusMetadata, KelvinMetadata, (c: Celsius) => (c + 273.15) as Kelvin)
+  .register(KelvinMetadata, CelsiusMetadata, (k: Kelvin) => (k - 273.15) as Celsius)
+  .allow(KelvinMetadata, FahrenheitMetadata); // Explicitly enable multi-hop path in types
 // Create branded values using callable accessors (NEW!)
 console.log('Creating branded values:');
 const temp = tempRegistry.Celsius(25); // NEW: Callable accessor!
-console.log(`  tempRegistry.Celsius(25) = ${temp}°C\n`);
+console.log(`  tempRegistry.Celsius(25) = ${temp}\n`);
 
 // Compare with old way (still supported)
 const tempOld = 25 as Celsius;
@@ -66,29 +68,29 @@ console.log('Old way (still works): const temp = 25 as Celsius;\n');
 // Method 1: convert() method API
 console.log('Method 1 (convert method):');
 const f1 = tempRegistry.convert(temp, 'Celsius').to('Fahrenheit');
-console.log(`  ${temp}°C = ${f1}°F`);
+console.log(`  ${temp} Celsius = ${f1} Fahrenheit`);
 
 // Method 2: Unit accessor API
 console.log('\nMethod 2 (unit accessor):');
 const f2 = tempRegistry.Celsius.to.Fahrenheit(temp);
-console.log(`  ${temp}°C = ${f2}°F`);
+console.log(`  ${temp} Celsius = ${f2} Fahrenheit`);
 
 // Method 3: Fluent callable accessor (NEW!)
 console.log('\nMethod 3 (fluent callable accessor - NEW!):');
 const f3 = tempRegistry.Celsius.to.Fahrenheit(tempRegistry.Celsius(30));
-console.log(`  tempRegistry.Celsius.to.Fahrenheit(tempRegistry.Celsius(30)) = ${f3}°F`);
+console.log(`  tempRegistry.Celsius.to.Fahrenheit(tempRegistry.Celsius(30)) = ${f3} Fahrenheit`);
 
 // Test multi-hop with unit accessor
 console.log('\nMulti-hop conversion (Celsius -> Kelvin -> Celsius):');
-const kelvinValue = tempRegistry.Celsius.to.Kelvin(100 as Celsius);
+const kelvinValue = tempRegistry.Celsius.to.Kelvin(tempRegistry.Celsius(100));
 const backToCelsius = tempRegistry.Kelvin.to.Celsius(kelvinValue);
-console.log(`  100°C = ${kelvinValue}K = ${backToCelsius}°C`);
+console.log(`  100 Celsius = ${kelvinValue} Kelvin = ${backToCelsius} Celsius`);
 
 // Test multi-hop conversion (Kelvin -> Fahrenheit via Celsius)
 console.log('\nMulti-hop conversion (Kelvin -> Fahrenheit via Celsius):');
 const kelvin = 300 as Kelvin;
 const fahrenheitFromKelvin = tempRegistry.Kelvin.to.Fahrenheit(kelvin);
-console.log(`  ${kelvin}K = ${fahrenheitFromKelvin}°F`);
+console.log(`  ${kelvin} Kelvin = ${fahrenheitFromKelvin} Fahrenheit`);
 
 // ===== Part 2: Metadata Support =====
 console.log('\n\nPart 2: Metadata Support\n');
@@ -131,12 +133,13 @@ console.log(`\nFormatted value: ${formatString.replace('${value}', tempValue.toS
 // ===== Part 3: Unit-Centric Registration =====
 console.log('\n\nPart 3: Unit-Centric Registration\n');
 
-// Register converters using bidirectional API with metadata objects
+// Register converters using bidirectional API
+const metersKmConverter = {
+  to: (m: number) => m / 1000,
+  from: (km: number) => km * 1000
+};
 const distanceRegistry = createRegistry()
-  .register(Meters, Kilometers, {
-    to: (m) => (m / 1000) as Kilometers,
-    from: (km) => (km * 1000) as Meters
-  })
+  .register(MetersMetadata, KilometersMetadata, metersKmConverter)
   // Add metadata using method chaining
   .meters.addMetadata({ abbreviation: 'm', description: 'Length in meters' })
   .kilometers.addMetadata({ abbreviation: 'km', description: 'Length in kilometers' });
@@ -150,21 +153,26 @@ console.log(
 
 // Demonstrate using register() and then working with the result
 const completeRegistry = distanceRegistry
-  .register(CelsiusMetadata, Fahrenheit, (c) => ((c * 9) / 5 + 32) as Fahrenheit)
-  .register(Fahrenheit, CelsiusMetadata, (f) => (((f - 32) * 5) / 9) as Celsius);
+  .register(CelsiusMetadata, FahrenheitMetadata, (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit)
+  .register(
+    FahrenheitMetadata,
+    CelsiusMetadata,
+    (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius
+  );
 
 // Use both distance and temperature conversions (with any for demonstration)
 console.log('\nCombined registry:');
-console.log(`  Temperature: ${temp}°C = ${completeRegistry.Celsius.to.Fahrenheit(temp)}°F`);
+console.log(
+  `  Temperature: ${temp} Celsius = ${completeRegistry.Celsius.to.Fahrenheit(temp)} Fahrenheit`
+);
 console.log(`  Distance: ${distance}m = ${completeRegistry.meters.to.kilometers(distance)}km`);
 
 // ===== Part 4: Custom Metadata Properties =====
 console.log('\n\nPart 4: Custom Metadata Properties\n');
 
 // Add custom metadata properties
-type CelsiusEdge = readonly [Celsius, Fahrenheit];
-const customRegistry = createRegistry<[CelsiusEdge]>()
-  .Celsius.register(Fahrenheit, (c) => ((c * 9) / 5 + 32) as Fahrenheit)
+const customRegistry = createRegistry()
+  .register(CelsiusMetadata, FahrenheitMetadata, (c: number) => (c * 9) / 5 + 32)
   .Celsius.addMetadata({
     abbreviation: '°C',
     description: 'Temperature in Celsius',

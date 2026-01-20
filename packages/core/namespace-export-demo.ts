@@ -3,53 +3,64 @@
  * This pattern allows users to import only the converters they need
  */
 
-import { createRegistry, type WithUnits, type BaseMetadata } from './src/index.js';
+import {
+  createRegistry,
+  type WithUnits,
+  type BaseMetadata,
+  type WithTypedUnits
+} from './src/index.js';
 
 // Define metadata for temperature units
-export const CelsiusMetadata = {
-  name: 'Celsius' as const,
+const CelsiusMetadata = {
+  name: 'Celsius',
+  type: 'number',
   symbol: '°C',
   description: 'Temperature in Celsius'
-} satisfies BaseMetadata;
+} as const;
 
-export const FahrenheitMetadata = {
-  name: 'Fahrenheit' as const,
+const FahrenheitMetadata = {
+  name: 'Fahrenheit',
+  type: 'number',
   symbol: '°F',
   description: 'Temperature in Fahrenheit'
-} satisfies BaseMetadata;
+} as const;
 
-export const KelvinMetadata = {
-  name: 'Kelvin' as const,
+const KelvinMetadata = {
+  name: 'Kelvin',
+  type: 'number',
   symbol: 'K',
   description: 'Absolute temperature'
-} satisfies BaseMetadata;
+} as const;
 
 // Define metadata for distance units
-export const MetersMetadata = {
-  name: 'Meters' as const,
+const MetersMetadata = {
+  name: 'Meters',
+  type: 'number',
   symbol: 'm',
   description: 'Distance in meters'
-} satisfies BaseMetadata;
+} as const;
 
-export const FeetMetadata = {
-  name: 'Feet' as const,
+const FeetMetadata = {
+  name: 'Feet',
+  type: 'number',
   symbol: 'ft',
   description: 'Distance in feet'
-} satisfies BaseMetadata;
+} as const;
 
-export const KilometersMetadata = {
-  name: 'Kilometers' as const,
+const KilometersMetadata = {
+  name: 'Kilometers',
+  type: 'number',
   symbol: 'km',
   description: 'Distance in kilometers'
-} satisfies BaseMetadata;
+} as const;
 
 // Define unit types with metadata
-export type Celsius = WithUnits<number, typeof CelsiusMetadata>;
-export type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
-export type Kelvin = WithUnits<number, typeof KelvinMetadata>;
-export type Meters = WithUnits<number, typeof MetersMetadata>;
-export type Feet = WithUnits<number, typeof FeetMetadata>;
-export type Kilometers = WithUnits<number, typeof KilometersMetadata>;
+export type Celsius = WithTypedUnits<typeof CelsiusMetadata>;
+export type Fahrenheit = WithTypedUnits<typeof FahrenheitMetadata>;
+export type Kelvin = WithTypedUnits<typeof KelvinMetadata>;
+export type Meters = WithTypedUnits<typeof MetersMetadata>;
+export type Feet = WithTypedUnits<typeof FeetMetadata>;
+export type Kilometers = WithTypedUnits<typeof KilometersMetadata>;
 
 // ============================================================================
 // Temperature Converters (would be in a separate file like 'temperature.ts')
@@ -105,7 +116,7 @@ console.log(`  ${temp}°C = ${fahrenheit}°F`);
 
 // Example 2: Multi-hop conversion (enabled via allow())
 console.log('\nExample 2: Multi-hop conversion (Kelvin -> Fahrenheit)');
-const kelvin = 300 as Kelvin;
+const kelvin = 300;
 const fahrenheitFromKelvin = Kelvin.to.Fahrenheit(kelvin);
 console.log(`  ${kelvin}K = ${fahrenheitFromKelvin}°F`);
 
@@ -119,7 +130,7 @@ console.log(`  ${distance}m = ${feet}ft = ${kilometers}km`);
 // Example 4: Using the full registry namespace
 console.log('\nExample 4: Using full registry namespace');
 const temp2 = Temperature.Fahrenheit.to.Celsius(77);
-const dist2 = Distance.Kilometers.to.Feet(1 as Kilometers);
+const dist2 = Distance.Kilometers.to.Feet(1);
 console.log(`  77°F = ${temp2}°C`);
 console.log(`  1km = ${dist2}ft`);
 

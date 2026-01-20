@@ -1,42 +1,45 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
-import type { WithUnits, BaseMetadata } from '../types.js';
+import type { WithTypedUnits, BaseMetadata, TypedMetadata } from '../types.js';
 
 describe('WithUnits Type Inference with Metadata', () => {
   it('infers metadata type from provided metadata object', () => {
     // Define metadata with specific shape
     const CelsiusMetadata = {
-      name: 'Celsius' as const,
+      name: 'Celsius',
+      type: 'number',
       symbol: '°C',
       description: 'Temperature in Celsius'
-    } satisfies BaseMetadata;
+    } as const;
 
-    type CelsiusWithMeta = WithUnits<number, typeof CelsiusMetadata>;
+    type CelsiusWithMeta = WithTypedUnits<typeof CelsiusMetadata>;
 
     // Type should preserve the specific metadata type
-    expectTypeOf<CelsiusWithMeta>().toMatchTypeOf<WithUnits<number, typeof CelsiusMetadata>>();
+    expectTypeOf<CelsiusWithMeta>().toMatchTypeOf<WithTypedUnits<typeof CelsiusMetadata>>();
   });
 
   it('defaults to BaseMetadata when no metadata specified', () => {
     // Define a default metadata for testing default behavior
     const MetersMetadata = {
-      name: 'meters' as const
-    } satisfies BaseMetadata;
+      name: 'meters' as const,
+      type: 'number' as const
+    };
 
-    type Meters = WithUnits<number, typeof MetersMetadata>;
+    type Meters = WithTypedUnits<typeof MetersMetadata>;
 
     const distance: Meters = 25 as Meters;
 
     // Should work with minimal metadata
-    expectTypeOf<Meters>().toMatchTypeOf<WithUnits<number, typeof MetersMetadata>>();
+    expectTypeOf<Meters>().toMatchTypeOf<WithTypedUnits<typeof MetersMetadata>>();
   });
 
   it('supports literal type inference for name property', () => {
     const KelvinMetadata = {
       name: 'Kelvin' as const,
+      type: 'number' as const,
       symbol: 'K'
-    } satisfies BaseMetadata;
+    };
 
-    type KelvinWithMeta = WithUnits<number, typeof KelvinMetadata>;
+    type KelvinWithMeta = WithTypedUnits<typeof KelvinMetadata>;
 
     // The name should be narrowed to literal type 'Kelvin'
     expectTypeOf<typeof KelvinMetadata.name>().toEqualTypeOf<'Kelvin'>();
@@ -45,23 +48,24 @@ describe('WithUnits Type Inference with Metadata', () => {
   it('compile-time: metadata should extend BaseMetadata', () => {
     // This test verifies that metadata types extend BaseMetadata
     // Once we add the constraint, this will enforce name property
-    interface ValidMetadata extends BaseMetadata {
+    interface ValidMetadata extends TypedMetadata<number> {
       symbol: string;
     }
 
     const metadata: ValidMetadata = {
       name: 'Test',
-      symbol: 'T'
+      symbol: 'T',
+      type: 'number' as const
     };
 
-    type ValidUnit = WithUnits<number, typeof metadata>;
+    type ValidUnit = WithTypedUnits<typeof metadata>;
     const unit: ValidUnit = 42 as ValidUnit;
 
     expect(unit).toBe(42);
   });
 
   it('allows extended metadata with custom properties', () => {
-    interface TemperatureMetadata extends BaseMetadata {
+    interface TemperatureMetadata extends TypedMetadata {
       symbol: string;
       baseUnit: string;
       offset?: number;
@@ -71,32 +75,33 @@ describe('WithUnits Type Inference with Metadata', () => {
       name: 'Fahrenheit',
       symbol: '°F',
       baseUnit: 'Kelvin',
-      offset: 459.67
+      offset: 459.67,
+      type: 'number' as const
     };
 
-    type FahrenheitWithMeta = WithUnits<number, typeof FahrenheitMetadata>;
+    type FahrenheitWithMeta = WithTypedUnits<typeof FahrenheitMetadata>;
 
     const temp: FahrenheitWithMeta = 77 as FahrenheitWithMeta;
 
-    expectTypeOf<FahrenheitWithMeta>().toMatchTypeOf<
-      WithUnits<number, typeof FahrenheitMetadata>
-    >();
+    expectTypeOf<FahrenheitWithMeta>().toMatchTypeOf<WithTypedUnits<typeof FahrenheitMetadata>>();
   });
 
   it('supports multiple units with different metadata types', () => {
     const Celsius = {
       name: 'Celsius' as const,
-      symbol: '°C'
-    } satisfies BaseMetadata;
+      symbol: '°C',
+      type: 'number' as const
+    };
 
     const Fahrenheit = {
       name: 'Fahrenheit' as const,
       symbol: '°F',
-      freezingPoint: 32
-    } satisfies BaseMetadata;
+      freezingPoint: 32,
+      type: 'number' as const
+    };
 
-    type CelsiusUnit = WithUnits<number, typeof Celsius>;
-    type FahrenheitUnit = WithUnits<number, typeof Fahrenheit>;
+    type CelsiusUnit = WithTypedUnits<typeof Celsius>;
+    type FahrenheitUnit = WithTypedUnits<typeof Fahrenheit>;
 
     // Different metadata types should be preserved
     expectTypeOf<CelsiusUnit>().not.toEqualTypeOf<FahrenheitUnit>();
@@ -105,10 +110,11 @@ describe('WithUnits Type Inference with Metadata', () => {
   it('metadata type parameter is required with BaseMetadata default', () => {
     // WithUnits requires metadata but defaults to BaseMetadata
     const SimpleMetadata = {
-      name: 'meters' as const
-    } satisfies BaseMetadata;
+      name: 'meters' as const,
+      type: 'number' as const
+    };
 
-    type SimpleUnit = WithUnits<number, typeof SimpleMetadata>;
+    type SimpleUnit = WithTypedUnits<typeof SimpleMetadata>;
 
     const distance: SimpleUnit = 100 as SimpleUnit;
 
@@ -125,13 +131,14 @@ describe('WithUnits Type Inference with Metadata', () => {
           style: 'decimal'
         }
       },
-      tags: ['measurement', 'physical']
-    } satisfies BaseMetadata;
+      tags: ['measurement', 'physical'],
+      type: 'number' as const
+    };
 
-    type ComplexUnit = WithUnits<number, typeof ComplexMetadata>;
+    type ComplexUnit = WithTypedUnits<typeof ComplexMetadata>;
 
     const value: ComplexUnit = 42 as ComplexUnit;
 
-    expectTypeOf<ComplexUnit>().toMatchTypeOf<WithUnits<number, typeof ComplexMetadata>>();
+    expectTypeOf<ComplexUnit>().toMatchTypeOf<WithTypedUnits<typeof ComplexMetadata>>();
   });
 });

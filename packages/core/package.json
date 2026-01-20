@@ -20,9 +20,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsgo",
+    "build": "tsc",
     "clean": "rm -rf dist",
-    "type-check": "tsgo --noEmit",
+    "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
   },
