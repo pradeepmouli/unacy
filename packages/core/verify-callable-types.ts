@@ -8,7 +8,7 @@ import {
   Fahrenheit as FahrenheitMetadata,
   Kelvin as KelvinMetadata
 } from './namespace-export-demo.js';
-import { createRegistry, type WithUnits, type WithTypedUnits } from './src/index.js';
+import { createRegistry, type WithTypedUnits } from './src/index.js';
 
 // Define unit types
 type Celsius = WithTypedUnits<typeof CelsiusMetadata>;

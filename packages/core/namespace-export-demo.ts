@@ -3,12 +3,7 @@
  * This pattern allows users to import only the converters they need
  */
 
-import {
-  createRegistry,
-  type WithUnits,
-  type BaseMetadata,
-  type WithTypedUnits
-} from './src/index.js';
+import { createRegistry, type WithTypedUnits } from './src/index.js';
 
 // Define metadata for temperature units
 const CelsiusMetadata = {

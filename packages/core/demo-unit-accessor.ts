@@ -44,7 +44,7 @@ type Celsius = WithTypedUnits<typeof CelsiusMetadata>;
 type Fahrenheit = WithTypedUnits<typeof FahrenheitMetadata>;
 type Kelvin = WithTypedUnits<typeof KelvinMetadata>;
 type Meters = WithTypedUnits<typeof MetersMetadata>;
-type Kilometers = WithTypedUnits<typeof KilometersMetadata>;
+type _Kilometers = WithTypedUnits<typeof KilometersMetadata>;
 
 // ===== Part 1: Basic Unit Accessor API =====
 console.log('Part 1: Basic Unit Accessor API\n');
@@ -62,7 +62,7 @@ const temp = tempRegistry.Celsius(25); // NEW: Callable accessor!
 console.log(`  tempRegistry.Celsius(25) = ${temp}\n`);
 
 // Compare with old way (still supported)
-const tempOld = 25 as Celsius;
+const _tempOld = 25 as Celsius;
 console.log('Old way (still works): const temp = 25 as Celsius;\n');
 
 // Method 1: convert() method API

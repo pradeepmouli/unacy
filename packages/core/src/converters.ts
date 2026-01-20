@@ -3,7 +3,7 @@
  * @packageDocumentation
  */
 
-import type { PrimitiveType, Unwrap, WithUnits, Relax as BaseRelax } from './types.js';
+import type { PrimitiveType, Relax as BaseRelax } from './types.js';
 
 /**
  * Unidirectional converter from one unit to another.
@@ -36,7 +36,7 @@ export type Relax<
   T extends PrimitiveType | Converter<any, any> | BidirectionalConverter<any, any>
 > = T extends PrimitiveType
   ? BaseRelax<T>
-  : T extends Converter<infer A extends PrimitiveType, infer B extends PrimitiveType>
+  : T extends Converter<infer _ extends PrimitiveType, infer _ extends PrimitiveType>
     ? RelaxConverter<T>
     : RelaxBidirectionalConverter<T>;
 

@@ -3,7 +3,7 @@
  * This file shows that invalid conversions are caught at compile-time
  */
 
-import { createRegistry, type WithUnits, type BaseMetadata } from './src/index.js';
+import { createRegistry, type WithUnits } from './src/index.js';
 
 // Define metadata for temperature units
 const CelsiusMetadata = {

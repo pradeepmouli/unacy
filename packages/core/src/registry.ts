@@ -5,19 +5,14 @@
 
 import type { Converter, BidirectionalConverter, Relax } from './converters.js';
 import type {
-  OptionalWithUnits,
   UnitsFor,
   WithUnits,
   TypedMetadata,
-  NameFor,
   WithTypedUnits,
-  UnitsOf,
-  Unwrap,
   UnitMetadata,
   BaseMetadata,
   PrimitiveType,
-  Relax as RelaxUnits,
-  MetadataOf
+  Relax as RelaxUnits
 } from './types.js';
 import { ConversionError } from './errors.js';
 import { findShortestPath, composeConverters } from './utils/graph.js';
@@ -57,7 +52,7 @@ type ExtractMetadata<T> = T extends WithUnits<any, infer M extends BaseMetadata>
 export type UnitAccessor<
   From extends WithTypedUnits<TypedMetadata>,
   Edges extends readonly Edge[],
-  FromUnits extends string
+  _FromUnits extends string
 > = {
   /**
    * Create a branded value with this unit
