@@ -3,7 +3,7 @@
  * This allows registering unit metadata before defining converters
  */
 
-import { createRegistry, type WithTypedUnits, type WithUnits } from './src/index.js';
+import { createRegistry, type WithTypedUnits } from './src/index.js';
 
 // Define unit metadata
 const Celsius = {

@@ -1,5 +1,5 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
-import type { WithTypedUnits, BaseMetadata, TypedMetadata } from '../types.js';
+import type { WithTypedUnits, TypedMetadata } from '../types.js';
 
 describe('WithUnits Type Inference with Metadata', () => {
   it('infers metadata type from provided metadata object', () => {
@@ -26,7 +26,7 @@ describe('WithUnits Type Inference with Metadata', () => {
 
     type Meters = WithTypedUnits<typeof MetersMetadata>;
 
-    const distance: Meters = 25 as Meters;
+    const _distance: Meters = 25 as Meters;
 
     // Should work with minimal metadata
     expectTypeOf<Meters>().toMatchTypeOf<WithTypedUnits<typeof MetersMetadata>>();
@@ -39,7 +39,7 @@ describe('WithUnits Type Inference with Metadata', () => {
       symbol: 'K'
     };
 
-    type KelvinWithMeta = WithTypedUnits<typeof KelvinMetadata>;
+    type _KelvinWithMeta = WithTypedUnits<typeof KelvinMetadata>;
 
     // The name should be narrowed to literal type 'Kelvin'
     expectTypeOf<typeof KelvinMetadata.name>().toEqualTypeOf<'Kelvin'>();
@@ -81,7 +81,7 @@ describe('WithUnits Type Inference with Metadata', () => {
 
     type FahrenheitWithMeta = WithTypedUnits<typeof FahrenheitMetadata>;
 
-    const temp: FahrenheitWithMeta = 77 as FahrenheitWithMeta;
+    const _temp: FahrenheitWithMeta = 77 as FahrenheitWithMeta;
 
     expectTypeOf<FahrenheitWithMeta>().toMatchTypeOf<WithTypedUnits<typeof FahrenheitMetadata>>();
   });
@@ -137,7 +137,7 @@ describe('WithUnits Type Inference with Metadata', () => {
 
     type ComplexUnit = WithTypedUnits<typeof ComplexMetadata>;
 
-    const value: ComplexUnit = 42 as ComplexUnit;
+    const _value: ComplexUnit = 42 as ComplexUnit;
 
     expectTypeOf<ComplexUnit>().toMatchTypeOf<WithTypedUnits<typeof ComplexMetadata>>();
   });

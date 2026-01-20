@@ -36,10 +36,10 @@ const KilometersMetadata = {
 
 // Define unit types with metadata
 type Celsius = WithTypedUnits<typeof CelsiusMetadata>;
-type Fahrenheit = WithTypedUnits<typeof FahrenheitMetadata>;
-type Kelvin = WithTypedUnits<typeof KelvinMetadata>;
-type Meters = WithTypedUnits<typeof MetersMetadata>;
-type Kilometers = WithTypedUnits<typeof KilometersMetadata>;
+type _Fahrenheit = WithTypedUnits<typeof FahrenheitMetadata>;
+type _Kelvin = WithTypedUnits<typeof KelvinMetadata>;
+type _Meters = WithTypedUnits<typeof MetersMetadata>;
+type _Kilometers = WithTypedUnits<typeof KilometersMetadata>;
 // Create registry with temperature converters
 const registry = createRegistry()
   .register(CelsiusMetadata, FahrenheitMetadata, (c) => (c * 9) / 5 + 32)
@@ -66,13 +66,13 @@ const registry = createRegistry()
 
 export default registry;
 
-let a = registry.Celsius(10 + 5);
+let _a = registry.Celsius(10 + 5);
 
 // ===== Part 1: Creating branded values using callable accessors =====
 console.log('Part 1: Creating branded values\n');
 
 // Old way: manual casting
-const tempOld: Celsius = 25 as Celsius;
+const _tempOld: Celsius = 25 as Celsius;
 console.log('Old way (manual cast): const temp: Celsius = 25 as Celsius;');
 
 // New way: callable accessor
@@ -143,7 +143,7 @@ console.log(`  Formatted: ${format.replace('${value}', displayTemp.toString())}\
 // ===== Part 7: Metadata-driven approach with addMetadata =====
 console.log('\nPart 7: Metadata-driven units');
 
-const customMetadata = registry.Celsius.addMetadata({
+const _customMetadata = registry.Celsius.addMetadata({
   customProperty: 'custom-value'
 });
 

@@ -53,7 +53,7 @@ export type ToPrimitiveTypeName<T extends PrimitiveType> =
 export type OptionalWithUnits<T extends PrimitiveType, M extends BaseMetadata = BaseMetadata> =
   | T
   | WithUnits<T, M>;
-``;
+
 export type Unwrap<T> = T extends WithUnits<PrimitiveType, any> ? UnwrapTagged<T> : T;
 
 export type Relax<T> = T | Unwrap<T>;
@@ -77,7 +77,7 @@ export type UnitsOf<T extends WithUnits<PrimitiveType, BaseMetadata>> = GetTagMe
 >;
 
 export type NameFor<T extends WithUnits<PrimitiveType, BaseMetadata>> =
-  T extends WithUnits<infer A, infer M extends BaseMetadata> ? ExtractName<M> : never;
+  T extends WithUnits<infer _, infer M extends BaseMetadata> ? ExtractName<M> : never;
 
 /** Alias for NameFor - returns the unit name type */
 export type UnitsFor<T extends WithUnits<PrimitiveType, BaseMetadata>> = NameFor<T>;
