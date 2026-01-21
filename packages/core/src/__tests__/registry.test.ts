@@ -385,11 +385,11 @@ describe('Registry - Unit Accessor API', () => {
 
   it('unit accessor API works with multi-hop conversions', () => {
     const registry = createRegistry()
-      .register('meters', 'kilometers', {
+      .register(MetersMetadata, KilometersMetadata, {
         to: (m) => m / 1000,
         from: (km) => km * 1000
       })
-      .register('kilometers', 'miles', {
+      .register(KilometersMetadata, MilesMetadata, {
         to: (km) => (km * 0.621371) as Miles,
         from: (mi) => (mi / 0.621371) as Kilometers
       });
@@ -403,7 +403,7 @@ describe('Registry - Unit Accessor API', () => {
   });
 
   it('unit accessor API throws error when no converter exists', () => {
-    const registry = createRegistry().register('A', 'B', (a) => (a * 2) as any);
+    const registry = createRegistry().register(AMetadata, BMetadata, (a) => (a * 2) as any);
 
     // Try to convert from A to C (C not in registry at all)
     expect(() => {
@@ -536,7 +536,7 @@ describe('Registry - Unit Accessor Registration', () => {
 
   it('unit accessor register supports bidirectional converters', () => {
     type MeterEdge = readonly [Meters, Kilometers];
-    const registry = createRegistry<[MeterEdge]>().meters.register('kilometers', {
+    const registry = createRegistry<[MeterEdge]>().meters.register(KilometersMetadata, {
       to: (m) => (m / 1000) as Kilometers,
       from: (km) => (km * 1000) as Meters
     });
@@ -625,8 +625,8 @@ describe('Registry - Metadata Object Support', () => {
 
   it('stores metadata from metadata objects automatically', () => {
     const registry = createRegistry().register(CelsiusMetadata, FahrenheitMetadata, {
-      to: (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit,
-      from: (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius
+      to: (c) => (c * 9) / 5 + 32,
+      from: (f) => ((f - 32) * 5) / 9
     });
 
     expect((registry as any)['Celsius']!['type']).toBe('number');
@@ -650,10 +650,10 @@ describe('Registry - Metadata Object Support', () => {
   it('unit accessor register accepts metadata objects', () => {
     const registry = createRegistry()
       .register(CelsiusMetadata, FahrenheitMetadata, {
-        to: (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit,
-        from: (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius
+        to: (c) => (c * 9) / 5 + 32,
+        from: (f) => ((f - 32) * 5) / 9
       })
-      .Celsius.register(KelvinMetadata, (c: Celsius) => (c + 273.15) as Kelvin);
+      .Celsius.register(KelvinMetadata, (c) => c + 273.15);
 
     const converter = getConverter(registry, 'Celsius', 'Kelvin');
     expect(converter).toBeDefined();

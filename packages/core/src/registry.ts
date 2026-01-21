@@ -56,8 +56,7 @@ type ExtractMetadata<T> = T extends WithUnits<any, infer M extends BaseMetadata>
  */
 export type UnitAccessor<
   From extends WithTypedUnits<TypedMetadata>,
-  Edges extends readonly Edge[],
-  FromUnits extends string
+  Edges extends readonly Edge[]
 > = {
   /**
    * Create a branded value with this unit
@@ -96,13 +95,16 @@ export type UnitAccessor<
  * Only allows conversions that have been registered
  */
 export type UnitMap<Edges extends readonly Edge[]> = {
-  [FU in FromUnits<Edges> as UnitsFor<FU>]: UnitAccessor<FU, Edges, UnitsFor<FromUnits<Edges>>>;
+  [FU in FromUnits<Edges> as UnitsFor<FU>]: UnitAccessor<FU, Edges>;
 };
 
 /**
  * Registry for managing and composing unit converters
  */
 export interface UnitRegistry<Edges extends Edge[] = []> {
+  register<From extends WithTypedUnits<FromMeta>, FromMeta extends TypedMetadata<PrimitiveType>>(
+    unit: FromMeta
+  ): this & { [K in NameFor<From>]: UnitAccessor<From, Edges> };
   /**
    * Register a unidirectional converter
    *
@@ -331,6 +333,11 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
     }
   }
 
+  // Overload 1: Register a single unit with metadata only (no converters)
+  register<From extends WithTypedUnits<FromMeta>, FromMeta extends TypedMetadata<PrimitiveType>>(
+    unit: FromMeta
+  ): this & { [K in NameFor<From>]: UnitAccessor<From, Edges> };
+  // Overload 2: Register unidirectional converter
   register<
     From extends WithTypedUnits<FromMeta>,
     To extends WithTypedUnits<ToMeta>,
@@ -339,38 +346,71 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
   >(
     from: UnitsFor<From> | { name: UnitsFor<From> },
     to: UnitsFor<To> | { name: UnitsFor<To> },
-    converter: Converter<From, To> | BidirectionalConverter<From, To>
-  ): UnitRegistry<any> & UnitMap<any> {
+    converter: Converter<From, To>
+  ): UnitRegistry<[...Edges, Edge<From, To>]> & UnitMap<[...Edges, Edge<From, To>]>;
+  // Overload 3: Bidirectional converter
+  register<
+    From extends WithTypedUnits<FromMeta>,
+    To extends WithTypedUnits<ToMeta>,
+    FromMeta extends TypedMetadata<PrimitiveType>,
+    ToMeta extends TypedMetadata<PrimitiveType>
+  >(
+    from: UnitsFor<From> | { name: UnitsFor<From> },
+    to: UnitsFor<To> | { name: UnitsFor<To> },
+    converter: BidirectionalConverter<From, To>
+  ): UnitRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
+    UnitMap<[...Edges, Edge<From, To>, Edge<To, From>]>;
+  // Implementation
+  register<
+    From extends WithTypedUnits<FromMeta>,
+    To extends WithTypedUnits<ToMeta>,
+    FromMeta extends TypedMetadata<PrimitiveType>,
+    ToMeta extends TypedMetadata<PrimitiveType>
+  >(
+    from: UnitsFor<From> | { name: UnitsFor<From> } | FromMeta,
+    to?: UnitsFor<To> | { name: UnitsFor<To> },
+    converter?: Converter<From, To> | BidirectionalConverter<From, To>
+  ): any {
+    // Handle single unit registration (overload 1)
+    if (to === undefined && converter === undefined) {
+      const unitMetadata = from as FromMeta;
+      const newMetadata = new Map(this.metadata);
+      const unitName = unitMetadata.name;
+      const existingMetadata = newMetadata.get(unitName) || {};
+      newMetadata.set(unitName, { ...existingMetadata, ...unitMetadata });
+      return createRegistryFromGraph<Edges>(this.graph, this.pathCache, newMetadata) as any;
+    }
+
     // Extract metadata if provided and store unit names
     let fromName: UnitsFor<From>;
     let toName: UnitsFor<To>;
     const newMetadata = new Map(this.metadata);
 
     if (typeof from === 'object' && 'name' in from) {
-      fromName = from.name;
+      fromName = from.name as UnitsFor<From>;
       // Store metadata for the from unit
       const existingFromMetadata = newMetadata.get(fromName) || {};
       newMetadata.set(fromName, { ...existingFromMetadata, ...from });
     } else {
-      fromName = from;
+      fromName = from as UnitsFor<From>;
     }
 
     if (typeof to === 'object' && 'name' in to) {
-      toName = to.name;
+      toName = to.name as UnitsFor<To>;
       // Store metadata for the to unit
       const existingToMetadata = newMetadata.get(toName) || {};
       newMetadata.set(toName, { ...existingToMetadata, ...to });
     } else {
-      toName = to;
+      toName = to as UnitsFor<To>;
     }
 
     // Check if it's a bidirectional converter
     if (typeof converter === 'object' && 'to' in converter && 'from' in converter) {
       // Handle bidirectional converter
       const biConverter = converter as BidirectionalConverter<From, To>;
-      return this.register(from, to, biConverter.to).register(
-        to as any,
-        from as any,
+      return this.register(fromName, toName, biConverter.to).register(
+        toName as any,
+        fromName as any,
         biConverter.from as any
       ) as any;
     }
