@@ -344,8 +344,8 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
     FromMeta extends TypedMetadata<PrimitiveType>,
     ToMeta extends TypedMetadata<PrimitiveType>
   >(
-    from: UnitsFor<From> | { name: UnitsFor<From> },
-    to: UnitsFor<To> | { name: UnitsFor<To> },
+    from: UnitsFor<From> | FromMeta,
+    to: UnitsFor<To> | ToMeta,
     converter: Converter<From, To>
   ): UnitRegistry<[...Edges, Edge<From, To>]> & UnitMap<[...Edges, Edge<From, To>]>;
   // Overload 3: Bidirectional converter
@@ -355,8 +355,8 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
     FromMeta extends TypedMetadata<PrimitiveType>,
     ToMeta extends TypedMetadata<PrimitiveType>
   >(
-    from: UnitsFor<From> | { name: UnitsFor<From> },
-    to: UnitsFor<To> | { name: UnitsFor<To> },
+    from: UnitsFor<From> | FromMeta,
+    to: UnitsFor<To> | ToMeta,
     converter: BidirectionalConverter<From, To>
   ): UnitRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
     UnitMap<[...Edges, Edge<From, To>, Edge<To, From>]>;
@@ -367,8 +367,8 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
     FromMeta extends TypedMetadata<PrimitiveType>,
     ToMeta extends TypedMetadata<PrimitiveType>
   >(
-    from: UnitsFor<From> | { name: UnitsFor<From> } | FromMeta,
-    to?: UnitsFor<To> | { name: UnitsFor<To> },
+    from: UnitsFor<From> | FromMeta,
+    to?: UnitsFor<To> | ToMeta,
     converter?: Converter<From, To> | BidirectionalConverter<From, To>
   ): any {
     // Handle single unit registration (overload 1)
@@ -409,8 +409,8 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
       // Handle bidirectional converter
       const biConverter = converter as BidirectionalConverter<From, To>;
       // Pass the original metadata objects (not just names) to preserve metadata
-      return this.register(from, to, biConverter.to).register(
-        to as any,
+      return this.register(from, to!, biConverter.to).register(
+        to! as any,
         from as any,
         biConverter.from as any
       ) as any;
