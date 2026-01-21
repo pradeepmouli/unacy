@@ -408,11 +408,16 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
     if (typeof converter === 'object' && 'to' in converter && 'from' in converter) {
       // Handle bidirectional converter
       const biConverter = converter as BidirectionalConverter<From, To>;
-      return this.register(fromName, toName, biConverter.to).register(
-        toName as any,
-        fromName as any,
-        biConverter.from as any
-      ) as any;
+      // First, create a new registry with the metadata to preserve it
+      const registryWithMetadata = createRegistryFromGraph<Edges>(
+        this.graph,
+        this.pathCache,
+        newMetadata
+      );
+      // Then register both directions on the new registry
+      return registryWithMetadata
+        .register(fromName, toName, biConverter.to)
+        .register(toName as any, fromName as any, biConverter.from as any) as any;
     }
 
     // Handle unidirectional converter
