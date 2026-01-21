@@ -1,7 +1,6 @@
-import { describe, it, expect, expectTypeOf } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { createRegistry } from '../registry.js';
-import type { Converter } from '../converters.js';
-import type { PrimitiveType, WithTypedUnits } from '../types.js';
+import type { WithTypedUnits } from '../types.js';
 import { CycleError, MaxDepthError, ConversionError } from '../errors.js';
 import {
   CelsiusMetadata,
@@ -27,7 +26,6 @@ type Miles = WithTypedUnits<typeof MilesMetadata>;
 type A = WithTypedUnits<typeof AMetadata>;
 type B = WithTypedUnits<typeof BMetadata>;
 type C = WithTypedUnits<typeof CMetadata>;
-type D = WithTypedUnits<typeof DMetadata>;
 
 const getConverter = (registry: any, from: string, to: string) =>
   (registry as any).getConverter(from, to);
@@ -569,9 +567,7 @@ describe('Registry - Unit Accessor Registration', () => {
 
   it('unit accessor register preserves existing converters', () => {
     type A = WithUnits<number, typeof AMetadata>;
-    type B = WithUnits<number, typeof BMetadata>;
     type C = WithUnits<number, typeof CMetadata>;
-    type D = WithUnits<number, typeof DMetadata>;
     type CEdge = readonly [C, A];
     const registry = createRegistry<[CEdge]>()
       .register('A', 'B', (a) => (a * 2) as any)
