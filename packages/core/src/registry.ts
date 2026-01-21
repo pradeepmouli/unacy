@@ -87,7 +87,7 @@ export type UnitAccessor<
     converter: Relax<BidirectionalConverter<From, To>>
   ): UnitRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
     UnitMap<[...Edges, Edge<From, To>, Edge<To, From>]>;
-} & ExtractMetadata<From>;
+} & UnitsOf<From>;
 
 /**
  * Type for unit-based conversion accessors
