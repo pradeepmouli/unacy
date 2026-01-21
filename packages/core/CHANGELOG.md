@@ -1,5 +1,11 @@
 # unacy
 
+## 0.7.0
+
+### Minor Changes
+
+- add support for typed metadata + non number units
+
 ## 0.6.0
 
 ### Minor Changes
