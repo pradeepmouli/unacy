@@ -5,19 +5,16 @@
 
 import type { Converter, BidirectionalConverter, Relax } from './converters.js';
 import type {
-  OptionalWithUnits,
   UnitsFor,
   WithUnits,
   TypedMetadata,
   NameFor,
   WithTypedUnits,
   UnitsOf,
-  Unwrap,
   UnitMetadata,
   BaseMetadata,
   PrimitiveType,
-  Relax as RelaxUnits,
-  MetadataOf
+  Relax as RelaxUnits
 } from './types.js';
 import { ConversionError } from './errors.js';
 import { findShortestPath, composeConverters } from './utils/graph.js';
@@ -28,8 +25,8 @@ import { findShortestPath, composeConverters } from './utils/graph.js';
  * they correspond to valid WithUnits types
  */
 type Edge<
-  From extends WithTypedUnits<any> | unknown = WithTypedUnits<TypedMetadata<PrimitiveType>>,
-  To extends WithTypedUnits<any> | unknown = WithTypedUnits<TypedMetadata<PrimitiveType>>
+  From extends WithTypedUnits<any> = WithTypedUnits<TypedMetadata<PrimitiveType>>,
+  To extends WithTypedUnits<any> = WithTypedUnits<TypedMetadata<PrimitiveType>>
 > = readonly [From, To];
 
 /**
@@ -48,8 +45,6 @@ type ToUnitsFor<Edges extends readonly Edge[], FromUnit extends WithTypedUnits<a
 /**
  * Extract metadata type from a WithUnits type
  */
-type ExtractMetadata<T> = T extends WithUnits<any, infer M extends BaseMetadata> ? M : BaseMetadata;
-
 /**
  * Type for unit accessor with metadata and conversion methods
  * Can be called as a function to create branded unit values

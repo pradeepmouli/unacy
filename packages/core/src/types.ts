@@ -12,8 +12,7 @@ export const DEFINITION: unique symbol = Symbol('DEFINITION');
 /**
  * Extract the name property from a metadata type
  * @internal
- */
-type ExtractName<M extends BaseMetadata> = M extends { name: infer N extends string } ? N : string;
+ **/
 
 export type WithTypedUnits<M extends TypedMetadata<any>> = WithUnits<ToPrimitiveType<M['type']>, M>;
 
@@ -53,7 +52,7 @@ export type ToPrimitiveTypeName<T extends PrimitiveType> =
 export type OptionalWithUnits<T extends PrimitiveType, M extends BaseMetadata = BaseMetadata> =
   | T
   | WithUnits<T, M>;
-``;
+
 export type Unwrap<T> = T extends WithUnits<PrimitiveType, any> ? UnwrapTagged<T> : T;
 
 export type Relax<T> = T | Unwrap<T>;
@@ -77,14 +76,18 @@ export type UnitsOf<T extends WithUnits<PrimitiveType, BaseMetadata>> = GetTagMe
 >;
 
 export type NameFor<T extends WithUnits<PrimitiveType, BaseMetadata>> =
-  T extends WithUnits<infer A, infer M extends BaseMetadata> ? ExtractName<M> : never;
+  GetTagMetadata<T, typeof UNITS> extends {
+    name: infer N extends string;
+  }
+    ? N
+    : string;
 
 /** Alias for NameFor - returns the unit name type */
 export type UnitsFor<T extends WithUnits<PrimitiveType, BaseMetadata>> = NameFor<T>;
 
 /** Extract metadata from a WithUnits type */
 export type MetadataOf<T extends WithUnits<PrimitiveType, BaseMetadata>> =
-  T extends WithUnits<any, infer M extends BaseMetadata> ? M : BaseMetadata;
+  GetTagMetadata<T, typeof UNITS> extends infer M ? M : BaseMetadata;
 export type UnitDefinition<T extends PrimitiveType, U, A, F extends string = never> = {
   type: ToPrimitiveTypeName<T>;
   name: U;

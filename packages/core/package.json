@@ -20,18 +20,18 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsgo -p tsconfig.json",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
-    "type-fest": "^5.4.0"
+    "type-fest": "^5.4.1"
   },
   "devDependencies": {
-    "@types/node": "^25.0.8",
-    "@typescript/native-preview": "7.0.0-dev.20260113.1",
+    "@types/node": "^25.0.9",
+    "@typescript/native-preview": "7.0.0-dev.20260120.1",
     "vitest": "^4.0.17"
   },
   "engines": {

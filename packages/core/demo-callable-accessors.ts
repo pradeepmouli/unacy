@@ -8,6 +8,11 @@ import type { WithTypedUnits } from './src/types.js';
 
 console.log('=== Callable Unit Accessor Demo ===\n');
 
+const LongShort = {
+  name: 'LongShort',
+  type: 'boolean'
+} as const;
+
 // Define metadata for each unit
 const CelsiusMetadata = {
   name: 'Celsius',
@@ -40,6 +45,8 @@ type Fahrenheit = WithTypedUnits<typeof FahrenheitMetadata>;
 type Kelvin = WithTypedUnits<typeof KelvinMetadata>;
 type Meters = WithTypedUnits<typeof MetersMetadata>;
 type Kilometers = WithTypedUnits<typeof KilometersMetadata>;
+
+type LongShort = WithTypedUnits<typeof LongShort>;
 // Create registry with temperature converters
 const registry = createRegistry()
   .register(CelsiusMetadata, FahrenheitMetadata, (c) => (c * 9) / 5 + 32)
@@ -104,10 +111,12 @@ console.log(`  Kelvin:     ${k}K\n`);
 // ===== Part 4: Distance units with callable accessors =====
 console.log('Part 4: Distance units\n');
 
-const distanceRegistry = createRegistry().register(MetersMetadata, KilometersMetadata, {
-  to: (m) => m / 1000,
-  from: (km) => km * 1000
-});
+const distanceRegistry = createRegistry()
+  .register(MetersMetadata, KilometersMetadata, {
+    to: (m) => m / 1000,
+    from: (km) => km * 1000
+  })
+  .register(MetersMetadata, LongShort, (m) => m > 1000);
 
 // Create distance values using callable accessors
 const distance = distanceRegistry.meters(5280);

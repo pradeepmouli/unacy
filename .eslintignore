@@ -1,0 +1,7 @@
+packages/core/demo-unit-accessor.ts
+packages/core/demo-callable-accessors.ts
+packages/core/demo-single-unit-register.ts
+packages/core/module-structure-guide.ts
+packages/core/namespace-export-demo.ts
+packages/core/type-safety-demo.ts
+packages/core/verify-callable-types.ts
