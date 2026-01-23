@@ -44,7 +44,20 @@ export type PrimitiveTypeMap = {
   bigint: bigint;
 };
 
-export type ToPrimitiveType<T extends keyof PrimitiveTypeMap> = PrimitiveTypeMap[T];
+export enum TestEnum {
+  A = 'A',
+  B = 'B',
+  C = 'C',
+  D = 'D'
+}
+
+export type ToPrimitiveType<T> = T extends keyof PrimitiveTypeMap
+  ? PrimitiveTypeMap[T]
+  : T extends PrimitiveType
+    ? T
+    : T extends Record<string, unknown>
+      ? T[keyof T]
+      : never;
 
 export type ToPrimitiveTypeName<T extends PrimitiveType> =
   T extends ToPrimitiveType<infer U> ? U : never;
@@ -88,12 +101,6 @@ export type UnitsFor<T extends WithUnits<PrimitiveType, BaseMetadata>> = NameFor
 /** Extract metadata from a WithUnits type */
 export type MetadataOf<T extends WithUnits<PrimitiveType, BaseMetadata>> =
   GetTagMetadata<T, typeof UNITS> extends infer M ? M : BaseMetadata;
-export type UnitDefinition<T extends PrimitiveType, U, A, F extends string = never> = {
-  type: ToPrimitiveTypeName<T>;
-  name: U;
-  abbreviation?: A;
-  format?: F;
-};
 
 /**
  * Base metadata type that all unit metadata must extend.
@@ -113,11 +120,19 @@ export type BaseMetadata = {
   name: string;
 };
 
-export type TypedMetadata<T extends PrimitiveType = number> = Simplify<{
+export type TypedMetadata<T extends PrimitiveType> = Simplify<{
   name: string;
   /** Data type name (e.g., "number", "string") */
   type: ToPrimitiveTypeName<T>;
 }>;
+
+export type EnumTypedMetadata<E extends Record<string, string | number>> = TypedMetadata<
+  E[keyof E]
+> & {
+  enum: E;
+};
+
+export type Test = EnumTypedMetadata<typeof TestEnum>;
 /**
  * Metadata that can be attached to units in the registry
  * Supports common properties like abbreviation, format, description,

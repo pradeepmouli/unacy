@@ -5,11 +5,18 @@
 
 import { createRegistry, type WithTypedUnits, type WithUnits } from './src/index.js';
 
+enum TestEnum {
+  A = 1,
+  B = 2,
+  C = 3,
+  D = 4
+}
+
 // Define unit metadata
 const Celsius = {
-  name: 'Celsius' as const,
-  type: 'number' as const
-};
+  name: 'Celsius',
+  enum: TestEnum
+} as const;
 
 const Fahrenheit = {
   name: 'Fahrenheit' as const,

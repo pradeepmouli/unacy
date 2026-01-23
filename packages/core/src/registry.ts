@@ -50,7 +50,7 @@ type ToUnitsFor<Edges extends readonly Edge[], FromUnit extends WithTypedUnits<a
  * Can be called as a function to create branded unit values
  */
 export type UnitAccessor<
-  From extends WithTypedUnits<TypedMetadata>,
+  From extends WithTypedUnits<TypedMetadata<PrimitiveType>>,
   Edges extends readonly Edge[]
 > = {
   /**
