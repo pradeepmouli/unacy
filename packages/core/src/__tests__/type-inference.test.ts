@@ -65,7 +65,7 @@ describe('WithUnits Type Inference with Metadata', () => {
   });
 
   it('allows extended metadata with custom properties', () => {
-    interface TemperatureMetadata extends TypedMetadata {
+    interface TemperatureMetadata extends TypedMetadata<number> {
       symbol: string;
       baseUnit: string;
       offset?: number;
@@ -77,7 +77,7 @@ describe('WithUnits Type Inference with Metadata', () => {
       baseUnit: 'Kelvin',
       offset: 459.67,
       type: 'number' as const
-    };
+    } as const;
 
     type FahrenheitWithMeta = WithTypedUnits<typeof FahrenheitMetadata>;
 

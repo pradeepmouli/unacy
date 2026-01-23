@@ -51,16 +51,11 @@ export enum TestEnum {
   D = 'D'
 }
 
-export type ToPrimitiveType<T> = T extends keyof PrimitiveTypeMap
-  ? PrimitiveTypeMap[T]
-  : T extends PrimitiveType
-    ? T
-    : T extends Record<string, unknown>
-      ? T[keyof T]
-      : never;
-
+export type ToPrimitiveType<T extends keyof PrimitiveTypeMap> = PrimitiveTypeMap[T];
 export type ToPrimitiveTypeName<T extends PrimitiveType> =
   T extends ToPrimitiveType<infer U> ? U : never;
+
+type test = ToPrimitiveTypeName<number>;
 
 export type OptionalWithUnits<T extends PrimitiveType, M extends BaseMetadata = BaseMetadata> =
   | T
