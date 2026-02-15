@@ -14,7 +14,8 @@ export const DEFINITION: unique symbol = Symbol('DEFINITION');
  * @internal
  **/
 
-export type WithTypedUnits<M extends TypedMetadata<any>> = WithUnits<ToPrimitiveType<M['type']>, M>;
+export type WithTypedUnits<M extends TypedMetadata<any>> =
+  M extends TypedMetadata<infer T> ? WithUnits<T, M> : never;
 
 /**
  * Brand a value with a unit identifier for compile-time unit safety.
@@ -45,15 +46,16 @@ export type PrimitiveTypeMap = {
 };
 
 export enum TestEnum {
-  A = 'A',
-  B = 'B',
-  C = 'C',
-  D = 'D'
+  A = 1,
+  B = 2,
+  C = 3,
+  D = 4
 }
 
-export type ToPrimitiveType<T extends keyof PrimitiveTypeMap> = PrimitiveTypeMap[T];
-export type ToPrimitiveTypeName<T extends PrimitiveType> =
-  T extends ToPrimitiveType<infer U> ? U : never;
+export type ToPrimitiveTypeName<T> = T extends PrimitiveTypeMap[infer U extends
+  keyof PrimitiveTypeMap]
+  ? U
+  : never;
 
 type test = ToPrimitiveTypeName<number>;
 
@@ -121,11 +123,18 @@ export type TypedMetadata<T extends PrimitiveType> = Simplify<{
   type: ToPrimitiveTypeName<T>;
 }>;
 
-export type EnumTypedMetadata<E extends Record<string, string | number>> = TypedMetadata<
-  E[keyof E]
-> & {
+export type EnumTypedMetadata<E extends Record<string, string | number>> = {
+  name: string;
+  type: ToPrimitiveTypeName<BaseTypeFor<E[keyof E]>>;
+
   enum: E;
 };
+
+type BaseTypeFor<T extends PrimitiveType> = `${T}` extends `${infer U extends number}`
+  ? number
+  : never;
+
+type Test3 = BaseTypeFor<TestEnum>;
 
 export type Test = EnumTypedMetadata<typeof TestEnum>;
 /**

@@ -13,7 +13,6 @@ export type {
   UnitMetadata,
   Relax,
   PrimitiveType,
-  ToPrimitiveType,
   ToPrimitiveTypeName
 } from './types.js';
 

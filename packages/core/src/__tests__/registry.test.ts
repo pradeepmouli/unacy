@@ -103,9 +103,9 @@ describe('Registry - Multi-Hop Composition', () => {
 
   it('auto-compose 3-hop conversion (A→B→C→D)', () => {
     const registry = createRegistry()
-      .register(AMetadata, BMetadata, (a: A) => (a * 2) as any)
-      .register(BMetadata, CMetadata, (b: B) => (b * 3) as any)
-      .register(CMetadata, DMetadata, (c: C) => (c * 5) as any);
+      .register(AMetadata, BMetadata, (a) => a * 2)
+      .register(BMetadata, CMetadata, (b) => b * 3)
+      .register(CMetadata, DMetadata, (c) => c * 5);
 
     const converter = getConverter(registry, 'A', 'D');
 

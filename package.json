@@ -52,9 +52,6 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.8",
-    "@commitlint/cli": "^20.3.1",
-    "@commitlint/config-conventional": "^20.3.1",
-    "@commitlint/types": "^20.3.1",
     "@size-limit/preset-small-lib": "^12.0.0",
     "@types/node": "^25.0.8",
     "@typescript/native-preview": "7.0.0-dev.20260113.1",
@@ -74,7 +71,6 @@
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm lint-staged",
-    "commit-msg": "pnpm commitlint --edit $1",
     "pre-push": "pnpm run type-check"
   },
   "lint-staged": {
