@@ -1,9 +1,20 @@
 # Feature Specification: Non-Primitive Type Support
 
-**Feature Branch**: `001-non-primitive-types`  
-**Created**: February 15, 2026  
-**Status**: Draft  
+**Feature Branch**: `001-non-primitive-types`
+**Created**: February 15, 2026
+**Status**: Draft
 **Input**: User description: "add support for non-primitive types (typescript enums, classes, records and tuples). For enums, in the runtime value in the unit metadata will be enum itself, for classes, it will be the class prototype, for records, a schema-like structure (object shape with value of properties = name of primitive type (or nested object)) and for tuples, an array of primitive type names."
+
+## Clarifications
+
+### Session 2026-02-15
+
+- Q: How should the system handle mixed enums (enums with both numeric and string members)? → A: Reject mixed enums at registration time with clear error message
+- Q: How should the system handle class inheritance and prototype chains? → A: Store only the direct class prototype; developers can traverse the prototype chain at runtime if needed
+- Q: How should circular references or self-referential structures in records be handled? → A: Reject circular references at registration time with a clear error message
+- Q: How should tuple types with optional or rest elements be represented in metadata? → A: Represent optional elements with "?" suffix (e.g., ["number", "string?"]) and rest elements with "..." prefix (e.g., ["number", "...string"])
+- Q: What should happen when a class constructor requires parameters? → A: Allow any class regardless of constructor signature; the unit system only stores the prototype, not instances
+- Q: How should the system handle empty types (empty enums, classes without methods, or empty records)? → A: Allow all empty types; they still provide type branding value even without data or behavior
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -73,26 +84,32 @@ A developer wants to define units using TypeScript tuple types to represent fixe
 
 ### Edge Cases
 
-- What happens when an enum has both numeric and string members (mixed enum)?
-- How does the system handle class inheritance and prototype chains?
-- What happens when a record contains circular references or self-referential structures?
-- How are tuple types with optional or rest elements represented in metadata?
-- What happens when a class constructor requires parameters?
-- How does the system handle empty enums, classes without methods, or empty records?
+- Mixed enums (both numeric and string members) are rejected at registration time with a clear error message explaining that only homogeneous enums are supported
+- Class inheritance is supported by storing only the direct class prototype in metadata; the prototype chain remains accessible at runtime for inheritance traversal
+- Records with circular references or self-referential structures are rejected at registration time with a clear error message explaining that circular structures are not supported
+- Tuple types with optional elements are represented with "?" suffix (e.g., ["number", "string?"]) and rest elements with "..." prefix (e.g., ["number", "...string"]) in the metadata array
+- Classes with constructor parameters are fully supported; the unit system stores only the prototype (not instances), so constructor signatures are irrelevant to the type system
+- Empty types (empty enums, classes without methods, empty records) are all allowed as they still provide type branding value for compile-time safety
 - What happens when record property values are not primitive types but complex nested structures?
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST support TypeScript enum types as unit definitions
+- **FR-001**: System MUST support TypeScript enum types (numeric or string, but not mixed) as unit definitions
+- **FR-001a**: System MUST reject mixed enums at registration time with a clear error message
+- **FR-001b**: System MUST allow empty enums as they provide type branding value
 - **FR-002**: System MUST store the enum itself as the runtime metadata value for enum-based units
 - **FR-003**: System MUST support TypeScript class types as unit definitions
 - **FR-004**: System MUST store the class prototype as the runtime metadata value for class-based units
+- **FR-004a**: System MUST store only the direct class prototype, preserving the natural prototype chain for runtime traversal
+- **FR-004b**: System MUST support classes with any constructor signature; constructor parameters are not relevant to the unit type system
 - **FR-005**: System MUST support TypeScript record types (object shapes) as unit definitions
 - **FR-006**: System MUST generate schema-like structures for record-based units, where property values are primitive type names or nested object schemas
+- **FR-006a**: System MUST reject records with circular references at registration time with a clear error message
 - **FR-007**: System MUST support TypeScript tuple types as unit definitions
 - **FR-008**: System MUST store an array of primitive type name strings for tuple-based units, representing each position's type
+- **FR-008a**: System MUST represent optional tuple elements with "?" suffix and rest elements with "..." prefix in the type name strings
 - **FR-009**: System MUST extend the `PrimitiveType` type union to include non-primitive types (enums, classes, records, tuples)
 - **FR-010**: System MUST provide type inference for non-primitive unit types, maintaining compile-time type safety
 - **FR-011**: System MUST handle nested structures in records (e.g., `{outer: {inner: number}}` → `{outer: {inner: "number"}}`)

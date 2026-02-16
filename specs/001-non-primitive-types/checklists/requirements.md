@@ -1,7 +1,7 @@
 # Specification Quality Checklist: Non-Primitive Type Support
 
-**Purpose**: Validate specification completeness and quality before proceeding to planning  
-**Created**: February 15, 2026  
+**Purpose**: Validate specification completeness and quality before proceeding to planning
+**Created**: February 15, 2026
 **Feature**: [Non-Primitive Type Support](../spec.md)
 
 ## Content Quality
