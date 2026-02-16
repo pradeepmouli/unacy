@@ -123,20 +123,6 @@ export type TypedMetadata<T extends PrimitiveType> = Simplify<{
   type: ToPrimitiveTypeName<T>;
 }>;
 
-export type EnumTypedMetadata<E extends Record<string, string | number>> = {
-  name: string;
-  type: ToPrimitiveTypeName<BaseTypeFor<E[keyof E]>>;
-
-  enum: E;
-};
-
-type BaseTypeFor<T extends PrimitiveType> = `${T}` extends `${infer U extends number}`
-  ? number
-  : never;
-
-type Test3 = BaseTypeFor<TestEnum>;
-
-export type Test = EnumTypedMetadata<typeof TestEnum>;
 /**
  * Metadata that can be attached to units in the registry
  * Supports common properties like abbreviation, format, description,
