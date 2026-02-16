@@ -12,6 +12,7 @@ Type-safe unit and format conversion library with automatic multi-hop compositio
 - 📦 **Tree-shakeable** - Only bundle converters you use
 - ✨ **Fluent API** - Clean, readable conversion syntax
 - 🎯 **Typed Metadata** - Native support for `number`, `string`, `boolean`, and `bigint` units
+- 🧩 **Non-Primitive Types** - First-class support for enums, classes, records, and tuples
 
 ## Installation
 
@@ -213,6 +214,81 @@ const str = iso8601.format(now); // "2026-01-06T12:00:00.000Z"
 const date = iso8601.parse('2026-01-06T12:00:00.000Z');
 ```
 
+### Non-Primitive Types
+
+Beyond primitives, the registry supports enums, classes, records, and tuples
+as unit types. The `type` field in metadata IS the runtime value itself.
+
+#### Enum Units
+
+```typescript
+import { createRegistry } from '@unacy/core';
+import type { WithTypedUnits, TypedMetadata } from '@unacy/core';
+
+enum LogLevel { DEBUG = 0, INFO = 1, WARN = 2, ERROR = 3 }
+
+const LogLevelMeta = { name: 'LogLevel', type: LogLevel } as const;
+type LogLevelUnit = WithTypedUnits<typeof LogLevelMeta>;
+
+const registry = createRegistry()
+  .register(LogLevelMeta, /* ... */);
+```
+
+#### Class Units
+
+```typescript
+class Temperature {
+  constructor(public value: number, public scale: string) {}
+}
+
+const TempMeta = { name: 'Temperature', type: Temperature } as const;
+type TempUnit = WithTypedUnits<typeof TempMeta>;
+```
+
+#### Record Units
+
+```typescript
+const PointSchema = { x: 'number', y: 'number' } as const;
+const PointMeta = { name: 'Point', type: PointSchema } as const;
+type PointUnit = WithTypedUnits<typeof PointMeta>;
+
+// Nested schemas
+const LineMeta = {
+  name: 'Line',
+  type: { start: { x: 'number', y: 'number' }, end: { x: 'number', y: 'number' } }
+} as const;
+```
+
+#### Tuple Units
+
+```typescript
+const RGBSchema = ['number', 'number', 'number'] as const;
+const RGBMeta = { name: 'RGB', type: RGBSchema } as const;
+type RGBUnit = WithTypedUnits<typeof RGBMeta>;
+
+// Optional and rest elements
+const HeaderSchema = ['string', 'number?', '...string'] as const;
+```
+
+#### Runtime Type Guards
+
+```typescript
+import {
+  isEnumMetadata, isClassMetadata,
+  isRecordMetadata, isTupleMetadata,
+  detectMetadataKind
+} from '@unacy/core';
+
+detectMetadataKind(LogLevelMeta);  // 'enum'
+detectMetadataKind(TempMeta);      // 'class'
+detectMetadataKind(PointMeta);     // 'record'
+detectMetadataKind(RGBMeta);       // 'tuple'
+
+if (isEnumMetadata(meta)) {
+  // meta.type is narrowed to EnumType
+}
+```
+
 ## API Reference
 
 ### Types
@@ -243,7 +319,15 @@ type NumericMetadata = TypedMetadata<number>;
 
 type StringMetadata = TypedMetadata<string>;
 // { name: string; type: 'string' }
+
+// Non-primitive: type IS the value itself
+type EnumMetadata = TypedMetadata<typeof LogLevel>;
+// { name: string; type: typeof LogLevel }
 ```
+
+#### `SupportedType`
+Union of all types that can be used as a unit base:
+`number | string | boolean | bigint | EnumType | ClassType | RecordSchema | TupleSchema`
 
 #### `WithFormat<T, F>`
 Brand a value with a format identifier for serialization safety.

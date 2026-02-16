@@ -1,7 +1,7 @@
 # Data Model: Non-Primitive Type Support
 
-**Date**: 2026-02-15  
-**Feature**: [Non-Primitive Type Support](./spec.md)  
+**Date**: 2026-02-15
+**Feature**: [Non-Primitive Type Support](./spec.md)
 **Research**: [research.md](./research.md)
 
 ## Overview
@@ -52,7 +52,7 @@ export type TypedMetadata<T extends PrimitiveType> = Simplify<{
 }>;
 
 // Extended implementation (all types)
-export type ExtendedTypedMetadata<T extends SupportedType> = 
+export type ExtendedTypedMetadata<T extends SupportedType> =
   T extends PrimitiveType ? PrimitiveTypedMetadata<T> :
   T extends EnumType ? EnumTypedMetadata<T> :
   T extends ClassType ? ClassTypedMetadata<T> :
@@ -238,16 +238,16 @@ const VersionTuple = ["number", "number", "...number"];  // [number, number, ...
 ```typescript
 // Infer TypeScript type from RecordSchema
 export type InferFromRecordSchema<S extends RecordSchema> = Simplify<{
-  [K in keyof S]: S[K] extends string 
+  [K in keyof S]: S[K] extends string
     ? PrimitiveTypeFromName<S[K]>
-    : S[K] extends RecordSchema 
+    : S[K] extends RecordSchema
       ? InferFromRecordSchema<S[K]>
       : never;
 }>;
 
 // Infer TypeScript type from TupleSchema
 export type InferFromTupleSchema<T extends readonly string[]> = Simplify<{
-  [K in keyof T]: T[K] extends `${infer Base}?` 
+  [K in keyof T]: T[K] extends `${infer Base}?`
     ? PrimitiveTypeFromName<Base> | undefined
     : T[K] extends `...${infer Base}`
       ? Array<PrimitiveTypeFromName<Base>>
@@ -257,7 +257,7 @@ export type InferFromTupleSchema<T extends readonly string[]> = Simplify<{
 }>;
 
 // Map type name strings to TypeScript types
-export type PrimitiveTypeFromName<T extends string> = 
+export type PrimitiveTypeFromName<T extends string> =
   T extends 'number' ? number :
   T extends 'string' ? string :
   T extends 'boolean' ? boolean :
@@ -274,19 +274,19 @@ export function validateEnum(value: unknown): value is EnumType {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
-  
+
   const enumObj = value as Record<string, unknown>;
   const values = Object.values(enumObj);
-  
+
   // Check if empty (allow per clarification #6)
   if (values.length === 0) {
     return true;
   }
-  
+
   // Check if all values are numbers or all are strings
   const numericValues = values.filter(v => typeof v === 'number');
   const stringValues = values.filter(v => typeof v === 'string');
-  
+
   // Reject mixed enums (per clarification #1)
   if (numericValues.length > 0 && stringValues.length > 0) {
     throw new Error(
@@ -294,7 +294,7 @@ export function validateEnum(value: unknown): value is EnumType {
       'Please use either numeric or string values consistently.'
     );
   }
-  
+
   return numericValues.length > 0 || stringValues.length > 0;
 }
 ```
@@ -306,12 +306,12 @@ export function validateClass(value: unknown): value is ClassType {
   if (typeof value !== 'function') {
     return false;
   }
-  
+
   // Check for prototype (per clarification #2 and #5)
   if (!('prototype' in value)) {
     return false;
   }
-  
+
   // Allow classes with any constructor signature (per clarification #5)
   // Allow classes without methods (per clarification #6)
   return true;
@@ -328,7 +328,7 @@ export function validateRecordSchema(
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     return false;
   }
-  
+
   // Detect circular references (reject per clarification #3)
   if (visited.has(value)) {
     throw new Error(
@@ -336,16 +336,16 @@ export function validateRecordSchema(
       'Please restructure your schema to avoid self-referential structures.'
     );
   }
-  
+
   visited.add(value);
-  
+
   const schema = value as Record<string, unknown>;
-  
+
   // Allow empty records (per clarification #6)
   if (Object.keys(schema).length === 0) {
     return true;
   }
-  
+
   // Validate all property values (per clarification #7)
   for (const [key, propValue] of Object.entries(schema)) {
     if (typeof propValue === 'string') {
@@ -368,7 +368,7 @@ export function validateRecordSchema(
       );
     }
   }
-  
+
   return true;
 }
 ```
@@ -380,22 +380,22 @@ export function validateTupleSchema(value: unknown): value is TupleSchema {
   if (!Array.isArray(value)) {
     return false;
   }
-  
+
   // Allow empty tuples (per clarification #6)
   if (value.length === 0) {
     return true;
   }
-  
+
   // Validate each element (per clarification #4)
   for (let i = 0; i < value.length; i++) {
     const element = value[i];
-    
+
     if (typeof element !== 'string') {
       throw new Error(
         `Tuple element at index ${i} must be a string, got ${typeof element}.`
       );
     }
-    
+
     // Parse optional (?) and rest (...) modifiers
     let typeName = element;
     if (element.endsWith('?')) {
@@ -403,7 +403,7 @@ export function validateTupleSchema(value: unknown): value is TupleSchema {
     } else if (element.startsWith('...')) {
       typeName = element.slice(3);
     }
-    
+
     // Validate base type name
     if (!['number', 'string', 'boolean', 'bigint'].includes(typeName)) {
       throw new Error(
@@ -412,7 +412,7 @@ export function validateTupleSchema(value: unknown): value is TupleSchema {
       );
     }
   }
-  
+
   return true;
 }
 ```

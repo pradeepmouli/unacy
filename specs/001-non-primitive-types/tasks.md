@@ -1,6 +1,6 @@
 # Tasks: Non-Primitive Type Support
 
-**Branch**: `001-non-primitive-types`  
+**Branch**: `001-non-primitive-types`
 **Input**: Design documents from `/specs/001-non-primitive-types/`
 **Prerequisites**: plan.md ✅, spec.md ✅, research.md ✅, data-model.md ✅, contracts/ ✅
 
@@ -18,9 +18,9 @@
 
 **Purpose**: Project initialization and validation infrastructure
 
-- [ ] T001 Validate existing project structure in packages/core/
-- [ ] T002 [P] Add type-fest usage imports to packages/core/src/types.ts
-- [ ] T003 [P] Create packages/core/src/type-inference.ts stub file for schema-to-type utilities
+- [X] T001 Validate existing project structure in packages/core/
+- [X] T002 [P] Add type-fest usage imports to packages/core/src/types.ts
+- [X] T003 [P] Create packages/core/src/type-inference.ts stub file for schema-to-type utilities
 
 ---
 
@@ -30,12 +30,12 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Extend `PrimitiveType` to create `SupportedType` union in packages/core/src/types.ts
-- [ ] T005 [P] Add `NonPrimitiveType` category types (EnumType, ClassType, RecordSchema, TupleSchema) in packages/core/src/types.ts
-- [ ] T006 [P] Add base metadata extension types (ExtendedTypedMetadata) in packages/core/src/types.ts
-- [ ] T007 Create validation infrastructure file packages/core/src/utils/validation.ts with type guard stubs
-- [ ] T008 [P] Add type inference utilities (InferFromRecordSchema, InferFromTupleSchema, PrimitiveTypeFromName) in packages/core/src/type-inference.ts
-- [ ] T009 Update WithUnits type to support extended metadata in packages/core/src/types.ts
+- [X] T004 Extend `PrimitiveType` to create `SupportedType` union in packages/core/src/types.ts
+- [X] T005 [P] Add `NonPrimitiveType` category types (EnumType, ClassType, RecordSchema, TupleSchema) in packages/core/src/types.ts
+- [X] T006 [P] Add base metadata extension types (ExtendedTypedMetadata) in packages/core/src/types.ts
+- [X] T007 Create validation infrastructure file packages/core/src/utils/validation.ts with type guard stubs
+- [X] T008 [P] Add type inference utilities (InferFromRecordSchema, InferFromTupleSchema, PrimitiveTypeFromName) in packages/core/src/type-inference.ts
+- [X] T009 Update WithUnits type to support extended metadata in packages/core/src/types.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -51,21 +51,21 @@
 
 > **TDD: Write these tests FIRST, ensure they FAIL, then implement**
 
-- [ ] T010 [P] [US1] Create test file packages/core/src/__tests__/enum-units.test.ts with basic enum registration test (MUST FAIL)
-- [ ] T011 [P] [US1] Add numeric enum test case in packages/core/src/__tests__/enum-units.test.ts (MUST FAIL)
-- [ ] T012 [P] [US1] Add string enum test case in packages/core/src/__tests__/enum-units.test.ts (MUST FAIL)
-- [ ] T013 [P] [US1] Add mixed enum rejection test in packages/core/src/__tests__/enum-units.test.ts (MUST FAIL)
-- [ ] T014 [P] [US1] Add empty enum test in packages/core/src/__tests__/enum-units.test.ts (MUST FAIL)
-- [ ] T015 [P] [US1] Add enum metadata introspection test in packages/core/src/__tests__/enum-units.test.ts (MUST FAIL)
+- [X] T010 [P] [US1] Create test file packages/core/src/__tests__/enum-units.test.ts with basic enum registration test (MUST FAIL)
+- [X] T011 [P] [US1] Add numeric enum test case in packages/core/src/__tests__/enum-units.test.ts (MUST FAIL)
+- [X] T012 [P] [US1] Add string enum test case in packages/core/src/__tests__/enum-units.test.ts (MUST FAIL)
+- [X] T013 [P] [US1] Add mixed enum rejection test in packages/core/src/__tests__/enum-units.test.ts (MUST FAIL)
+- [X] T014 [P] [US1] Add empty enum test in packages/core/src/__tests__/enum-units.test.ts (MUST FAIL)
+- [X] T015 [P] [US1] Add enum metadata introspection test in packages/core/src/__tests__/enum-units.test.ts (MUST FAIL)
 
 ### Implementation for User Story 1
 
-- [ ] T016 [P] [US1] Implement EnumTypedMetadata type in packages/core/src/types.ts
-- [ ] T017 [P] [US1] Implement validateEnum function in packages/core/src/utils/validation.ts with mixed enum rejection
-- [ ] T018 [P] [US1] Implement isEnumMetadata type guard in packages/core/src/utils/validation.ts
-- [ ] T019 [US1] Extend registry.register() to detect and handle enum types in packages/core/src/registry.ts
-- [ ] T020 [US1] Add enum type validation with clear error messages in packages/core/src/registry.ts
-- [ ] T021 [US1] Verify all enum tests pass (T010-T015)
+- [X] T016 [P] [US1] Implement EnumTypedMetadata type in packages/core/src/types.ts
+- [X] T017 [P] [US1] Implement validateEnum function in packages/core/src/utils/validation.ts with mixed enum rejection
+- [X] T018 [P] [US1] Implement isEnumMetadata type guard in packages/core/src/utils/validation.ts
+- [X] T019 [US1] Extend registry.register() to detect and handle enum types in packages/core/src/registry.ts
+- [X] T020 [US1] Add enum type validation with clear error messages in packages/core/src/registry.ts
+- [X] T021 [US1] Verify all enum tests pass (T010-T015)
 
 **Checkpoint**: Enum units are fully functional and independently testable
 
@@ -81,21 +81,21 @@
 
 > **TDD: Write these tests FIRST, ensure they FAIL, then implement**
 
-- [ ] T022 [P] [US2] Create test file packages/core/src/__tests__/class-units.test.ts with basic class registration test (MUST FAIL)
-- [ ] T023 [P] [US2] Add class with constructor parameters test in packages/core/src/__tests__/class-units.test.ts (MUST FAIL)
-- [ ] T024 [P] [US2] Add class with methods test in packages/core/src/__tests__/class-units.test.ts (MUST FAIL)
-- [ ] T025 [P] [US2] Add class inheritance test in packages/core/src/__tests__/class-units.test.ts (MUST FAIL)
-- [ ] T026 [P] [US2] Add class without methods test (empty class) in packages/core/src/__tests__/class-units.test.ts (MUST FAIL)
-- [ ] T027 [P] [US2] Add class metadata introspection test in packages/core/src/__tests__/class-units.test.ts (MUST FAIL)
+- [X] T022 [P] [US2] Create test file packages/core/src/__tests__/class-units.test.ts with basic class registration test (MUST FAIL)
+- [X] T023 [P] [US2] Add class with constructor parameters test in packages/core/src/__tests__/class-units.test.ts (MUST FAIL)
+- [X] T024 [P] [US2] Add class with methods test in packages/core/src/__tests__/class-units.test.ts (MUST FAIL)
+- [X] T025 [P] [US2] Add class inheritance test in packages/core/src/__tests__/class-units.test.ts (MUST FAIL)
+- [X] T026 [P] [US2] Add class without methods test (empty class) in packages/core/src/__tests__/class-units.test.ts (MUST FAIL)
+- [X] T027 [P] [US2] Add class metadata introspection test in packages/core/src/__tests__/class-units.test.ts (MUST FAIL)
 
 ### Implementation for User Story 2
 
-- [ ] T028 [P] [US2] Implement ClassTypedMetadata type in packages/core/src/types.ts
-- [ ] T029 [P] [US2] Implement validateClass function in packages/core/src/utils/validation.ts
-- [ ] T030 [P] [US2] Implement isClassMetadata type guard in packages/core/src/utils/validation.ts
-- [ ] T031 [US2] Extend registry.register() to detect and handle class types in packages/core/src/registry.ts
-- [ ] T032 [US2] Add class type validation (prototype check) in packages/core/src/registry.ts
-- [ ] T033 [US2] Verify all class tests pass (T022-T027)
+- [X] T028 [P] [US2] Implement ClassTypedMetadata type in packages/core/src/types.ts
+- [X] T029 [P] [US2] Implement validateClass function in packages/core/src/utils/validation.ts
+- [X] T030 [P] [US2] Implement isClassMetadata type guard in packages/core/src/utils/validation.ts
+- [X] T031 [US2] Extend registry.register() to detect and handle class types in packages/core/src/registry.ts
+- [X] T032 [US2] Add class type validation (prototype check) in packages/core/src/registry.ts
+- [X] T033 [US2] Verify all class tests pass (T022-T027)
 
 **Checkpoint**: Class units are fully functional and independently testable
 
@@ -111,23 +111,23 @@
 
 > **TDD: Write these tests FIRST, ensure they FAIL, then implement**
 
-- [ ] T034 [P] [US3] Create test file packages/core/src/__tests__/record-units.test.ts with basic record registration test (MUST FAIL)
-- [ ] T035 [P] [US3] Add simple record schema test (Point {x, y}) in packages/core/src/__tests__/record-units.test.ts (MUST FAIL)
-- [ ] T036 [P] [US3] Add nested record schema test (Address with coordinates) in packages/core/src/__tests__/record-units.test.ts (MUST FAIL)
-- [ ] T037 [P] [US3] Add circular reference rejection test in packages/core/src/__tests__/record-units.test.ts (MUST FAIL)
-- [ ] T038 [P] [US3] Add empty record test in packages/core/src/__tests__/record-units.test.ts (MUST FAIL)
-- [ ] T039 [P] [US3] Add invalid type name rejection test in packages/core/src/__tests__/record-units.test.ts (MUST FAIL)
-- [ ] T040 [P] [US3] Add record metadata introspection test in packages/core/src/__tests__/record-units.test.ts (MUST FAIL)
+- [X] T034 [P] [US3] Create test file packages/core/src/__tests__/record-units.test.ts with basic record registration test (MUST FAIL)
+- [X] T035 [P] [US3] Add simple record schema test (Point {x, y}) in packages/core/src/__tests__/record-units.test.ts (MUST FAIL)
+- [X] T036 [P] [US3] Add nested record schema test (Address with coordinates) in packages/core/src/__tests__/record-units.test.ts (MUST FAIL)
+- [X] T037 [P] [US3] Add circular reference rejection test in packages/core/src/__tests__/record-units.test.ts (MUST FAIL)
+- [X] T038 [P] [US3] Add empty record test in packages/core/src/__tests__/record-units.test.ts (MUST FAIL)
+- [X] T039 [P] [US3] Add invalid type name rejection test in packages/core/src/__tests__/record-units.test.ts (MUST FAIL)
+- [X] T040 [P] [US3] Add record metadata introspection test in packages/core/src/__tests__/record-units.test.ts (MUST FAIL)
 
 ### Implementation for User Story 3
 
-- [ ] T041 [P] [US3] Implement RecordTypedMetadata and RecordSchema types in packages/core/src/types.ts
-- [ ] T042 [P] [US3] Implement InferFromRecordSchema type utility in packages/core/src/type-inference.ts
-- [ ] T043 [P] [US3] Implement validateRecordSchema function with circular reference detection in packages/core/src/utils/validation.ts
-- [ ] T044 [P] [US3] Implement isRecordMetadata type guard in packages/core/src/utils/validation.ts
-- [ ] T045 [US3] Extend registry.register() to detect and handle record schemas in packages/core/src/registry.ts
-- [ ] T046 [US3] Add record schema validation with clear error messages (circular refs, invalid type names) in packages/core/src/registry.ts
-- [ ] T047 [US3] Verify all record tests pass (T034-T040)
+- [X] T041 [P] [US3] Implement RecordTypedMetadata and RecordSchema types in packages/core/src/types.ts
+- [X] T042 [P] [US3] Implement InferFromRecordSchema type utility in packages/core/src/type-inference.ts
+- [X] T043 [P] [US3] Implement validateRecordSchema function with circular reference detection in packages/core/src/utils/validation.ts
+- [X] T044 [P] [US3] Implement isRecordMetadata type guard in packages/core/src/utils/validation.ts
+- [X] T045 [US3] Extend registry.register() to detect and handle record schemas in packages/core/src/registry.ts
+- [X] T046 [US3] Add record schema validation with clear error messages (circular refs, invalid type names) in packages/core/src/registry.ts
+- [X] T047 [US3] Verify all record tests pass (T034-T040)
 
 **Checkpoint**: Record units are fully functional and independently testable
 
@@ -143,23 +143,23 @@
 
 > **TDD: Write these tests FIRST, ensure they FAIL, then implement**
 
-- [ ] T048 [P] [US4] Create test file packages/core/src/__tests__/tuple-units.test.ts with basic tuple registration test (MUST FAIL)
-- [ ] T049 [P] [US4] Add simple tuple schema test (RGB triplet) in packages/core/src/__tests__/tuple-units.test.ts (MUST FAIL)
-- [ ] T050 [P] [US4] Add tuple with optional element test (?) in packages/core/src/__tests__/tuple-units.test.ts (MUST FAIL)
-- [ ] T051 [P] [US4] Add tuple with rest element test (...) in packages/core/src/__tests__/tuple-units.test.ts (MUST FAIL)
-- [ ] T052 [P] [US4] Add empty tuple test in packages/core/src/__tests__/tuple-units.test.ts (MUST FAIL)
-- [ ] T053 [P] [US4] Add invalid type name rejection test in packages/core/src/__tests__/tuple-units.test.ts (MUST FAIL)
-- [ ] T054 [P] [US4] Add tuple metadata introspection test in packages/core/src/__tests__/tuple-units.test.ts (MUST FAIL)
+- [X] T048 [P] [US4] Create test file packages/core/src/__tests__/tuple-units.test.ts with basic tuple registration test (MUST FAIL)
+- [X] T049 [P] [US4] Add simple tuple schema test (RGB triplet) in packages/core/src/__tests__/tuple-units.test.ts (MUST FAIL)
+- [X] T050 [P] [US4] Add tuple with optional element test (?) in packages/core/src/__tests__/tuple-units.test.ts (MUST FAIL)
+- [X] T051 [P] [US4] Add tuple with rest element test (...) in packages/core/src/__tests__/tuple-units.test.ts (MUST FAIL)
+- [X] T052 [P] [US4] Add empty tuple test in packages/core/src/__tests__/tuple-units.test.ts (MUST FAIL)
+- [X] T053 [P] [US4] Add invalid type name rejection test in packages/core/src/__tests__/tuple-units.test.ts (MUST FAIL)
+- [X] T054 [P] [US4] Add tuple metadata introspection test in packages/core/src/__tests__/tuple-units.test.ts (MUST FAIL)
 
 ### Implementation for User Story 4
 
-- [ ] T055 [P] [US4] Implement TupleTypedMetadata and TupleSchema types in packages/core/src/types.ts
-- [ ] T056 [P] [US4] Implement InferFromTupleSchema type utility in packages/core/src/type-inference.ts
-- [ ] T057 [P] [US4] Implement validateTupleSchema function with ? and ... parsing in packages/core/src/utils/validation.ts
-- [ ] T058 [P] [US4] Implement isTupleMetadata type guard in packages/core/src/utils/validation.ts
-- [ ] T059 [US4] Extend registry.register() to detect and handle tuple schemas in packages/core/src/registry.ts
-- [ ] T060 [US4] Add tuple schema validation with clear error messages in packages/core/src/registry.ts
-- [ ] T061 [US4] Verify all tuple tests pass (T048-T054)
+- [X] T055 [P] [US4] Implement TupleTypedMetadata and TupleSchema types in packages/core/src/types.ts
+- [X] T056 [P] [US4] Implement InferFromTupleSchema type utility in packages/core/src/type-inference.ts
+- [X] T057 [P] [US4] Implement validateTupleSchema function with ? and ... parsing in packages/core/src/utils/validation.ts
+- [X] T058 [P] [US4] Implement isTupleMetadata type guard in packages/core/src/utils/validation.ts
+- [X] T059 [US4] Extend registry.register() to detect and handle tuple schemas in packages/core/src/registry.ts
+- [X] T060 [US4] Add tuple schema validation with clear error messages in packages/core/src/registry.ts
+- [X] T061 [US4] Verify all tuple tests pass (T048-T054)
 
 **Checkpoint**: Tuple units are fully functional and independently testable
 
@@ -169,16 +169,16 @@
 
 **Purpose**: Integration tests, documentation, and backward compatibility verification
 
-- [ ] T062 [P] Extend packages/core/src/__tests__/types.test.ts with non-primitive type edge cases
-- [ ] T063 [P] Extend packages/core/src/__tests__/registry.test.ts with mixed primitive/non-primitive registrations
-- [ ] T064 [P] Extend packages/core/src/__tests__/metadata.test.ts with all type guard tests
-- [ ] T065 [P] Add backward compatibility tests for existing primitive type registrations in packages/core/src/__tests__/registry.test.ts
-- [ ] T066 Update packages/core/README.md with non-primitive type examples and usage patterns
-- [ ] T067 [P] Add JSDoc comments to all new public APIs in packages/core/src/types.ts
-- [ ] T068 [P] Add JSDoc comments to validation functions in packages/core/src/utils/validation.ts
-- [ ] T069 [P] Add explicit type category introspection test in packages/core/src/__tests__/metadata.test.ts verifying isEnumMetadata, isClassMetadata, isRecordMetadata, isTupleMetadata for all four types
-- [ ] T070 Verify all quality gates pass: `pnpm type-check && pnpm lint && pnpm format:check && pnpm test`
-- [ ] T071 Create changeset with: `pnpm changeset` (minor version, feature description)
+- [X] T062 [P] Extend packages/core/src/__tests__/types.test.ts with non-primitive type edge cases
+- [X] T063 [P] Extend packages/core/src/__tests__/registry.test.ts with mixed primitive/non-primitive registrations
+- [X] T064 [P] Extend packages/core/src/__tests__/metadata.test.ts with all type guard tests
+- [X] T065 [P] Add backward compatibility tests for existing primitive type registrations in packages/core/src/__tests__/registry.test.ts
+- [X] T066 Update packages/core/README.md with non-primitive type examples and usage patterns
+- [X] T067 [P] Add JSDoc comments to all new public APIs in packages/core/src/types.ts
+- [X] T068 [P] Add JSDoc comments to validation functions in packages/core/src/utils/validation.ts
+- [X] T069 [P] Add explicit type category introspection test in packages/core/src/__tests__/metadata.test.ts verifying isEnumMetadata, isClassMetadata, isRecordMetadata, isTupleMetadata for all four types
+- [X] T070 Verify all quality gates pass: `pnpm type-check && pnpm lint && pnpm format:check && pnpm test`
+- [X] T071 Create changeset with: `pnpm changeset` (minor version, feature description)
 
 ---
 
@@ -273,7 +273,7 @@ All must pass before proceeding to next phase.
 - **User Story 4 Tasks**: 14 (7 tests + 7 implementation)
 - **Polish Tasks**: 10 (Phase 7)
 
-**Parallel Opportunities**: 
+**Parallel Opportunities**:
 - Phase 1: 2 tasks can run in parallel
 - Phase 2: 3 tasks can run in parallel
 - Each User Story: 6-7 test tasks can run in parallel

@@ -13,6 +13,11 @@ export type {
   UnitMetadata,
   Relax,
   PrimitiveType,
+  SupportedType,
+  EnumType,
+  ClassType,
+  RecordSchema,
+  TupleSchema,
   ToPrimitiveTypeName
 } from './types.js';
 
@@ -30,4 +35,21 @@ export { createRegistry } from './registry.js';
 export { UnacyError, CycleError, MaxDepthError, ConversionError, ParseError } from './errors.js';
 
 // Utilities
-export { createParserWithSchema } from './utils/validation.js';
+export {
+  createParserWithSchema,
+  validateEnum,
+  validateClass,
+  validateRecordSchema,
+  validateTupleSchema,
+  isEnumMetadata,
+  isClassMetadata,
+  isRecordMetadata,
+  isTupleMetadata
+} from './utils/validation.js';
+
+// Type inference utilities
+export type {
+  PrimitiveTypeFromName,
+  InferFromRecordSchema,
+  InferFromTupleSchema
+} from './type-inference.js';

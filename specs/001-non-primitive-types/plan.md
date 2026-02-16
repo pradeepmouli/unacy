@@ -11,14 +11,14 @@ Extend the unacy type system to support non-primitive TypeScript types (enums, c
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.9.3 with ESM-only output  
-**Primary Dependencies**: type-fest ^5.4.4 (Tagged, GetTagMetadata, Simplify utilities)  
-**Storage**: N/A (in-memory registry only)  
+**Language/Version**: TypeScript 5.9.3 with ESM-only output
+**Primary Dependencies**: type-fest ^5.4.4 (Tagged, GetTagMetadata, Simplify utilities)
+**Storage**: N/A (in-memory registry only)
 **Testing**: Vitest ^4.0.18
 **Target Platform**: Node.js >=20.0.0, browser ESM
-**Project Type**: Monorepo package (packages/core)  
+**Project Type**: Monorepo package (packages/core)
 **Performance Goals**: Type inference at compile-time with zero runtime overhead for type operations
-**Constraints**: Must maintain backward compatibility with existing primitive type registrations; no breaking changes to UnitRegistry API  
+**Constraints**: Must maintain backward compatibility with existing primitive type registrations; no breaking changes to UnitRegistry API
 **Scale/Scope**: Extends existing ~150 LOC in packages/core/src/types.ts; adds ~200-300 LOC for non-primitive type support across types, registry, and validation modules
 
 ## Constitution Check
@@ -99,12 +99,12 @@ No constitution violations requiring justification. This feature follows all cor
 
 ## Phase 0: Research ✅ COMPLETE
 
-**Status**: Complete  
+**Status**: Complete
 **Artifact**: [research.md](./research.md)
 
 All design decisions have been validated through the clarification session:
 1. ✅ Mixed enum handling: Reject with error
-2. ✅ Class inheritance: Store direct prototype only  
+2. ✅ Class inheritance: Store direct prototype only
 3. ✅ Circular references: Reject with error
 4. ✅ Tuple optional/rest elements: Use "?" and "..." notation
 5. ✅ Class constructors: Support any signature
@@ -119,7 +119,7 @@ All design decisions have been validated through the clarification session:
 
 ## Phase 1: Design & Contracts ✅ COMPLETE
 
-**Status**: Complete  
+**Status**: Complete
 **Artifacts**:
 - [data-model.md](./data-model.md) - Complete type system extensions and metadata structures
 - [contracts/type-metadata-api.md](./contracts/type-metadata-api.md) - Full API contracts with validation rules
@@ -201,7 +201,7 @@ Before PR:
 
 ---
 
-**Plan Status**: ✅ **READY FOR TASK GENERATION**  
-**Next Command**: `/speckit.tasks`  
-**Branch**: `001-non-primitive-types`  
+**Plan Status**: ✅ **READY FOR TASK GENERATION**
+**Next Command**: `/speckit.tasks`
+**Branch**: `001-non-primitive-types`
 **Estimated Scope**: ~200-300 LOC across 5-6 files, 8-10 test files

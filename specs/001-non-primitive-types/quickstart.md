@@ -1,7 +1,7 @@
 # Quickstart: Non-Primitive Type Support
 
-**Date**: 2026-02-15  
-**Feature**: [Non-Primitive Type Support](./spec.md)  
+**Date**: 2026-02-15
+**Feature**: [Non-Primitive Type Support](./spec.md)
 **API Contracts**: [contracts/type-metadata-api.md](./contracts/type-metadata-api.md)
 
 ## Overview
@@ -118,7 +118,7 @@ class Temperature {
     public value: number,
     public scale: 'C' | 'F' | 'K'
   ) {}
-  
+
   toCelsius(): number {
     switch (this.scale) {
       case 'C': return this.value;
@@ -126,7 +126,7 @@ class Temperature {
       case 'K': return this.value - 273.15;
     }
   }
-  
+
   toFahrenheit(): number {
     const celsius = this.toCelsius();
     return celsius * 9/5 + 32;
@@ -163,7 +163,7 @@ console.log(metadata.className);  // 'Temperature'
 ```typescript
 class Measurement {
   constructor(public value: number) {}
-  
+
   toString() {
     return `${this.value}`;
   }
@@ -173,7 +173,7 @@ class Distance extends Measurement {
   constructor(value: number, public unit: string) {
     super(value);
   }
-  
+
   toString() {
     return `${this.value} ${this.unit}`;
   }
@@ -364,7 +364,7 @@ const v2 = registry.Version([1, 2, 3, 4, 5]);
 const registry = createRegistry()
   // Primitive
   .register({ name: 'Meter', type: 'number' })
-  
+
   // Enum
   .register({
     name: 'LogLevel',
@@ -372,7 +372,7 @@ const registry = createRegistry()
     value: LogLevel,
     enumType: 'numeric'
   })
-  
+
   // Class
   .register({
     name: 'Temperature',
@@ -380,14 +380,14 @@ const registry = createRegistry()
     value: Temperature,
     className: 'Temperature'
   })
-  
+
   // Record
   .register({
     name: 'Point',
     type: 'record',
     value: { x: "number", y: "number" }
   })
-  
+
   // Tuple
   .register({
     name: 'RGB',
@@ -412,7 +412,7 @@ const metadata = registry.getMetadata('Point');
 if (isRecordMetadata(metadata)) {
   // TypeScript knows this is RecordTypedMetadata
   console.log('Record properties:', Object.keys(metadata.value));
-  
+
   // Iterate over schema
   for (const [key, typeDesc] of Object.entries(metadata.value)) {
     if (typeof typeDesc === 'string') {

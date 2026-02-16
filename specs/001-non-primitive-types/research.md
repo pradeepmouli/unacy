@@ -1,7 +1,7 @@
 # Research: Non-Primitive Type Support
 
-**Date**: 2026-02-15  
-**Feature**: [Non-Primitive Type Support](./spec.md)  
+**Date**: 2026-02-15
+**Feature**: [Non-Primitive Type Support](./spec.md)
 **Status**: Complete
 
 ## Overview
@@ -11,18 +11,18 @@ This document consolidates research findings for extending the unacy type system
 ## Design Decisions (from Clarifications)
 
 ### 1. Mixed Enum Handling
-**Decision**: Reject mixed enums at registration time with clear error message  
+**Decision**: Reject mixed enums at registration time with clear error message
 **Rationale**: TypeScript discourages mixed enums as an anti-pattern. Rejecting them:
 - Simplifies implementation (no need to handle heterogeneous member types)
 - Guides developers toward better practices
 - Prevents ambiguity in type inference
-**Alternatives Considered**: 
+**Alternatives Considered**:
 - Support with normalization to strings (adds complexity)
 - Support with separate handling per member type (breaks type consistency)
 
 ### 2. Class Inheritance
-**Decision**: Store only the direct class prototype; natural prototype chain remains accessible  
-**Rationale**: 
+**Decision**: Store only the direct class prototype; natural prototype chain remains accessible
+**Rationale**:
 - Aligns with JavaScript's native inheritance mechanism
 - Developers can traverse prototype chain at runtime when needed
 - Avoids storage overhead of flattening or duplicating inherited methods
@@ -33,7 +33,7 @@ This document consolidates research findings for extending the unacy type system
 - Reject classes with inheritance (too restrictive)
 
 ### 3. Circular References in Records
-**Decision**: Reject circular references at registration time with clear error message  
+**Decision**: Reject circular references at registration time with clear error message
 **Rationale**:
 - Prevents infinite recursion during schema validation
 - Simplifies implementation significantly
@@ -44,7 +44,7 @@ This document consolidates research findings for extending the unacy type system
 - Support with depth limits (arbitrary cutoff creates inconsistency)
 
 ### 4. Tuple Optional and Rest Elements
-**Decision**: Represent optional elements with "?" suffix, rest elements with "..." prefix  
+**Decision**: Represent optional elements with "?" suffix, rest elements with "..." prefix
 **Rationale**:
 - Familiar syntax from TypeScript/JavaScript conventions
 - Compact and readable representation
@@ -56,7 +56,7 @@ This document consolidates research findings for extending the unacy type system
 - Ignore optional/rest (loses important type information)
 
 ### 5. Class Constructor Parameters
-**Decision**: Allow any class regardless of constructor signature  
+**Decision**: Allow any class regardless of constructor signature
 **Rationale**:
 - Unit system stores prototypes, not instances
 - Constructor parameters are irrelevant to type branding
@@ -68,7 +68,7 @@ This document consolidates research findings for extending the unacy type system
 - Store constructor parameter types (adds metadata complexity without clear benefit)
 
 ### 6. Empty Types
-**Decision**: Allow all empty types (empty enums, classes without methods, empty records)  
+**Decision**: Allow all empty types (empty enums, classes without methods, empty records)
 **Rationale**:
 - Empty types still provide type branding value for compile-time safety
 - Common pattern in type-driven design for marker types
@@ -79,7 +79,7 @@ This document consolidates research findings for extending the unacy type system
 - Allow with warnings (adds noise without benefit)
 
 ### 7. Complex Nested Structures in Records
-**Decision**: Recursively support nested structures using same schema format rules  
+**Decision**: Recursively support nested structures using same schema format rules
 **Important Clarification**: Schemas are **provided by developers** in the required format. The system **infers TypeScript types from schemas** rather than generating schemas from types.
 **Rationale**:
 - Consistent with overall design: developers define schemas, system provides types
@@ -104,7 +104,7 @@ export type WithUnits<T extends PrimitiveType, M extends BaseMetadata> = Tagged<
 **Proposed Extensions**:
 ```typescript
 // 1. Extend PrimitiveType to include non-primitive types
-export type NonPrimitiveType = 
+export type NonPrimitiveType =
   | Record<string, unknown>  // For enums (enum object itself), records (schema objects)
   | Function                 // For classes (class prototype)
   | readonly unknown[];      // For tuples (array of type name strings)
@@ -170,14 +170,14 @@ Since schemas are provided by developers, the system needs to infer TypeScript t
 ```typescript
 // Schema-to-type inference utility types
 export type InferFromSchema<S extends RecordSchema> = {
-  [K in keyof S]: S[K] extends string 
+  [K in keyof S]: S[K] extends string
     ? PrimitiveTypeFromName<S[K]>
-    : S[K] extends RecordSchema 
+    : S[K] extends RecordSchema
       ? InferFromSchema<S[K]>
       : never;
 };
 
-export type PrimitiveTypeFromName<T extends string> = 
+export type PrimitiveTypeFromName<T extends string> =
   T extends 'number' ? number :
   T extends 'string' ? string :
   T extends 'boolean' ? boolean :
@@ -185,7 +185,7 @@ export type PrimitiveTypeFromName<T extends string> =
   never;
 
 export type InferFromTuple<T extends readonly string[]> = {
-  [K in keyof T]: T[K] extends `${infer Base}?` 
+  [K in keyof T]: T[K] extends `${infer Base}?`
     ? PrimitiveTypeFromName<Base> | undefined
     : T[K] extends `...${infer Base}`
       ? PrimitiveTypeFromName<Base>[]

@@ -684,3 +684,123 @@ describe('Registry - Metadata Object Support', () => {
     }
   });
 });
+
+describe('Non-Primitive Type Registration (T063)', () => {
+  enum LogLevel {
+    DEBUG = 0,
+    INFO = 1,
+    WARN = 2,
+    ERROR = 3
+  }
+
+  it('should register enum unit with simplified metadata', () => {
+    const registry = createRegistry().register({
+      name: 'LogLevel',
+      type: LogLevel
+    } as const);
+
+    // Verify the unit is accessible
+    expect(registry).toBeDefined();
+  });
+
+  it('should register class unit with simplified metadata', () => {
+    class Temperature {
+      constructor(public value: number) {}
+    }
+
+    const registry = createRegistry().register({
+      name: 'Temperature',
+      type: Temperature
+    } as const);
+
+    expect(registry).toBeDefined();
+  });
+
+  it('should register record schema unit with simplified metadata', () => {
+    const registry = createRegistry().register({
+      name: 'Point',
+      type: { x: 'number', y: 'number' }
+    } as const);
+
+    expect(registry).toBeDefined();
+  });
+
+  it('should register tuple schema unit with simplified metadata', () => {
+    const registry = createRegistry().register({
+      name: 'RGB',
+      type: ['number', 'number', 'number'] as const
+    });
+
+    expect(registry).toBeDefined();
+  });
+
+  it('should handle mixed primitive and non-primitive registrations', () => {
+    const registry = createRegistry()
+      .register(CelsiusMetadata)
+      .register(FahrenheitMetadata)
+      .register({
+        name: 'LogLevel',
+        type: LogLevel
+      } as const);
+
+    expect(registry).toBeDefined();
+  });
+});
+
+describe('Backward Compatibility (T065)', () => {
+  it('existing primitive registration still works', () => {
+    const registry = createRegistry()
+      .register(CelsiusMetadata)
+      .register(FahrenheitMetadata)
+      .register(
+        CelsiusMetadata,
+        FahrenheitMetadata,
+        (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit
+      );
+
+    const converter = getConverter(registry, 'Celsius', 'Fahrenheit');
+    expect(converter).toBeDefined();
+    if (converter) {
+      expect(converter(100 as Celsius)).toBe(212);
+    }
+  });
+
+  it('existing metadata format still type-checks', () => {
+    const metadata = {
+      name: 'Celsius' as const,
+      type: 'number' as const
+    };
+
+    // This should still work as TypedMetadata<number>
+    const registry = createRegistry().register(metadata);
+    expect(registry).toBeDefined();
+  });
+
+  it('existing converter chains still work', () => {
+    const registry = createRegistry()
+      .register(
+        CelsiusMetadata,
+        FahrenheitMetadata,
+        (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit
+      )
+      .register(
+        FahrenheitMetadata,
+        KelvinMetadata,
+        (f: Fahrenheit) => (((f - 32) * 5) / 9 + 273.15) as Kelvin
+      );
+
+    // Direct conversion
+    const directConverter = getConverter(registry, 'Celsius', 'Fahrenheit');
+    expect(directConverter).toBeDefined();
+    if (directConverter) {
+      expect(directConverter(0 as Celsius)).toBe(32);
+    }
+
+    // Multi-hop conversion (BFS)
+    const hopConverter = getConverter(registry, 'Celsius', 'Kelvin');
+    expect(hopConverter).toBeDefined();
+    if (hopConverter) {
+      expect(hopConverter(0 as Celsius)).toBeCloseTo(273.15, 1);
+    }
+  });
+});

@@ -1,5 +1,5 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
-import type { WithUnits, WithFormat } from '../types.js';
+import type { WithUnits, WithFormat, TypedMetadata, SupportedType } from '../types.js';
 import { CelsiusMetadata, FahrenheitMetadata, MetersMetadata } from './test-metadata.js';
 
 describe('WithUnits Type Safety', () => {
@@ -182,5 +182,69 @@ describe('WithUnits and WithFormat Interaction', () => {
     const value: BrandedNumber = 25 as any as BrandedNumber;
 
     expectTypeOf(value).toEqualTypeOf<BrandedNumber>();
+  });
+});
+
+describe('Non-Primitive Type Edge Cases (T062)', () => {
+  enum Direction {
+    NORTH = 0,
+    SOUTH = 1,
+    EAST = 2,
+    WEST = 3
+  }
+
+  class Vector {
+    constructor(
+      public x: number,
+      public y: number
+    ) {}
+  }
+
+  it('TypedMetadata resolves correctly for primitive types', () => {
+    type NumMeta = TypedMetadata<number>;
+    expectTypeOf<NumMeta>().toEqualTypeOf<{ name: string; type: 'number' }>();
+
+    type StrMeta = TypedMetadata<string>;
+    expectTypeOf<StrMeta>().toEqualTypeOf<{ name: string; type: 'string' }>();
+
+    type BoolMeta = TypedMetadata<boolean>;
+    expectTypeOf<BoolMeta>().toEqualTypeOf<{ name: string; type: 'boolean' }>();
+
+    type BigMeta = TypedMetadata<bigint>;
+    expectTypeOf<BigMeta>().toEqualTypeOf<{ name: string; type: 'bigint' }>();
+  });
+
+  it('TypedMetadata resolves correctly for enum types', () => {
+    type EnumMeta = TypedMetadata<typeof Direction>;
+    // For non-primitives, type IS the value itself
+    expectTypeOf<EnumMeta>().toEqualTypeOf<{ name: string; type: typeof Direction }>();
+  });
+
+  it('TypedMetadata resolves correctly for class types', () => {
+    type ClassMeta = TypedMetadata<typeof Vector>;
+    expectTypeOf<ClassMeta>().toEqualTypeOf<{ name: string; type: typeof Vector }>();
+  });
+
+  it('TypedMetadata resolves correctly for record schemas', () => {
+    const schema = { x: 'number', y: 'number' } as const;
+    type RecMeta = TypedMetadata<typeof schema>;
+    expectTypeOf<RecMeta>().toEqualTypeOf<{ name: string; type: typeof schema }>();
+  });
+
+  it('TypedMetadata resolves correctly for tuple schemas', () => {
+    const schema = ['number', 'string', 'boolean'] as const;
+    type TupMeta = TypedMetadata<typeof schema>;
+    expectTypeOf<TupMeta>().toEqualTypeOf<{ name: string; type: typeof schema }>();
+  });
+
+  it('SupportedType includes all categories', () => {
+    expectTypeOf<number>().toMatchTypeOf<SupportedType>();
+    expectTypeOf<string>().toMatchTypeOf<SupportedType>();
+    expectTypeOf<boolean>().toMatchTypeOf<SupportedType>();
+    expectTypeOf<bigint>().toMatchTypeOf<SupportedType>();
+    expectTypeOf<typeof Direction>().toMatchTypeOf<SupportedType>();
+    expectTypeOf<typeof Vector>().toMatchTypeOf<SupportedType>();
+    expectTypeOf<{ x: 'number' }>().toMatchTypeOf<SupportedType>();
+    expectTypeOf<readonly ['number']>().toMatchTypeOf<SupportedType>();
   });
 });

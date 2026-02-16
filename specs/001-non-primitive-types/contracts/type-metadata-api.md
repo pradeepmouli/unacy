@@ -1,7 +1,7 @@
 # API Contracts: Type Metadata API
 
-**Date**: 2026-02-15  
-**Feature**: [Non-Primitive Type Support](../spec.md)  
+**Date**: 2026-02-15
+**Feature**: [Non-Primitive Type Support](../spec.md)
 **Data Model**: [data-model.md](../data-model.md)
 
 ## Overview
@@ -73,10 +73,10 @@ register<C extends ClassType>(
 // Input
 class Temperature {
   constructor(public value: number, public scale: string) {}
-  
+
   toCelsius(): number {
-    return this.scale === 'F' 
-      ? (this.value - 32) * 5/9 
+    return this.scale === 'F'
+      ? (this.value - 32) * 5/9
       : this.value;
   }
 }
