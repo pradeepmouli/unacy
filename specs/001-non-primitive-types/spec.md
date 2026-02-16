@@ -15,6 +15,7 @@
 - Q: How should tuple types with optional or rest elements be represented in metadata? → A: Represent optional elements with "?" suffix (e.g., ["number", "string?"]) and rest elements with "..." prefix (e.g., ["number", "...string"])
 - Q: What should happen when a class constructor requires parameters? → A: Allow any class regardless of constructor signature; the unit system only stores the prototype, not instances
 - Q: How should the system handle empty types (empty enums, classes without methods, or empty records)? → A: Allow all empty types; they still provide type branding value even without data or behavior
+- Q: What should happen when record property values are complex nested structures? → A: Recursively support nested structures using the same schema format rules; schemas are provided by developers (not generated), and the system infers TypeScript types from them
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -90,7 +91,7 @@ A developer wants to define units using TypeScript tuple types to represent fixe
 - Tuple types with optional elements are represented with "?" suffix (e.g., ["number", "string?"]) and rest elements with "..." prefix (e.g., ["number", "...string"]) in the metadata array
 - Classes with constructor parameters are fully supported; the unit system stores only the prototype (not instances), so constructor signatures are irrelevant to the type system
 - Empty types (empty enums, classes without methods, empty records) are all allowed as they still provide type branding value for compile-time safety
-- What happens when record property values are not primitive types but complex nested structures?
+- Records with complex nested structures are supported by recursively applying the same schema format rules; developers provide schemas in the required format, and the system infers TypeScript type signatures from them
 
 ## Requirements *(mandatory)*
 
@@ -105,18 +106,22 @@ A developer wants to define units using TypeScript tuple types to represent fixe
 - **FR-004a**: System MUST store only the direct class prototype, preserving the natural prototype chain for runtime traversal
 - **FR-004b**: System MUST support classes with any constructor signature; constructor parameters are not relevant to the unit type system
 - **FR-005**: System MUST support TypeScript record types (object shapes) as unit definitions
-- **FR-006**: System MUST generate schema-like structures for record-based units, where property values are primitive type names or nested object schemas
+- **FR-006**: System MUST accept schema structures for record-based units in the format where property values are primitive type name strings or nested schema objects
 - **FR-006a**: System MUST reject records with circular references at registration time with a clear error message
+- **FR-006b**: System MUST infer TypeScript type signatures from provided schemas for compile-time type safety
+- **FR-006c**: System MUST support recursively nested schemas following the same format rules (primitives as strings, nested objects as nested schemas)
 - **FR-007**: System MUST support TypeScript tuple types as unit definitions
 - **FR-008**: System MUST store an array of primitive type name strings for tuple-based units, representing each position's type
 - **FR-008a**: System MUST represent optional tuple elements with "?" suffix and rest elements with "..." prefix in the type name strings
 - **FR-009**: System MUST extend the `PrimitiveType` type union to include non-primitive types (enums, classes, records, tuples)
 - **FR-010**: System MUST provide type inference for non-primitive unit types, maintaining compile-time type safety
+  - **Acceptance**: Given a record schema `{x: "number", y: "string"}`, TypeScript compiler reports zero type errors when accessing properties with correct types (`value.x as number`, `value.y as string`) and reports type errors for incorrect access (`value.x as string`)
 - **FR-011**: System MUST handle nested structures in records (e.g., `{outer: {inner: number}}` → `{outer: {inner: "number"}}`)
+  - **Note**: Circular reference detection at registration time prevents infinite recursion during schema validation
 - **FR-012**: System MUST support registration of non-primitive types in the existing UnitRegistry infrastructure
 - **FR-013**: System MUST maintain backward compatibility with existing primitive type registrations
-- **FR-014**: System MUST provide runtime introspection capabilities for querying non-primitive type metadata
-- **FR-015**: System MUST validate that branded values conform to their registered non-primitive type definitions
+- **FR-014**: System MUST provide runtime introspection capabilities for querying non-primitive type metadata through type guard functions (`isEnumMetadata()`, `isClassMetadata()`, `isRecordMetadata()`, `isTupleMetadata()`) and registry `getMetadata()` method. See [contracts/type-metadata-api.md](./contracts/type-metadata-api.md) for full API surface.
+- **FR-015**: System MUST validate non-primitive type definitions at registration time (schema structure, enum homogeneity, circular reference detection). Runtime value validation is TypeScript's responsibility through the type system; branded values are compile-time checked, not runtime validated.
 
 ### Key Entities
 
@@ -137,8 +142,8 @@ A developer wants to define units using TypeScript tuple types to represent fixe
 - **SC-003**: Developers can register and use record-based units with schema validation for object structures
 - **SC-004**: Developers can register and use tuple-based units with positional type validation
 - **SC-005**: All existing unit registry functionality continues to work with primitive types without breaking changes
-- **SC-006**: Type inference correctly resolves non-primitive unit types at compile time with zero type errors
+- **SC-006**: Type inference correctly resolves non-primitive unit types at compile time with zero type errors for correctly-typed property access and method calls
 - **SC-007**: Runtime metadata accurately reflects the structure and type information of all non-primitive types
-- **SC-008**: Unit conversion operations work seamlessly with non-primitive types where conversions are defined
+- **SC-008**: *[FUTURE SCOPE]* Unit conversion operations work seamlessly with non-primitive types where conversions are defined (deferred to future enhancement)
 - **SC-009**: Developer can introspect any registered unit to determine its type category (primitive, enum, class, record, tuple)
 - **SC-010**: All edge cases (mixed enums, class inheritance, nested records, optional tuple elements) are handled gracefully with clear error messages or defined behavior
