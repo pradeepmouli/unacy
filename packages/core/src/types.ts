@@ -288,12 +288,14 @@ export type InferFromRecordSchema<S extends RecordSchema> = Simplify<{
  * Infer TypeScript type from a `TupleSchema`.
  * Handles optional (`?`) and rest (`...`) elements.
  */
-export type InferFromTupleSchema<T extends readonly string[]> = Simplify<{
-  [K in keyof T]: T[K] extends `${infer Base}?`
-    ? PrimitiveTypeFromName<Base> | undefined
-    : T[K] extends `...${infer Base}`
-      ? Array<PrimitiveTypeFromName<Base>>
-      : T[K] extends string
-        ? PrimitiveTypeFromName<T[K]>
-        : never;
-}>;
+export type InferFromTupleSchema<T extends readonly string[]> = T extends readonly []
+  ? []
+  : T extends readonly [infer Head extends string, ...infer Rest extends readonly string[]]
+    ? Head extends `...${infer Base}`
+      ? Rest extends readonly []
+        ? [...Array<PrimitiveTypeFromName<Base>>]
+        : never
+      : Head extends `${infer Base}?`
+        ? [PrimitiveTypeFromName<Base>?, ...InferFromTupleSchema<Rest>]
+        : [PrimitiveTypeFromName<Head>, ...InferFromTupleSchema<Rest>]
+    : never;
