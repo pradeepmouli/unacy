@@ -292,7 +292,9 @@ export type InferFromTupleSchema<T extends readonly string[]> = T extends readon
   ? []
   : T extends readonly [infer Head extends string, ...infer Rest extends readonly string[]]
     ? Head extends `...${infer Base}`
-      ? [...Array<PrimitiveTypeFromName<Base>>]
+      ? Rest extends readonly []
+        ? [...Array<PrimitiveTypeFromName<Base>>]
+        : never
       : Head extends `${infer Base}?`
         ? [PrimitiveTypeFromName<Base>?, ...InferFromTupleSchema<Rest>]
         : [PrimitiveTypeFromName<Head>, ...InferFromTupleSchema<Rest>]
