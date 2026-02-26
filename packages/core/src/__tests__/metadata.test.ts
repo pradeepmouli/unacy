@@ -1,5 +1,12 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
 import type { BaseMetadata } from '../types.js';
+import {
+  isEnumMetadata,
+  isClassMetadata,
+  isRecordMetadata,
+  isTupleMetadata,
+  detectMetadataKind
+} from '../utils/validation.js';
 
 describe('BaseMetadata Type Constraints', () => {
   it('requires name property', () => {
@@ -97,5 +104,89 @@ describe('BaseMetadata Type Constraints', () => {
     expectTypeOf(celsius).toMatchTypeOf<BaseMetadata>();
     expectTypeOf(celsius).toMatchTypeOf<TemperatureMetadata>();
     expect(celsius.baseUnit).toBe('Kelvin');
+  });
+});
+
+describe('Type Category Introspection (T064, T069)', () => {
+  // Define test types
+  enum Status {
+    ACTIVE = 0,
+    INACTIVE = 1
+  }
+  enum Color {
+    RED = 'red',
+    GREEN = 'green',
+    BLUE = 'blue'
+  }
+  class Widget {
+    constructor(public id: number) {}
+  }
+
+  const primitiveMeta = { name: 'Celsius', type: 'number' };
+  const numericEnumMeta = { name: 'Status', type: Status };
+  const stringEnumMeta = { name: 'Color', type: Color };
+  const classMeta = { name: 'Widget', type: Widget };
+  const recordMeta = { name: 'Point', type: { x: 'number', y: 'number' } };
+  const tupleMeta = { name: 'RGB', type: ['number', 'number', 'number'] };
+
+  it('isEnumMetadata correctly identifies all types', () => {
+    expect(isEnumMetadata(primitiveMeta)).toBe(false);
+    expect(isEnumMetadata(numericEnumMeta)).toBe(true);
+    expect(isEnumMetadata(stringEnumMeta)).toBe(true);
+    expect(isEnumMetadata(classMeta)).toBe(false);
+    expect(isEnumMetadata(recordMeta)).toBe(false);
+    expect(isEnumMetadata(tupleMeta)).toBe(false);
+  });
+
+  it('isClassMetadata correctly identifies all types', () => {
+    expect(isClassMetadata(primitiveMeta)).toBe(false);
+    expect(isClassMetadata(numericEnumMeta)).toBe(false);
+    expect(isClassMetadata(stringEnumMeta)).toBe(false);
+    expect(isClassMetadata(classMeta)).toBe(true);
+    expect(isClassMetadata(recordMeta)).toBe(false);
+    expect(isClassMetadata(tupleMeta)).toBe(false);
+  });
+
+  it('isRecordMetadata correctly identifies all types', () => {
+    expect(isRecordMetadata(primitiveMeta)).toBe(false);
+    expect(isRecordMetadata(numericEnumMeta)).toBe(false);
+    expect(isRecordMetadata(stringEnumMeta)).toBe(false);
+    expect(isRecordMetadata(classMeta)).toBe(false);
+    expect(isRecordMetadata(recordMeta)).toBe(true);
+    expect(isRecordMetadata(tupleMeta)).toBe(false);
+  });
+
+  it('isTupleMetadata correctly identifies all types', () => {
+    expect(isTupleMetadata(primitiveMeta)).toBe(false);
+    expect(isTupleMetadata(numericEnumMeta)).toBe(false);
+    expect(isTupleMetadata(stringEnumMeta)).toBe(false);
+    expect(isTupleMetadata(classMeta)).toBe(false);
+    expect(isTupleMetadata(recordMeta)).toBe(false);
+    expect(isTupleMetadata(tupleMeta)).toBe(true);
+  });
+
+  it('detectMetadataKind correctly categorizes all types', () => {
+    expect(detectMetadataKind(primitiveMeta)).toBe('primitive');
+    expect(detectMetadataKind(numericEnumMeta)).toBe('enum');
+    expect(detectMetadataKind(stringEnumMeta)).toBe('enum');
+    expect(detectMetadataKind(classMeta)).toBe('class');
+    expect(detectMetadataKind(recordMeta)).toBe('record');
+    expect(detectMetadataKind(tupleMeta)).toBe('tuple');
+  });
+
+  it('detectMetadataKind handles edge cases', () => {
+    expect(detectMetadataKind(null)).toBe('unknown');
+    expect(detectMetadataKind(undefined)).toBe('unknown');
+    expect(detectMetadataKind({})).toBe('unknown');
+    expect(detectMetadataKind({ name: 'test' })).toBe('unknown');
+  });
+
+  it('type guards return false for null/undefined', () => {
+    for (const guard of [isEnumMetadata, isClassMetadata, isRecordMetadata, isTupleMetadata]) {
+      expect(guard(null)).toBe(false);
+      expect(guard(undefined)).toBe(false);
+      expect(guard(42)).toBe(false);
+      expect(guard('string')).toBe(false);
+    }
   });
 });

@@ -51,10 +51,11 @@
     "prepare": "simple-git-hooks"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.5.1",
     "@changesets/cli": "^2.29.8",
     "@size-limit/preset-small-lib": "^12.0.0",
     "@types/node": "^25.2.3",
-    "@typescript/native-preview": "7.0.0-dev.20260214.1",
+    "@typescript/native-preview": "7.0.0-dev.20260219.1",
     "@vitest/coverage-v8": "^4.0.18",
     "@vitest/ui": "^4.0.18",
     "lint-staged": "^16.2.7",
@@ -73,17 +74,9 @@
     "pre-commit": "pnpm lint-staged",
     "pre-push": "pnpm run type-check"
   },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx,json,md}": [
-      "oxfmt . --no-error-on-unmatched-pattern"
-    ],
-    "*.{ts,tsx,js,jsx}": [
-      "oxlint --fix"
-    ]
-  },
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=10.0.0"
   },
-  "packageManager": "pnpm@10.27.0"
+  "packageManager": "pnpm@10.6.2"
 }

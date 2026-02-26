@@ -5,22 +5,69 @@
 
 import type { GetTagMetadata, Simplify, Tagged, UnwrapTagged } from 'type-fest';
 
+/**
+ * Constraint type for any tagged unit value.
+ * `Tagged<unknown, K, V>` resolves to `Tag<K, V>` (since `unknown & X = X`),
+ * giving us the `Tag` constraint without importing the internal `Tag` type.
+ */
+type AnyTaggedUnit = Tagged<unknown, typeof UNITS, any>;
+
 export const UNITS: unique symbol = Symbol('UNITS');
 
 export const DEFINITION: unique symbol = Symbol('DEFINITION');
 
 /**
- * Extract the name property from a metadata type
- * @internal
- **/
+ * Resolve a schema/constructor/enum type to its runtime value type.
+ *
+ * - **Tuple schemas** → `InferFromTupleSchema` (`['number', 'string']` → `[number, string]`)
+ * - **Class constructors** → `InstanceType` (constructor → instance)
+ * - **Record schemas** → `InferFromRecordSchema` (`{ x: 'number' }` → `{ x: number }`)
+ * - **Enum objects** → `T[keyof T]` (enum value type)
+ * - **Primitives** → passed through unchanged
+ */
+export type ResolveValueType<T> = T extends readonly string[]
+  ? InferFromTupleSchema<T>
+  : T extends ClassType
+    ? InstanceType<T>
+    : T extends RecordSchema
+      ? T[keyof T] extends keyof PrimitiveTypeMap | RecordSchema
+        ? InferFromRecordSchema<T>
+        : T[keyof T]
+      : T extends EnumType
+        ? T[keyof T]
+        : T;
 
-export type WithTypedUnits<M extends TypedMetadata<any>> =
-  M extends TypedMetadata<infer T> ? WithUnits<T, M> : never;
+/**
+ * Resolve a branded unit type from a `TypedMetadata` object.
+ *
+ * For primitive metadata (where `type` is a name string like `'number'`),
+ * maps back through `PrimitiveTypeMap` to recover the base primitive.
+ * For non-primitive metadata (enum, class, record, tuple), resolves to
+ * the actual runtime value type via `ResolveValueType`.
+ *
+ * @template M - A `TypedMetadata` instance (e.g., `typeof CelsiusMetadata`)
+ *
+ * @example
+ * ```typescript
+ * const CelsiusMeta = { name: 'Celsius', type: 'number' } as const;
+ * type Celsius = WithTypedUnits<typeof CelsiusMeta>;
+ * // Celsius = Tagged<number, UNITS, typeof CelsiusMeta>
+ * ```
+ */
+export type WithTypedUnits<M extends TypedMetadata<any>> = unknown extends M
+  ? WithUnits<any, any> // Handle M = any
+  : M extends { name: string; type: infer TypeField }
+    ? TypeField extends keyof PrimitiveTypeMap
+      ? WithUnits<PrimitiveTypeMap[TypeField], M>
+      : TypeField extends SupportedType
+        ? WithUnits<ResolveValueType<TypeField>, M>
+        : never
+    : never;
 
 /**
  * Brand a value with a unit identifier for compile-time unit safety.
  *
- * @template T - Base type (e.g., number, bigint)
+ * @template T - Base type (e.g., number, bigint, record, tuple, class instance)
  * @template M - Metadata type (must extend BaseMetadata with required name property)
  *
  * @example
@@ -30,13 +77,56 @@ export type WithTypedUnits<M extends TypedMetadata<any>> =
  * const temp: Celsius = 25 as Celsius;
  * ```
  */
-export type WithUnits<T extends PrimitiveType, M extends BaseMetadata = TypedMetadata<T>> = Tagged<
-  T,
-  typeof UNITS,
-  M
->;
+export type WithUnits<T, M extends BaseMetadata = BaseMetadata> = Tagged<T, typeof UNITS, M>;
 
+/** Primitive JavaScript types that can be used as unit base types. */
 export type PrimitiveType = number | string | boolean | bigint;
+
+/**
+ * A TypeScript enum object at runtime — an object whose values are all
+ * strings (string enum) or all numbers (numeric enum).
+ * Mixed enums (both string and number values) are rejected at validation.
+ */
+export type EnumType = Record<string, string | number>;
+
+/**
+ * A class constructor (including abstract classes) that can serve as a
+ * unit's type identity. At runtime, the constructor itself is stored
+ * in the metadata `type` field.
+ */
+export type ClassType = abstract new (...args: any[]) => any;
+
+/** A record schema value — either a primitive type name or a nested schema. */
+export type RecordSchemaValue = string | RecordSchema;
+
+/**
+ * A schema describing an object shape. Keys are property names;
+ * values are primitive type name strings (`'number'`, `'string'`, etc.)
+ * or nested `RecordSchema` objects.
+ *
+ * @example
+ * ```typescript
+ * const PointSchema = { x: 'number', y: 'number' } satisfies RecordSchema;
+ * ```
+ */
+export type RecordSchema = { [key: string]: RecordSchemaValue };
+
+/**
+ * A schema describing a tuple as an array of primitive type name strings.
+ * Supports optional (`'number?'`) and rest (`'...number'`) modifiers.
+ *
+ * @example
+ * ```typescript
+ * const RGBSchema = ['number', 'number', 'number'] as const satisfies TupleSchema;
+ * ```
+ */
+export type TupleSchema = readonly string[];
+
+/**
+ * Union of all types that can be used as a unit's base type.
+ * Includes primitives and non-primitive categories (enum, class, record, tuple).
+ */
+export type SupportedType = PrimitiveType | EnumType | ClassType | RecordSchema | TupleSchema;
 
 export type PrimitiveTypeMap = {
   string: string;
@@ -45,25 +135,41 @@ export type PrimitiveTypeMap = {
   bigint: bigint;
 };
 
-export enum TestEnum {
-  A = 1,
-  B = 2,
-  C = 3,
-  D = 4
-}
-
 export type ToPrimitiveTypeName<T> = T extends PrimitiveTypeMap[infer U extends
   keyof PrimitiveTypeMap]
   ? U
   : never;
 
-type test = ToPrimitiveTypeName<number>;
+export type OptionalWithUnits<T, M extends BaseMetadata = BaseMetadata> = T | WithUnits<T, M>;
 
-export type OptionalWithUnits<T extends PrimitiveType, M extends BaseMetadata = BaseMetadata> =
-  | T
-  | WithUnits<T, M>;
+export type Unwrap<T> = T extends AnyTaggedUnit ? UnwrapTagged<T> : T;
 
-export type Unwrap<T> = T extends WithUnits<PrimitiveType, any> ? UnwrapTagged<T> : T;
+/**
+ * Resolve the callable argument types from a branded unit type.
+ *
+ * Uses the metadata's `type` field (the original schema/constructor) to
+ * determine the kind, then produces the appropriate parameter tuple:
+ * - **Tuple schemas** → spread members: `['number', 'string']` → `[number, string]`
+ * - **Class constructors** → spread constructor params: `ConstructorParameters<C>`
+ * - **Record schemas** → single object arg: `[{ x: number; y: number }]`
+ * - **Enum objects** → single value arg: `[LogLevel.WARN]`
+ * - **Primitives** → single arg: `[number]`
+ */
+export type InferCallableArgs<From> = From extends AnyTaggedUnit
+  ? GetTagMetadata<From, typeof UNITS> extends { type: infer TypeField }
+    ? TypeField extends readonly string[]
+      ? InferFromTupleSchema<TypeField>
+      : TypeField extends ClassType
+        ? ConstructorParameters<TypeField>
+        : TypeField extends RecordSchema
+          ? TypeField[keyof TypeField] extends keyof PrimitiveTypeMap | RecordSchema
+            ? [InferFromRecordSchema<TypeField>]
+            : [TypeField[keyof TypeField]]
+          : TypeField extends EnumType
+            ? [TypeField[keyof TypeField]]
+            : [Unwrap<From>]
+    : [Unwrap<From>]
+  : [Unwrap<From>];
 
 export type Relax<T> = T | Unwrap<T>;
 /**
@@ -80,24 +186,23 @@ export type Relax<T> = T | Unwrap<T>;
  */
 export type WithFormat<T, F extends string> = Tagged<T, typeof UNITS, F>;
 
-export type UnitsOf<T extends WithUnits<PrimitiveType, BaseMetadata>> = GetTagMetadata<
-  T,
-  typeof UNITS
->;
+export type UnitsOf<T> = T extends AnyTaggedUnit ? GetTagMetadata<T, typeof UNITS> : never;
 
-export type NameFor<T extends WithUnits<PrimitiveType, BaseMetadata>> =
-  GetTagMetadata<T, typeof UNITS> extends {
-    name: infer N extends string;
-  }
+export type NameFor<T> = T extends AnyTaggedUnit
+  ? GetTagMetadata<T, typeof UNITS> extends { name: infer N extends string }
     ? N
-    : string;
+    : string
+  : string;
 
 /** Alias for NameFor - returns the unit name type */
-export type UnitsFor<T extends WithUnits<PrimitiveType, BaseMetadata>> = NameFor<T>;
+export type UnitsFor<T> = NameFor<T>;
 
 /** Extract metadata from a WithUnits type */
-export type MetadataOf<T extends WithUnits<PrimitiveType, BaseMetadata>> =
-  GetTagMetadata<T, typeof UNITS> extends infer M ? M : BaseMetadata;
+export type MetadataOf<T> = T extends AnyTaggedUnit
+  ? GetTagMetadata<T, typeof UNITS> extends infer M
+    ? M
+    : BaseMetadata
+  : BaseMetadata;
 
 /**
  * Base metadata type that all unit metadata must extend.
@@ -117,26 +222,21 @@ export type BaseMetadata = {
   name: string;
 };
 
-export type TypedMetadata<T extends PrimitiveType> = Simplify<{
+/**
+ * Metadata type for units with type information.
+ *
+ * For primitive types, `type` is the type name string (e.g., `'number'`).
+ * For non-primitive types, `type` IS the actual value:
+ * - Enum: the enum object itself
+ * - Class: the class constructor
+ * - Record: the schema object `{ x: 'number', y: 'string' }`
+ * - Tuple: the tuple schema array `['number', 'string']`
+ */
+export type TypedMetadata<T extends SupportedType> = Simplify<{
   name: string;
-  /** Data type name (e.g., "number", "string") */
-  type: ToPrimitiveTypeName<T>;
+  type: T extends PrimitiveType ? ToPrimitiveTypeName<T> : T;
 }>;
 
-export type EnumTypedMetadata<E extends Record<string, string | number>> = {
-  name: string;
-  type: ToPrimitiveTypeName<BaseTypeFor<E[keyof E]>>;
-
-  enum: E;
-};
-
-type BaseTypeFor<T extends PrimitiveType> = `${T}` extends `${infer U extends number}`
-  ? number
-  : never;
-
-type Test3 = BaseTypeFor<TestEnum>;
-
-export type Test = EnumTypedMetadata<typeof TestEnum>;
 /**
  * Metadata that can be attached to units in the registry
  * Supports common properties like abbreviation, format, description,
@@ -154,3 +254,48 @@ export interface UnitMetadata {
   /** Allow arbitrary custom metadata properties */
   [key: string]: unknown;
 }
+
+// ============================================================================
+// Type Inference Utilities
+// ============================================================================
+
+/**
+ * Map type name strings to TypeScript primitive types.
+ */
+export type PrimitiveTypeFromName<T extends string> = T extends 'number'
+  ? number
+  : T extends 'string'
+    ? string
+    : T extends 'boolean'
+      ? boolean
+      : T extends 'bigint'
+        ? bigint
+        : never;
+
+/**
+ * Infer TypeScript type from a `RecordSchema`.
+ * Recursively processes nested schemas.
+ */
+export type InferFromRecordSchema<S extends RecordSchema> = Simplify<{
+  [K in keyof S]: S[K] extends string
+    ? PrimitiveTypeFromName<S[K]>
+    : S[K] extends RecordSchema
+      ? InferFromRecordSchema<S[K]>
+      : never;
+}>;
+
+/**
+ * Infer TypeScript type from a `TupleSchema`.
+ * Handles optional (`?`) and rest (`...`) elements.
+ */
+export type InferFromTupleSchema<T extends readonly string[]> = T extends readonly []
+  ? []
+  : T extends readonly [infer Head extends string, ...infer Rest extends readonly string[]]
+    ? Head extends `...${infer Base}`
+      ? Rest extends readonly []
+        ? [...Array<PrimitiveTypeFromName<Base>>]
+        : never
+      : Head extends `${infer Base}?`
+        ? [PrimitiveTypeFromName<Base>?, ...InferFromTupleSchema<Rest>]
+        : [PrimitiveTypeFromName<Head>, ...InferFromTupleSchema<Rest>]
+    : never;

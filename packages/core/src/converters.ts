@@ -3,7 +3,7 @@
  * @packageDocumentation
  */
 
-import type { PrimitiveType, Relax as BaseRelax } from './types.js';
+import type { PrimitiveType, Relax as BaseRelax, Unwrap } from './types.js';
 
 /**
  * Unidirectional converter from one unit to another.
@@ -80,3 +80,29 @@ export type RelaxBidirectionalConverter<ConverterType> =
         to: (input: PrimitiveType) => PrimitiveType;
         from: (input: PrimitiveType) => PrimitiveType;
       };
+
+/**
+ * A converter that accepts the branded input type but returns
+ * unwrapped output. This eliminates the need to cast return values
+ * to branded types inside converter functions, while preserving
+ * full autocompletion on the input parameter.
+ *
+ * Since `Tagged<T, ...> extends T`, strict converters returning branded
+ * types are also assignable to this type.
+ *
+ * @template TInput - Source unit-tagged type
+ * @template TOutput - Destination unit-tagged type
+ */
+export type RelaxedConverter<TInput, TOutput> = (input: TInput) => Unwrap<TOutput>;
+
+/**
+ * A bidirectional converter with relaxed (unwrapped) output types.
+ * Input remains branded for full autocompletion.
+ *
+ * @template TInput - First unit-tagged type
+ * @template TOutput - Second unit-tagged type
+ */
+export type RelaxedBidirectionalConverter<TInput, TOutput> = {
+  to: RelaxedConverter<TInput, TOutput>;
+  from: RelaxedConverter<TOutput, TInput>;
+};
