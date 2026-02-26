@@ -22,7 +22,12 @@ export type {
 } from './types.js';
 
 // Converter types
-export type { Converter, BidirectionalConverter } from './converters.js';
+export type {
+  Converter,
+  BidirectionalConverter,
+  RelaxedConverter,
+  RelaxedBidirectionalConverter
+} from './converters.js';
 
 // Formatter/Parser types
 export type { Formatter, Parser, FormatterParser } from './formatters.js';
@@ -44,7 +49,8 @@ export {
   isEnumMetadata,
   isClassMetadata,
   isRecordMetadata,
-  isTupleMetadata
+  isTupleMetadata,
+  detectMetadataKind
 } from './utils/validation.js';
 
 // Type inference utilities
@@ -52,4 +58,4 @@ export type {
   PrimitiveTypeFromName,
   InferFromRecordSchema,
   InferFromTupleSchema
-} from './type-inference.js';
+} from './types.js';

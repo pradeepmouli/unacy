@@ -51,7 +51,7 @@ console.log('Part 1: Basic Unit Accessor API\n');
 
 // Create registry with converters using traditional API
 const tempRegistry = createRegistry()
-  .register(CelsiusMetadata, FahrenheitMetadata, (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit)
+  .register(CelsiusMetadata, FahrenheitMetadata, (c: Celsius) => (c * 9) / 5 + 32)
   .register(FahrenheitMetadata, CelsiusMetadata, (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius)
   .register(CelsiusMetadata, KelvinMetadata, (c: Celsius) => (c + 273.15) as Kelvin)
   .register(KelvinMetadata, CelsiusMetadata, (k: Kelvin) => (k - 273.15) as Celsius)

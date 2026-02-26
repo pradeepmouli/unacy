@@ -3,7 +3,12 @@
  * @packageDocumentation
  */
 
-import type { Converter, BidirectionalConverter, Relax } from './converters.js';
+import type {
+  BidirectionalConverter,
+  Converter,
+  RelaxedConverter,
+  RelaxedBidirectionalConverter
+} from './converters.js';
 import type {
   UnitsFor,
   WithUnits,
@@ -14,6 +19,7 @@ import type {
   UnitMetadata,
   BaseMetadata,
   SupportedType,
+  InferCallableArgs,
   Relax as RelaxUnits
 } from './types.js';
 import { ConversionError } from './errors.js';
@@ -54,11 +60,13 @@ export type UnitAccessor<
   Edges extends readonly Edge[]
 > = {
   /**
-   * Create a branded value with this unit
-   * @param value - The numeric value to brand
+   * Create a branded value with this unit.
+   * For tuples, pass members as individual arguments.
+   * For classes, pass constructor parameters directly.
+   * @param args - The value(s) to brand
    * @returns The value branded with this unit type
    */
-  (value: number): From;
+  (...args: InferCallableArgs<From>): From;
   to: {
     [To in ToUnitsFor<Edges, From> as UnitsFor<To>]: (
       value: RelaxUnits<From>
@@ -75,11 +83,11 @@ export type UnitAccessor<
    */
   register<To extends WithTypedUnits<ToMeta>, ToMeta extends TypedMetadata<SupportedType>>(
     to: UnitsFor<To> | ToMeta,
-    converter: Relax<Converter<From, To>>
+    converter: RelaxedConverter<From, To>
   ): UnitRegistry<[...Edges, Edge<From, To>]> & UnitMap<[...Edges, Edge<From, To>]>;
   register<To extends WithTypedUnits<ToMeta>, ToMeta extends TypedMetadata<SupportedType>>(
     to: UnitsFor<To> | ToMeta,
-    converter: Relax<BidirectionalConverter<From, To>>
+    converter: RelaxedBidirectionalConverter<From, To>
   ): UnitRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
     UnitMap<[...Edges, Edge<From, To>, Edge<To, From>]>;
 } & UnitsOf<From>;
@@ -105,7 +113,7 @@ export interface UnitRegistry<Edges extends Edge[] = []> {
    *
    * @param from - Source unit (string name or metadata object)
    * @param to - Destination unit (string name or metadata object)
-   * @param converter - Converter function
+   * @param converter - Converter function (input is branded, output can be plain or branded)
    * @returns New registry instance with the converter registered
    */
   register<
@@ -116,14 +124,14 @@ export interface UnitRegistry<Edges extends Edge[] = []> {
   >(
     from: UnitsFor<From> | FromMeta,
     to: UnitsFor<To> | ToMeta,
-    converter: Converter<From, RelaxUnits<To>>
+    converter: RelaxedConverter<From, To>
   ): UnitRegistry<[...Edges, Edge<From, To>]> & UnitMap<[...Edges, Edge<From, To>]>;
   /**
    * Register a bidirectional converter (both directions)
    *
    * @param from - First unit (string name or metadata object)
    * @param to - Second unit (string name or metadata object)
-   * @param converter - Bidirectional converter object
+   * @param converter - Bidirectional converter object (input branded, output can be plain or branded)
    * @returns New registry instance with both converters registered
    */
   register<
@@ -134,7 +142,7 @@ export interface UnitRegistry<Edges extends Edge[] = []> {
   >(
     from: UnitsFor<From> | FromMeta,
     to: UnitsFor<To> | ToMeta,
-    converter: BidirectionalConverter<RelaxUnits<From>, RelaxUnits<To>>
+    converter: RelaxedBidirectionalConverter<From, To>
   ): UnitRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
     UnitMap<[...Edges, Edge<From, To>, Edge<To, From>]>;
 
@@ -285,8 +293,16 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
       // Get metadata for this unit
       const unitMetadata = this.metadata.get(fromUnit) || {};
 
-      // Create a callable function that brands a value with the unit
-      const brandFunction = (value: number) => value as WithUnits<SupportedType, any>;
+      // Create a callable function that brands a value with the unit.
+      // For tuples, collect spread args into an array.
+      // For classes, construct an instance from the spread args.
+      const metaType = (unitMetadata as any)?.type;
+      const brandFunction =
+        metaType && typeof metaType === 'function' && /^[A-Z]/.test(metaType.name ?? '')
+          ? (...args: unknown[]) => new metaType(...args) as WithUnits<SupportedType, any>
+          : metaType && Array.isArray(metaType)
+            ? (...args: unknown[]) => args as unknown as WithUnits<SupportedType, any>
+            : (value: unknown) => value as WithUnits<SupportedType, any>;
 
       // Create unit accessor object with to, addMetadata, register, and metadata properties
       const unitAccessor: any = Object.assign(brandFunction, {
@@ -438,7 +454,7 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
   >(
     from: UnitsFor<From>,
     to: UnitsFor<To>,
-    converter: Relax<BidirectionalConverter<From, To>>
+    converter: RelaxedBidirectionalConverter<From, To>
   ): UnitRegistry<[...Edges, Edge<From, To>, Edge<To, From>]> &
     UnitMap<[...Edges, Edge<From, To>, Edge<To, From>]> {
     return this.register(from, to, converter.to as any).register(
@@ -618,8 +634,16 @@ function createRegistryFromGraph<Edges extends Edge[] = []>(
       // Get metadata for this unit (may be empty)
       const unitMetadata = target.metadata.get(prop) || {};
 
-      // Create a callable function that brands a value with the unit
-      const brandFunction = (value: number) => value as WithUnits<SupportedType, any>;
+      // Create a callable function that brands a value with the unit.
+      // For tuples, collect spread args into an array.
+      // For classes, construct an instance from the spread args.
+      const metaType = (unitMetadata as any)?.type;
+      const brandFunction =
+        metaType && typeof metaType === 'function' && /^[A-Z]/.test(metaType.name ?? '')
+          ? (...args: unknown[]) => new metaType(...args) as WithUnits<SupportedType, any>
+          : metaType && Array.isArray(metaType)
+            ? (...args: unknown[]) => args as unknown as WithUnits<SupportedType, any>
+            : (value: unknown) => value as WithUnits<SupportedType, any>;
 
       // Create unit accessor with all methods
       const dynamicAccessor: any = Object.assign(brandFunction, {
