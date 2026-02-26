@@ -3,8 +3,8 @@
  * Following TDD: These tests are written FIRST
  */
 
-import { describe, it, expect } from 'vitest';
-import type { TypedMetadata } from '../types.js';
+import { describe, it, expect, expectTypeOf } from 'vitest';
+import type { TypedMetadata, InferFromTupleSchema } from '../types.js';
 import { validateTupleSchema, isTupleMetadata, detectMetadataKind } from '../utils/validation.js';
 
 describe('Tuple Units - Basic Registration (T048)', () => {
@@ -69,6 +69,15 @@ describe('Tuple Units - Optional Elements (T050)', () => {
     const schema = ['string', 'number?', 'boolean?'] as const;
     expect(validateTupleSchema(schema)).toBe(true);
   });
+
+  it('T050: InferFromTupleSchema should infer optional element as optional tuple position', () => {
+    type Schema = readonly ['number', 'number', 'number', 'number?'];
+    type Inferred = InferFromTupleSchema<Schema>;
+    // Optional element allows both 3- and 4-length tuples
+    expectTypeOf<[number, number, number]>().toMatchTypeOf<Inferred>();
+    expectTypeOf<[number, number, number, number]>().toMatchTypeOf<Inferred>();
+    expectTypeOf<Inferred>().toEqualTypeOf<[number, number, number, number?]>();
+  });
 });
 
 describe('Tuple Units - Rest Elements (T051)', () => {
@@ -87,6 +96,13 @@ describe('Tuple Units - Rest Elements (T051)', () => {
     expect(metadata.type.length).toBe(2);
     expect(metadata.type[0]).toBe('string');
     expect(metadata.type[1]).toBe('...number');
+  });
+
+  it('T051: InferFromTupleSchema should infer variadic rest tail', () => {
+    type Schema = readonly ['string', '...number'];
+    type Inferred = InferFromTupleSchema<Schema>;
+    // Rest element should produce a proper variadic tuple
+    expectTypeOf<Inferred>().toEqualTypeOf<[string, ...number[]]>();
   });
 });
 
