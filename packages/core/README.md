@@ -58,9 +58,6 @@ const fahrenheit2 = tempRegistry.Celsius.to.Fahrenheit(tempRegistry.Celsius(30))
 
 console.log(fahrenheit1); // 77
 console.log(fahrenheit2); // 86
-
-// Old way still works (manual casting)
-const tempOld: Celsius = 25 as Celsius;
 ```
 
 ## Usage Examples
@@ -76,9 +73,6 @@ const distance = registry.meters(100);    // Returns WithTypedUnits<typeof Meter
 
 // Fluent workflow
 const fahrenheit = registry.Celsius.to.Fahrenheit(registry.Celsius(20));
-
-// Compare with old way (still works)
-const tempOld: Celsius = 25 as Celsius;
 
 // Benefits:
 // - Cleaner syntax
@@ -112,7 +106,7 @@ const FlagMetadata = {
 
 ```typescript
 // Same registry as above
-const distance: Meters = 10 as Meters;
+const distance = distanceRegistry.meters(10);
 
 // Access units directly via property syntax
 const feet = distanceRegistry.meters.to.feet(distance);
@@ -122,7 +116,7 @@ console.log(feet); // 32.8084
 const feet2 = distanceRegistry.meters.to.feet(distanceRegistry.meters(10));
 
 // Works in both directions
-const meters = distanceRegistry.feet.to.meters(32.8084 as Feet) satisfies Meters;
+const meters = distanceRegistry.feet.to.meters(distanceRegistry.feet(32.8084));
 console.log(meters); // 10
 ```
 
@@ -152,8 +146,8 @@ const registry = createRegistry()
   });
 
 // Both directions work automatically
-const km = registry.convert(5000 as Meters, 'meters').to('kilometers'); // 5
-const m = registry.convert(5 as Kilometers, 'kilometers').to('meters'); // 5000
+const km = registry.convert(registry.meters(5000), 'meters').to('kilometers'); // 5
+const m = registry.convert(registry.kilometers(5), 'kilometers').to('meters'); // 5000
 ```
 
 ### Multi-Hop Auto-Composition
@@ -181,8 +175,7 @@ const registry = createRegistry()
 
 // No direct meters→miles converter registered!
 // Registry auto-composes: meters → kilometers → miles
-const meters: Meters = 5000 as Meters;
-const miles = registry.convert(meters, 'meters').to('miles');
+const miles = registry.convert(registry.meters(5000), 'meters').to('miles');
 console.log(miles); // 3.106855
 ```
 

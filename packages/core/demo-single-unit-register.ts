@@ -3,7 +3,7 @@
  * This allows registering unit metadata before defining converters
  */
 
-import { createRegistry, type WithTypedUnits, type WithUnits } from './src/index.js';
+import { createRegistry, type WithTypedUnits } from './src/index.js';
 
 // Define unit metadata
 const Celsius = {
@@ -57,21 +57,21 @@ console.log('\nAfter adding Celsius<->Kelvin converters:');
 console.log('25°C =', step3.Celsius.to.Kelvin(tempC), 'K');
 console.log('25°C =', step3.Celsius.to.Fahrenheit(tempC), '°F');
 
-// Example 2: Traditional approach for comparison
-console.log('\n=== Example 2: Traditional approach (register with converters) ===\n');
+// Example 2: One-shot registration for comparison
+console.log('\n=== Example 2: One-shot registration (no pre-register step) ===\n');
 
-const traditional = createRegistry()
-  .register(Celsius, Fahrenheit, (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit)
-  .register(Fahrenheit, Celsius, (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius)
-  .register(Celsius, Kelvin, (c: Celsius) => (c + 273.15) as Kelvin)
-  .register(Kelvin, Celsius, (k: Kelvin) => (k - 273.15) as Celsius)
+const oneShot = createRegistry()
+  .register(Celsius, Fahrenheit, (c) => (c * 9) / 5 + 32)
+  .register(Fahrenheit, Celsius, (f) => ((f - 32) * 5) / 9)
+  .register(Celsius, Kelvin, (c) => c + 273.15)
+  .register(Kelvin, Celsius, (k) => k - 273.15)
   .allow(Fahrenheit, Kelvin)
   .allow(Kelvin, Fahrenheit);
 
-console.log('With traditional approach:');
-const temp2 = traditional.Celsius(25);
-console.log('25°C =', traditional.Celsius.to.Fahrenheit(temp2), '°F');
-console.log('25°C =', traditional.Celsius.to.Kelvin(temp2), 'K');
+console.log('With one-shot registration:');
+const temp2 = oneShot.Celsius(25);
+console.log('25°C =', oneShot.Celsius.to.Fahrenheit(temp2), '°F');
+console.log('25°C =', oneShot.Celsius.to.Kelvin(temp2), 'K');
 
 /**
  * Key benefits of the single-unit register method:

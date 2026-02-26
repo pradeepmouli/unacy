@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createRegistry } from '../registry.js';
-import type { WithTypedUnits } from '../types.js';
+import type { WithTypedUnits, WithUnits } from '../types.js';
 import { CycleError, MaxDepthError, ConversionError } from '../errors.js';
 import {
   CelsiusMetadata,
@@ -23,9 +23,6 @@ type Kelvin = WithTypedUnits<typeof KelvinMetadata>;
 type Meters = WithTypedUnits<typeof MetersMetadata>;
 type Kilometers = WithTypedUnits<typeof KilometersMetadata>;
 type Miles = WithTypedUnits<typeof MilesMetadata>;
-type A = WithTypedUnits<typeof AMetadata>;
-type B = WithTypedUnits<typeof BMetadata>;
-type C = WithTypedUnits<typeof CMetadata>;
 
 const getConverter = (registry: any, from: string, to: string) =>
   (registry as any).getConverter(from, to);
@@ -43,13 +40,13 @@ describe('Registry - Basic Operations', () => {
 
     expect(converter).toBeDefined();
     if (converter) {
-      const result = converter(0 as Celsius);
+      const result = converter(0);
       expect(result).toBe(32);
     }
   });
 
   it('registerBidirectional registers both directions', () => {
-    const metersKilometers: BidirectionalConverter<Meters, Kilometers> = {
+    const metersKilometers = {
       to: (m: Meters) => m / 1000,
       from: (km: Kilometers) => km * 1000
     };
@@ -66,15 +63,15 @@ describe('Registry - Basic Operations', () => {
     expect(km2m).toBeDefined();
 
     if (m2km && km2m) {
-      expect(m2km(1000 as Meters)).toBe(1);
-      expect(km2m(1 as Kilometers)).toBe(1000);
+      expect(m2km(1000)).toBe(1);
+      expect(km2m(1)).toBe(1000);
     }
   });
 
   it('getConverter finds direct converter in O(1)', () => {
     const registry = createRegistry()
-      .register(AMetadata, BMetadata, (a: A) => (a * 2) as any)
-      .register(BMetadata, CMetadata, (b: B) => (b * 3) as any);
+      .register(AMetadata, BMetadata, (a) => a * 2)
+      .register(BMetadata, CMetadata, (b) => b * 3);
 
     const startTime = performance.now();
     const converter = getConverter(registry, 'A', 'B');
@@ -89,15 +86,15 @@ describe('Registry - Basic Operations', () => {
 describe('Registry - Multi-Hop Composition', () => {
   it('auto-compose 2-hop conversion (A→B→C)', () => {
     const registry = createRegistry()
-      .register(AMetadata, BMetadata, (a: A) => (a * 2) as any)
-      .register(BMetadata, CMetadata, (b: B) => (b * 3) as any);
+      .register(AMetadata, BMetadata, (a) => a * 2)
+      .register(BMetadata, CMetadata, (b) => b * 3);
 
     const converter = getConverter(registry, 'A', 'C');
 
     expect(converter).toBeDefined();
     if (converter) {
       // A→B→C: 10 * 2 = 20, 20 * 3 = 60
-      expect(converter(10 as any)).toBe(60);
+      expect(converter(10)).toBe(60);
     }
   });
 
@@ -112,16 +109,16 @@ describe('Registry - Multi-Hop Composition', () => {
     expect(converter).toBeDefined();
     if (converter) {
       // A→B→C→D: 10 * 2 * 3 * 5 = 300
-      expect(converter(10 as any)).toBe(300);
+      expect(converter(10)).toBe(300);
     }
   });
 
   it('integration test: 3-unit distance conversion (m→km→mi)', () => {
-    const mToKm: BidirectionalConverter<Meters, Kilometers> = {
+    const mToKm = {
       to: (m: Meters) => m / 1000,
       from: (km: Kilometers) => km * 1000
     };
-    const kmToMi: BidirectionalConverter<Kilometers, Miles> = {
+    const kmToMi = {
       to: (km: Kilometers) => km * 0.621371,
       from: (mi: Miles) => mi / 0.621371
     };
@@ -133,8 +130,7 @@ describe('Registry - Multi-Hop Composition', () => {
 
     expect(converter).toBeDefined();
     if (converter) {
-      const meters: Meters = 5000 as Meters;
-      const miles = converter(meters);
+      const miles = converter(5000);
 
       // 5000m → 5km → 3.106855mi
       expect(miles).toBeCloseTo(3.106855, 5);
@@ -145,17 +141,17 @@ describe('Registry - Multi-Hop Composition', () => {
     // Create diamond shape: A→B→D and A→C→D
     // But also add direct A→D
     const registry = createRegistry()
-      .register(AMetadata, BMetadata, (a: A) => (a + 100) as any) // Long path
-      .register(BMetadata, DMetadata, (b: B) => (b + 100) as any)
-      .register(AMetadata, CMetadata, (a: A) => (a + 200) as any) // Long path
-      .register(CMetadata, DMetadata, (c: C) => (c + 200) as any)
-      .register(AMetadata, DMetadata, (a: A) => (a * 10) as any); // Direct (shortest)
+      .register(AMetadata, BMetadata, (a) => a + 100) // Long path
+      .register(BMetadata, DMetadata, (b) => b + 100)
+      .register(AMetadata, CMetadata, (a) => a + 200) // Long path
+      .register(CMetadata, DMetadata, (c) => c + 200)
+      .register(AMetadata, DMetadata, (a) => a * 10); // Direct (shortest)
 
     const converter = getConverter(registry, 'A', 'D');
 
     if (converter) {
       // Should use direct path: 5 * 10 = 50
-      expect(converter(5 as any)).toBe(50);
+      expect(converter(5)).toBe(50);
     }
   });
 });
@@ -164,9 +160,9 @@ describe('Registry - Error Handling', () => {
   it('cycle detection throws CycleError with path', () => {
     // Create cycle: A→B→C→A
     const registry = createRegistry()
-      .register(AMetadata, BMetadata, (a: A) => (a * 2) as any)
-      .register(BMetadata, CMetadata, (b: B) => (b * 3) as any)
-      .register(CMetadata, AMetadata, (c: C) => (c * 5) as any);
+      .register(AMetadata, BMetadata, (a) => a * 2)
+      .register(BMetadata, CMetadata, (b) => b * 3)
+      .register(CMetadata, AMetadata, (c) => c * 5);
 
     // Trying to convert from C to A would complete a cycle
     // But the actual cycle is detected when finding a path
@@ -182,24 +178,12 @@ describe('Registry - Error Handling', () => {
   it('max depth (>5 hops) throws MaxDepthError', () => {
     // Create chain: A→B→C→D→E→F→G (6 hops)
     const registry = createRegistry()
-      .register(AMetadata, BMetadata, (a: A) => (a * 2) as any)
-      .register(BMetadata, CMetadata, (b: B) => (b * 2) as any)
-      .register(CMetadata, { name: 'D', type: 'number' }, (c: C) => (c * 2) as any)
-      .register(
-        { name: 'D', type: 'number' },
-        { name: 'E', type: 'number' },
-        (d: any) => (d * 2) as any
-      )
-      .register(
-        { name: 'E', type: 'number' },
-        { name: 'F', type: 'number' },
-        (e: any) => (e * 2) as any
-      )
-      .register(
-        { name: 'F', type: 'number' },
-        { name: 'G', type: 'number' },
-        (f: any) => (f * 2) as any
-      );
+      .register(AMetadata, BMetadata, (a) => a * 2)
+      .register(BMetadata, CMetadata, (b) => b * 2)
+      .register(CMetadata, { name: 'D', type: 'number' }, (c) => c * 2)
+      .register({ name: 'D', type: 'number' }, { name: 'E', type: 'number' }, (d) => d * 2)
+      .register({ name: 'E', type: 'number' }, { name: 'F', type: 'number' }, (e) => e * 2)
+      .register({ name: 'F', type: 'number' }, { name: 'G', type: 'number' }, (f) => f * 2);
 
     expect(() => {
       getConverter(registry, 'A', 'G');
@@ -207,7 +191,7 @@ describe('Registry - Error Handling', () => {
   });
 
   it('missing converter path throws ConversionError', () => {
-    const registry = createRegistry().register(AMetadata, BMetadata, (a: A) => (a * 2) as any);
+    const registry = createRegistry().register(AMetadata, BMetadata, (a) => a * 2);
     // No path from A to C
 
     const result = getConverter(registry, 'A', 'C');
@@ -217,13 +201,9 @@ describe('Registry - Error Handling', () => {
 
 describe('Registry - Fluent API', () => {
   it('compile-time: wrong unit to convert() causes error', () => {
-    const registry = createRegistry().register(
-      'Celsius',
-      'Fahrenheit',
-      (c) => ((c * 9) / 5 + 32) as Fahrenheit
-    );
+    const registry = createRegistry().register('Celsius', 'Fahrenheit', (c) => (c * 9) / 5 + 32);
 
-    const temp: Celsius = 25 as Celsius;
+    const temp = registry.Celsius(25);
 
     // Valid conversion
     const fahrenheit = convert(registry, temp, 'Celsius').to('Fahrenheit');
@@ -234,13 +214,9 @@ describe('Registry - Fluent API', () => {
   });
 
   it('fluent API performs direct conversion', () => {
-    const registry = createRegistry().register(
-      'Celsius',
-      'Fahrenheit',
-      (c) => ((c * 9) / 5 + 32) as Fahrenheit
-    );
+    const registry = createRegistry().register('Celsius', 'Fahrenheit', (c) => (c * 9) / 5 + 32);
 
-    const temp: Celsius = 0 as Celsius;
+    const temp = registry.Celsius(0);
     const result = convert(registry, temp, 'Celsius').to('Fahrenheit');
 
     expect(result).toBe(32);
@@ -249,24 +225,20 @@ describe('Registry - Fluent API', () => {
 
   it('fluent API performs multi-hop conversion', () => {
     const registry = createRegistry()
-      .register(CelsiusMetadata, KelvinMetadata, (c: Celsius) => (c + 273.15) as Kelvin)
-      .register(
-        KelvinMetadata,
-        FahrenheitMetadata,
-        (k: Kelvin) => (((k - 273.15) * 9) / 5 + 32) as Fahrenheit
-      );
+      .register(CelsiusMetadata, KelvinMetadata, (c) => c + 273.15)
+      .register(KelvinMetadata, FahrenheitMetadata, (k) => ((k - 273.15) * 9) / 5 + 32);
 
-    const temp: Celsius = 0 as Celsius;
+    const temp = registry.Celsius(0);
     const fahrenheit = convert(registry, temp, 'Celsius').to('Fahrenheit');
 
     expect(fahrenheit).toBeCloseTo(32, 5);
   });
 
   it('fluent API throws error for missing path', () => {
-    const registry = createRegistry().register(AMetadata, BMetadata, (a: A) => (a * 2) as any);
+    const registry = createRegistry().register(AMetadata, BMetadata, (a) => a * 2);
 
     expect(() => {
-      convert(registry, 10 as any, 'A').to('C');
+      convert(registry, 10, 'A').to('C');
     }).toThrow(ConversionError);
   });
 });
@@ -274,14 +246,14 @@ describe('Registry - Fluent API', () => {
 describe('Registry - Immutability', () => {
   it('register returns new registry instance', () => {
     const registry1 = createRegistry();
-    const registry2 = registry1.register(AMetadata, BMetadata, (a: A) => (a * 2) as any);
+    const registry2 = registry1.register(AMetadata, BMetadata, (a) => a * 2);
 
     expect(registry1).not.toBe(registry2);
   });
 
   it('original registry unchanged after register', () => {
     const registry1 = createRegistry();
-    const registry2 = registry1.register(AMetadata, BMetadata, (a: A) => (a * 2) as any);
+    const registry2 = registry1.register(AMetadata, BMetadata, (a) => a * 2);
 
     // registry1 should not have the converter
     expect(getConverter(registry1, 'A', 'B')).toBeUndefined();
@@ -294,8 +266,8 @@ describe('Registry - Immutability', () => {
 describe('Registry - Performance', () => {
   it('caches composed paths for repeated conversions', () => {
     const registry = createRegistry()
-      .register(AMetadata, BMetadata, (a: A) => (a * 2) as any)
-      .register('B', 'C', (b) => (b * 3) as any);
+      .register(AMetadata, BMetadata, (a) => a * 2)
+      .register('B', 'C', (b) => b * 3);
 
     // First call - may be slower due to BFS
     const start1 = performance.now();
@@ -318,13 +290,9 @@ describe('Registry - Performance', () => {
 
 describe('Registry - Unit Accessor API', () => {
   it('provides unit-based accessor API', () => {
-    const registry = createRegistry().register(
-      'Celsius',
-      'Fahrenheit',
-      (c) => ((c * 9) / 5 + 32) as Fahrenheit
-    );
+    const registry = createRegistry().register('Celsius', 'Fahrenheit', (c) => (c * 9) / 5 + 32);
 
-    const temp = 0 as Celsius;
+    const temp = registry.Celsius(0);
 
     // Use the unit accessor API: registry.celsius.to.fahrenheit(value)
     const result = (registry as any).Celsius.to.Fahrenheit(temp);
@@ -334,11 +302,7 @@ describe('Registry - Unit Accessor API', () => {
   });
 
   it('unit accessor is callable to create branded values', () => {
-    const registry = createRegistry().register(
-      'Celsius',
-      'Fahrenheit',
-      (c) => ((c * 9) / 5 + 32) as Fahrenheit
-    );
+    const registry = createRegistry().register('Celsius', 'Fahrenheit', (c) => (c * 9) / 5 + 32);
 
     // Call the unit accessor as a function to brand a value
     const temp = (registry as any).Celsius(25);
@@ -370,8 +334,8 @@ describe('Registry - Unit Accessor API', () => {
       from: (km) => km * 1000
     });
 
-    const meters = 5000 as Meters;
-    const km = 5 as Kilometers;
+    const meters = registry.meters(5000);
+    const km = registry.kilometers(5);
 
     // Both directions should work
     const toKm = (registry as any).meters.to.kilometers(meters);
@@ -388,11 +352,11 @@ describe('Registry - Unit Accessor API', () => {
         from: (km) => km * 1000
       })
       .register(KilometersMetadata, MilesMetadata, {
-        to: (km) => (km * 0.621371) as Miles,
-        from: (mi) => (mi / 0.621371) as Kilometers
+        to: (km) => km * 0.621371,
+        from: (mi) => mi / 0.621371
       });
 
-    const meters = 5000 as Meters;
+    const meters = registry.meters(5000);
 
     // Should auto-compose: meters → kilometers → miles
     const miles = (registry as any).meters.to.miles(meters);
@@ -401,7 +365,7 @@ describe('Registry - Unit Accessor API', () => {
   });
 
   it('unit accessor API throws error when no converter exists', () => {
-    const registry = createRegistry().register(AMetadata, BMetadata, (a) => (a * 2) as any);
+    const registry = createRegistry().register(AMetadata, BMetadata, (a) => a * 2);
 
     // Try to convert from A to C (C not in registry at all)
     expect(() => {
@@ -413,11 +377,7 @@ describe('Registry - Unit Accessor API', () => {
 describe('Registry - Metadata Support', () => {
   it('addMetadata attaches metadata to a unit', () => {
     const registry = createRegistry()
-      .register(
-        CelsiusMetadata,
-        FahrenheitMetadata,
-        (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit
-      )
+      .register(CelsiusMetadata, FahrenheitMetadata, (c) => (c * 9) / 5 + 32)
       ['Celsius']?.addMetadata({
         abbreviation: '°C',
         format: '${value}°C',
@@ -431,7 +391,7 @@ describe('Registry - Metadata Support', () => {
 
   it('metadata properties are accessible on unit accessors', () => {
     const registry = createRegistry()
-      .register(MetersMetadata, KilometersMetadata, (m: Meters) => (m / 1000) as Kilometers)
+      .register(MetersMetadata, KilometersMetadata, (m) => m / 1000)
       ['meters']?.addMetadata({ abbreviation: 'm', symbol: 'm' });
     expect((registry as any)['meters']!['abbreviation']).toBe('m');
     expect((registry as any)['meters']!['symbol']).toBe('m');
@@ -439,7 +399,7 @@ describe('Registry - Metadata Support', () => {
 
   it('addMetadata supports arbitrary custom properties', () => {
     const registry = createRegistry()
-      .register(KelvinMetadata, CelsiusMetadata, (k: Kelvin) => (k - 273.15) as Celsius)
+      .register(KelvinMetadata, CelsiusMetadata, (k) => k - 273.15)
       ['Kelvin']?.addMetadata({
         abbreviation: 'K',
         customProp: 'custom value',
@@ -453,15 +413,15 @@ describe('Registry - Metadata Support', () => {
 
   it('metadata persists across register operations', () => {
     const registry = createRegistry()
-      .register(AMetadata, BMetadata, (a: A) => (a * 2) as any)
+      .register(AMetadata, BMetadata, (a) => a * 2)
       ['A']?.addMetadata({ abbreviation: 'A' })
-      .register(BMetadata, CMetadata, (b: B) => (b * 3) as any);
+      .register(BMetadata, CMetadata, (b) => b * 3);
     expect((registry as any)['A']!['abbreviation']).toBe('A');
   });
 
   it('addMetadata can update existing metadata', () => {
     const registry = createRegistry()
-      .register(MetersMetadata, FeetMetadata, (m: Meters) => (m * 3.28084) as any)
+      .register(MetersMetadata, FeetMetadata, (m) => m * 3.28084)
       ['meters']?.addMetadata({ abbreviation: 'm' })
       ['meters']?.addMetadata({ description: 'Length in meters' });
     expect((registry as any)['meters']!['abbreviation']).toBe('m');
@@ -473,7 +433,7 @@ describe('Registry - Metadata Support', () => {
       .register(
         { name: 'grams', type: 'number' },
         { name: 'kilograms', type: 'number' },
-        (g: any) => (g / 1000) as any
+        (g) => g / 1000
       )
       ['grams']?.addMetadata({ abbreviation: 'g' })
       ['grams']?.addMetadata({ abbreviation: 'gram' });
@@ -482,26 +442,18 @@ describe('Registry - Metadata Support', () => {
 
   it('multiple units can have independent metadata', () => {
     const registry = createRegistry()
-      .register(
-        CelsiusMetadata,
-        FahrenheitMetadata,
-        (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit
-      )
-      .register(
-        FahrenheitMetadata,
-        CelsiusMetadata,
-        (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius
-      )
+      .register(CelsiusMetadata, FahrenheitMetadata, (c) => (c * 9) / 5 + 32)
+      .register(FahrenheitMetadata, CelsiusMetadata, (f) => ((f - 32) * 5) / 9)
       ['Celsius']?.addMetadata({ abbreviation: '°C' })
       ['Fahrenheit']?.addMetadata({ abbreviation: '°F' });
 
-    expect(registry!['Celsius']!['abbreviation']).toBe('°C');
-    expect(registry!['Fahrenheit']!['abbreviation']).toBe('°F');
+    expect((registry as any)['Celsius']!['abbreviation']).toBe('°C');
+    expect((registry as any)['Fahrenheit']!['abbreviation']).toBe('°F');
   });
 
   it('metadata returns undefined for non-existent properties', () => {
     const registry = createRegistry()
-      .register('meters', 'feet', (m) => (m * 3.28084) as any)
+      .register('meters', 'feet', (m) => m * 3.28084)
       ['meters']?.addMetadata({ abbreviation: 'm' });
 
     expect(registry!['meters']!['abbreviation']).toBe('m');
@@ -509,7 +461,7 @@ describe('Registry - Metadata Support', () => {
   });
 
   it('addMetadata returns new registry instance (immutable)', () => {
-    const registry1 = createRegistry().register('A', 'B', (a) => (a * 2) as any);
+    const registry1 = createRegistry().register('A', 'B', (a) => a * 2);
     const registry2 = registry1['A']?.addMetadata({ abbreviation: 'A' });
 
     expect(registry1['A']!['abbreviation']).toBeUndefined();
@@ -522,21 +474,21 @@ describe('Registry - Unit Accessor Registration', () => {
     type CelsiusEdge = readonly [Celsius, Fahrenheit];
     const registry = createRegistry<[CelsiusEdge]>().Celsius.register(
       'Fahrenheit',
-      (c) => ((c * 9) / 5 + 32) as Fahrenheit
+      (c) => (c * 9) / 5 + 32
     );
 
     const converter = getConverter(registry, 'Celsius', 'Fahrenheit');
     expect(converter).toBeDefined();
     if (converter) {
-      expect(converter(0 as Celsius)).toBe(32);
+      expect(converter(0)).toBe(32);
     }
   });
 
   it('unit accessor register supports bidirectional converters', () => {
     type MeterEdge = readonly [Meters, Kilometers];
     const registry = createRegistry<[MeterEdge]>().meters.register(KilometersMetadata, {
-      to: (m) => (m / 1000) as Kilometers,
-      from: (km) => (km * 1000) as Meters
+      to: (m) => m / 1000,
+      from: (km) => km * 1000
     });
 
     const m2km = getConverter(registry, 'meters', 'kilometers');
@@ -546,8 +498,8 @@ describe('Registry - Unit Accessor Registration', () => {
     expect(km2m).toBeDefined();
 
     if (m2km && km2m) {
-      expect(m2km(1000 as Meters)).toBe(1);
-      expect(km2m(1 as Kilometers)).toBe(1000);
+      expect(m2km(1000)).toBe(1);
+      expect(km2m(1)).toBe(1000);
     }
   });
 
@@ -555,8 +507,8 @@ describe('Registry - Unit Accessor Registration', () => {
     type CelsiusEdge = readonly [Celsius, Fahrenheit];
     type FahrenheitEdge = readonly [Fahrenheit, Kelvin];
     const registry = createRegistry<[CelsiusEdge, FahrenheitEdge]>()
-      .Celsius.register('Fahrenheit', (c) => ((c * 9) / 5 + 32) as Fahrenheit)
-      .Fahrenheit.register('Kelvin', (f) => ((f - 32) * (5 / 9) + 273.15) as Kelvin);
+      .Celsius.register('Fahrenheit', (c) => (c * 9) / 5 + 32)
+      .Fahrenheit.register('Kelvin', (f) => (f - 32) * (5 / 9) + 273.15);
 
     const c2f = getConverter(registry, 'Celsius', 'Fahrenheit');
     const f2k = getConverter(registry, 'Fahrenheit', 'Kelvin');
@@ -587,7 +539,7 @@ describe('Registry - Unit Accessor Registration', () => {
       (c) => (c * 9) / 5 + 32
     );
 
-    const temp = 0 as Celsius;
+    const temp = registry.Celsius(0);
     const result = (registry as any).Celsius.to.Fahrenheit(temp);
 
     expect(result).toBe(32);
@@ -599,7 +551,7 @@ describe('Registry - Unit Accessor Registration', () => {
       .Celsius.addMetadata({ abbreviation: '°C' })
       .Celsius.register('Fahrenheit', (c) => (c * 9) / 5 + 32);
 
-    expect(registry!['Celsius']!['abbreviation']).toBe('°C');
+    expect((registry as any)['Celsius']!['abbreviation']).toBe('°C');
     const converter = getConverter(registry, 'Celsius', 'Fahrenheit');
     expect(converter).toBeDefined();
   });
@@ -608,14 +560,14 @@ describe('Registry - Unit Accessor Registration', () => {
 describe('Registry - Metadata Object Support', () => {
   it('registers converters with metadata objects', () => {
     const registry = createRegistry().register(CelsiusMetadata, FahrenheitMetadata, {
-      to: (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit,
-      from: (f: Fahrenheit) => (((f - 32) * 5) / 9) as Celsius
+      to: (c) => (c * 9) / 5 + 32,
+      from: (f) => ((f - 32) * 5) / 9
     });
 
     const converter = getConverter(registry, 'Celsius', 'Fahrenheit');
     expect(converter).toBeDefined();
     if (converter) {
-      expect(converter(0 as Celsius)).toBe(32);
+      expect(converter(0)).toBe(32);
     }
   });
 
@@ -631,8 +583,8 @@ describe('Registry - Metadata Object Support', () => {
 
   it('supports mixed string and metadata object registration', () => {
     const registry = createRegistry()
-      .register('Celsius', FahrenheitMetadata, (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit)
-      .register(CelsiusMetadata, 'Kelvin', (c: Celsius) => (c + 273.15) as Kelvin);
+      .register('Celsius', FahrenheitMetadata, (c) => (c * 9) / 5 + 32)
+      .register(CelsiusMetadata, 'Kelvin', (c) => c + 273.15);
 
     const c2f = getConverter(registry, 'Celsius', 'Fahrenheit');
     const c2k = getConverter(registry, 'Celsius', 'Kelvin');
@@ -658,29 +610,25 @@ describe('Registry - Metadata Object Support', () => {
 
   it('allow method accepts metadata objects', () => {
     const registry = createRegistry()
-      .register(CelsiusMetadata, KelvinMetadata, (c: Celsius) => (c + 273.15) as Kelvin)
-      .register(KelvinMetadata, FahrenheitMetadata, (k: Kelvin) => ((k - 273.15) * 9) / 5 + 32)
+      .register(CelsiusMetadata, KelvinMetadata, (c) => c + 273.15)
+      .register(KelvinMetadata, FahrenheitMetadata, (k) => ((k - 273.15) * 9) / 5 + 32)
       .allow(CelsiusMetadata, FahrenheitMetadata);
 
     const converter = getConverter(registry, 'Celsius', 'Fahrenheit');
     expect(converter).toBeDefined();
     if (converter) {
-      const result = converter(0 as Celsius);
+      const result = converter(0);
       expect(result).toBeCloseTo(32, 5);
     }
   });
 
   it('maintains backward compatibility with string registration', () => {
-    const registry = createRegistry().register(
-      'Celsius',
-      'Fahrenheit',
-      (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit
-    );
+    const registry = createRegistry().register('Celsius', 'Fahrenheit', (c) => (c * 9) / 5 + 32);
 
     const converter = getConverter(registry, 'Celsius', 'Fahrenheit');
     expect(converter).toBeDefined();
     if (converter) {
-      expect(converter(25 as Celsius)).toBe(77);
+      expect(converter(25)).toBe(77);
     }
   });
 });
@@ -752,16 +700,12 @@ describe('Backward Compatibility (T065)', () => {
     const registry = createRegistry()
       .register(CelsiusMetadata)
       .register(FahrenheitMetadata)
-      .register(
-        CelsiusMetadata,
-        FahrenheitMetadata,
-        (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit
-      );
+      .register(CelsiusMetadata, FahrenheitMetadata, (c) => (c * 9) / 5 + 32);
 
     const converter = getConverter(registry, 'Celsius', 'Fahrenheit');
     expect(converter).toBeDefined();
     if (converter) {
-      expect(converter(100 as Celsius)).toBe(212);
+      expect(converter(100)).toBe(212);
     }
   });
 
@@ -778,29 +722,21 @@ describe('Backward Compatibility (T065)', () => {
 
   it('existing converter chains still work', () => {
     const registry = createRegistry()
-      .register(
-        CelsiusMetadata,
-        FahrenheitMetadata,
-        (c: Celsius) => ((c * 9) / 5 + 32) as Fahrenheit
-      )
-      .register(
-        FahrenheitMetadata,
-        KelvinMetadata,
-        (f: Fahrenheit) => (((f - 32) * 5) / 9 + 273.15) as Kelvin
-      );
+      .register(CelsiusMetadata, FahrenheitMetadata, (c) => (c * 9) / 5 + 32)
+      .register(FahrenheitMetadata, KelvinMetadata, (f) => ((f - 32) * 5) / 9 + 273.15);
 
     // Direct conversion
     const directConverter = getConverter(registry, 'Celsius', 'Fahrenheit');
     expect(directConverter).toBeDefined();
     if (directConverter) {
-      expect(directConverter(0 as Celsius)).toBe(32);
+      expect(directConverter(0)).toBe(32);
     }
 
     // Multi-hop conversion (BFS)
     const hopConverter = getConverter(registry, 'Celsius', 'Kelvin');
     expect(hopConverter).toBeDefined();
     if (hopConverter) {
-      expect(hopConverter(0 as Celsius)).toBeCloseTo(273.15, 1);
+      expect(hopConverter(0)).toBeCloseTo(273.15, 1);
     }
   });
 });
