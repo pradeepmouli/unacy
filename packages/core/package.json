@@ -21,10 +21,11 @@
   ],
   "scripts": {
     "build": "tsgo -p tsconfig.json",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "type-check": "tsgo --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "dependencies": {
     "type-fest": "^5.4.4"
