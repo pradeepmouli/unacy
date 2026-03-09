@@ -1,5 +1,26 @@
 # unacy
 
+## 0.8.0
+
+### Minor Changes
+
+- [#12](https://github.com/pradeepmouli/unacy/pull/12) [`2e1adf1`](https://github.com/pradeepmouli/unacy/commit/2e1adf1a5d894cf2a97bf96d49e8063f7f680a91) Thanks [@pradeepmouli](https://github.com/pradeepmouli)! - feat(core): add non-primitive type support for enums, classes, records, and tuples
+
+  The metadata `type` field now accepts non-primitive values directly:
+
+  - **Enums**: `{ name: 'LogLevel', type: LogLevel }` — numeric or string enums
+  - **Classes**: `{ name: 'Temperature', type: Temperature }` — class constructors
+  - **Records**: `{ name: 'Point', type: { x: 'number', y: 'number' } }` — object schemas
+  - **Tuples**: `{ name: 'RGB', type: ['number', 'number', 'number'] }` — array schemas
+
+  New exports:
+
+  - Types: `SupportedType`, `EnumType`, `ClassType`, `RecordSchema`, `TupleSchema`
+  - Validators: `validateEnum`, `validateClass`, `validateRecordSchema`, `validateTupleSchema`
+  - Type guards: `isEnumMetadata`, `isClassMetadata`, `isRecordMetadata`, `isTupleMetadata`
+  - Introspection: `detectMetadataKind`
+  - Type inference: `PrimitiveTypeFromName`, `InferFromRecordSchema`, `InferFromTupleSchema`
+
 ## 0.7.0
 
 ### Minor Changes
