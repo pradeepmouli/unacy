@@ -1,5 +1,11 @@
 # unacy
 
+## 0.8.1
+
+### Patch Changes
+
+- [#27](https://github.com/pradeepmouli/unacy/pull/27) [`8bc23bc`](https://github.com/pradeepmouli/unacy/commit/8bc23bcf326ba9b04badd50264c7627031fc7de5) Thanks [@pradeepmouli](https://github.com/pradeepmouli)! - - chore: test CI/CD automation pipeline
+
 ## 0.8.0
 
 ### Minor Changes
