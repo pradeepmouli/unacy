@@ -102,15 +102,3 @@ jobs:
             `, { id: pr.node_id });
             console.log(`Auto-merge enabled on PR #${pr.number}`);
 
-      - name: Create GitHub Release
-        if: steps.changesets.outputs.published == 'true'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
-          name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
-          body: |
-            Release ${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
-
-            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/master/CHANGELOG.md) for details.
-          draft: false
-          prerelease: ${{ contains(fromJson(steps.changesets.outputs.publishedPackages)[0].version, '-') }}
