@@ -4,7 +4,7 @@ on:
   push:
     branches: [master, "changeset-release/**"]
   pull_request:
-    branches: [master]
+    branches-ignore: ["sub**"]
 
 jobs:
   lint-and-test:
