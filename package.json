@@ -48,7 +48,9 @@
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "changeset:publish": "pnpm run build && changeset publish",
-    "prepare": "simple-git-hooks"
+    "prepare": "simple-git-hooks",
+    "docs": "typedoc --out docs/html --plugin typedoc-plugin-to-skills",
+    "docs:md": "typedoc"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.1",
