@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.3.1",
-    "@typescript/native-preview": "7.0.0-dev.20260225.1",
+    "@typescript/native-preview": "7.0.0-dev.20260321.1",
     "vitest": "^4.0.18"
   },
   "engines": {
