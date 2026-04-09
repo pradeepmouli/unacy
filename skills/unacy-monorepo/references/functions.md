@@ -5,7 +5,7 @@ Create a new converter registry
 ```ts
 createRegistry<Edges>(): UnitRegistry<Edges extends readonly E[] ? E[] : never> & UnitMap<Edges>
 ```
-**Returns:** `UnitRegistry<Edges extends readonly E[] ? E[] : never> & UnitMap<Edges>`
+**Returns:** `UnitRegistry<Edges extends readonly E[] ? E[] : never> & UnitMap<Edges>` — Empty converter registry with unit-based accessors
 ```typescript
 type Celsius = WithUnits<PrimitiveType, 'Celsius'>;
 type Fahrenheit = WithUnits<PrimitiveType, 'Fahrenheit'>;
@@ -33,7 +33,7 @@ createParserWithSchema<F, T>(schema: any, format: F): Parser<WithFormat<T, F>>
 **Parameters:**
 - `schema: any` — Zod schema for validation
 - `format: F` — Format identifier string
-**Returns:** `Parser<WithFormat<T, F>>`
+**Returns:** `Parser<WithFormat<T, F>>` — Parser function that validates and tags values
 ```typescript
 const parseHex = createParserWithSchema(
   z.string().regex(/^#[0-9A-Fa-f]{6}$/),
@@ -52,7 +52,8 @@ validateEnum(value: unknown): value is EnumType
 ```
 **Parameters:**
 - `value: unknown` — The value to validate
-**Returns:** `value is EnumType`
+**Returns:** `value is EnumType` — `true` if `value` is a valid `EnumType`
+**Throws:** If the enum contains both numeric and string members
 ```typescript
 enum LogLevel { DEBUG = 0, INFO = 1 }
 validateEnum(LogLevel); // true
@@ -69,7 +70,7 @@ validateClass(value: unknown): value is ClassType
 ```
 **Parameters:**
 - `value: unknown` — The value to validate
-**Returns:** `value is ClassType`
+**Returns:** `value is ClassType` — `true` if `value` is a valid `ClassType` constructor
 
 ## `validateRecordSchema`
 Validate that a runtime value is a valid record schema.
@@ -83,7 +84,8 @@ validateRecordSchema(value: unknown, visited: Set<unknown>): value is RecordSche
 **Parameters:**
 - `value: unknown` — The value to validate
 - `visited: Set<unknown>` — default: `...` — Internal set for circular reference detection
-**Returns:** `value is RecordSchema`
+**Returns:** `value is RecordSchema` — `true` if `value` is a valid `RecordSchema`
+**Throws:** If circular references or invalid type names are found
 ```typescript
 validateRecordSchema({ x: 'number', y: 'number' }); // true
 validateRecordSchema({ pos: { x: 'number' } }); // true (nested)
@@ -100,7 +102,8 @@ validateTupleSchema(value: unknown): value is TupleSchema
 ```
 **Parameters:**
 - `value: unknown` — The value to validate
-**Returns:** `value is TupleSchema`
+**Returns:** `value is TupleSchema` — `true` if `value` is a valid `TupleSchema`
+**Throws:** If elements are not strings or contain invalid type names
 ```typescript
 validateTupleSchema(['number', 'number', 'number']); // true
 validateTupleSchema(['string', 'number?']); // true (optional)
@@ -157,4 +160,4 @@ detectMetadataKind(meta: unknown): "primitive" | "enum" | "class" | "tuple" | "r
 ```
 **Parameters:**
 - `meta: unknown` — Metadata object to categorise
-**Returns:** `"primitive" | "enum" | "class" | "tuple" | "record" | "unknown"`
+**Returns:** `"primitive" | "enum" | "class" | "tuple" | "record" | "unknown"` — The detected kind string

@@ -46,6 +46,11 @@ Simplify<{ name: string; type: T extends PrimitiveType ? ToPrimitiveTypeName<T> 
 Metadata that can be attached to units in the registry
 Supports common properties like abbreviation, format, description,
 and allows arbitrary custom properties via index signature
+**Properties:**
+- `abbreviation: string` (optional) — Short abbreviation for the unit (e.g., "°C", "m", "kg")
+- `format: string` (optional) — Format string for displaying values (e.g., "${value}°C")
+- `description: string` (optional) — Human-readable description of the unit
+- `symbol: string` (optional) — Symbol representation of the unit
 
 ### `Relax`
 ```ts

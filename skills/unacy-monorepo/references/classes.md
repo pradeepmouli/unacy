@@ -2,6 +2,7 @@
 
 ## `UnacyError`
 Base error class for all Unacy errors
+*extends `Error`*
 ```ts
 constructor(message: string): UnacyError
 ```
@@ -67,6 +68,7 @@ a();
 
 ## `CycleError`
 Error thrown when a cycle is detected in the conversion graph
+*extends `UnacyError`*
 ```ts
 constructor(path: PropertyKey[]): CycleError
 ```
@@ -133,6 +135,7 @@ a();
 
 ## `MaxDepthError`
 Error thrown when maximum conversion depth is exceeded
+*extends `UnacyError`*
 ```ts
 constructor(from: PropertyKey, to: PropertyKey, maxDepth: number): MaxDepthError
 ```
@@ -201,6 +204,7 @@ a();
 
 ## `ConversionError`
 Error thrown when a conversion cannot be performed
+*extends `UnacyError`*
 ```ts
 constructor(from: PropertyKey, to: PropertyKey, reason?: string): ConversionError
 ```
@@ -268,6 +272,7 @@ a();
 
 ## `ParseError`
 Error thrown when parsing a string into a tagged format fails
+*extends `UnacyError`*
 ```ts
 constructor(format: string, input: string, reason: string): ParseError
 ```
