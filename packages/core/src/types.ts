@@ -135,6 +135,11 @@ export type PrimitiveTypeMap = {
   bigint: bigint;
 };
 
+/**
+ * Map a primitive TypeScript type to its corresponding type name string.
+ * For example, `number` → `'number'`, `string` → `'string'`, `boolean` → `'boolean'`, `bigint` → `'bigint'`.
+ * Returns `never` for non-primitive types.
+ */
 export type ToPrimitiveTypeName<T> = T extends PrimitiveTypeMap[infer U extends
   keyof PrimitiveTypeMap]
   ? U
@@ -171,6 +176,10 @@ export type InferCallableArgs<From> = From extends AnyTaggedUnit
     : [Unwrap<From>]
   : [Unwrap<From>];
 
+/**
+ * Relax a branded unit type to accept either the branded form or its raw unwrapped value.
+ * Useful for APIs that should accept both `WithUnits<T, M>` and plain `T` interchangeably.
+ */
 export type Relax<T> = T | Unwrap<T>;
 /**
  * Brand a value with a format identifier for compile-time format safety.

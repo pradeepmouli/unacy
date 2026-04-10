@@ -8,7 +8,7 @@
 
 > **UnitAccessor**\<`From`, `Edges`\> = \{(...`args`): `From`; `to`: `{ [To in ToUnitsFor<Edges, From> as UnitsFor<To>]: (value: Relax<From>) => To }`; `addMetadata`: [`UnitRegistry`](../interfaces/UnitRegistry.md)\<`Edges` *extends* readonly `E`[] ? `E`[] : `never`\> & [`UnitMap`](UnitMap.md)\<`Edges`\>; `register`: [`UnitRegistry`](../interfaces/UnitRegistry.md)\<\[`...Edges[]`, `Edge`\<`From`, `To`\>\]\> & [`UnitMap`](UnitMap.md)\<\[`...Edges[]`, `Edge`\<`From`, `To`\>\]\>; \} & `UnitsOf`\<`From`\>
 
-Defined in: [packages/core/src/registry.ts:58](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/registry.ts#L58)
+Defined in: [packages/core/src/registry.ts:58](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/registry.ts#L58)
 
 Type for unit accessor with metadata and conversion methods
 Can be called as a function to create branded unit values

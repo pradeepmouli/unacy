@@ -53,6 +53,8 @@ and allows arbitrary custom properties via index signature
 - `symbol: string` (optional) — Symbol representation of the unit
 
 ### `Relax`
+Relax a branded unit type to accept either the branded form or its raw unwrapped value.
+Useful for APIs that should accept both `WithUnits<T, M>` and plain `T` interchangeably.
 ```ts
 T | Unwrap<T>
 ```
@@ -102,6 +104,9 @@ readonly string[]
 ```
 
 ### `ToPrimitiveTypeName`
+Map a primitive TypeScript type to its corresponding type name string.
+For example, `number` → `'number'`, `string` → `'string'`, `boolean` → `'boolean'`, `bigint` → `'bigint'`.
+Returns `never` for non-primitive types.
 ```ts
 T extends PrimitiveTypeMap[infer U extends keyof PrimitiveTypeMap] ? U : never
 ```

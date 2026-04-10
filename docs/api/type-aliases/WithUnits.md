@@ -8,7 +8,7 @@
 
 > **WithUnits**\<`T`, `M`\> = `Tagged`\<`T`, *typeof* `UNITS`, `M`\>
 
-Defined in: [packages/core/src/types.ts:80](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/types.ts#L80)
+Defined in: [packages/core/src/types.ts:80](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/types.ts#L80)
 
 Brand a value with a unit identifier for compile-time unit safety.
 
