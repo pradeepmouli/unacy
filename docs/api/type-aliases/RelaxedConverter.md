@@ -8,7 +8,7 @@
 
 > **RelaxedConverter**\<`TInput`, `TOutput`\> = (`input`) => `Unwrap`\<`TOutput`\>
 
-Defined in: [packages/core/src/converters.ts:96](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/converters.ts#L96)
+Defined in: [packages/core/src/converters.ts:96](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/converters.ts#L96)
 
 A converter that accepts the branded input type but returns
 unwrapped output. This eliminates the need to cast return values

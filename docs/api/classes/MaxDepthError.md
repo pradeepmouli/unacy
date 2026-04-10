@@ -6,7 +6,7 @@
 
 # Class: MaxDepthError
 
-Defined in: [packages/core/src/errors.ts:31](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/errors.ts#L31)
+Defined in: [packages/core/src/errors.ts:31](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/errors.ts#L31)
 
 Error thrown when maximum conversion depth is exceeded
 
@@ -20,7 +20,7 @@ Error thrown when maximum conversion depth is exceeded
 
 > **new MaxDepthError**(`from`, `to`, `maxDepth`): `MaxDepthError`
 
-Defined in: [packages/core/src/errors.ts:36](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/errors.ts#L36)
+Defined in: [packages/core/src/errors.ts:36](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/errors.ts#L36)
 
 #### Parameters
 
@@ -62,7 +62,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **from**: `PropertyKey`
 
-Defined in: [packages/core/src/errors.ts:32](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/errors.ts#L32)
+Defined in: [packages/core/src/errors.ts:32](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/errors.ts#L32)
 
 ***
 
@@ -70,7 +70,7 @@ Defined in: [packages/core/src/errors.ts:32](https://github.com/pradeepmouli/una
 
 > `readonly` **maxDepth**: `number`
 
-Defined in: [packages/core/src/errors.ts:34](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/errors.ts#L34)
+Defined in: [packages/core/src/errors.ts:34](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/errors.ts#L34)
 
 ***
 
@@ -114,7 +114,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **to**: `PropertyKey`
 
-Defined in: [packages/core/src/errors.ts:33](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/errors.ts#L33)
+Defined in: [packages/core/src/errors.ts:33](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/errors.ts#L33)
 
 ***
 

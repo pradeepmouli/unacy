@@ -6,7 +6,7 @@
 
 # Class: ConversionError
 
-Defined in: [packages/core/src/errors.ts:50](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/errors.ts#L50)
+Defined in: [packages/core/src/errors.ts:50](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/errors.ts#L50)
 
 Error thrown when a conversion cannot be performed
 
@@ -20,7 +20,7 @@ Error thrown when a conversion cannot be performed
 
 > **new ConversionError**(`from`, `to`, `reason?`): `ConversionError`
 
-Defined in: [packages/core/src/errors.ts:54](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/errors.ts#L54)
+Defined in: [packages/core/src/errors.ts:54](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/errors.ts#L54)
 
 #### Parameters
 
@@ -62,7 +62,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **from**: `PropertyKey`
 
-Defined in: [packages/core/src/errors.ts:51](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/errors.ts#L51)
+Defined in: [packages/core/src/errors.ts:51](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/errors.ts#L51)
 
 ***
 
@@ -106,7 +106,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **to**: `PropertyKey`
 
-Defined in: [packages/core/src/errors.ts:52](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/errors.ts#L52)
+Defined in: [packages/core/src/errors.ts:52](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/errors.ts#L52)
 
 ***
 

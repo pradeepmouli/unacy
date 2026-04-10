@@ -8,7 +8,7 @@
 
 > **InferFromTupleSchema**\<`T`\> = `T` *extends* readonly \[\] ? \[\] : `T` *extends* readonly \[infer Head, `...(infer Rest extends readonly string[])`\] ? `Head` *extends* `` `...${infer Base}` `` ? `Rest` *extends* readonly \[\] ? \[`...PrimitiveTypeFromName<Base>[]`\] : `never` : `Head` *extends* `` `${infer Base}?` `` ? \[[`PrimitiveTypeFromName`](PrimitiveTypeFromName.md)\<`Base`\>?, `...InferFromTupleSchema<Rest>`\] : \[[`PrimitiveTypeFromName`](PrimitiveTypeFromName.md)\<`Head`\>, `...InferFromTupleSchema<Rest>`\] : `never`
 
-Defined in: [packages/core/src/types.ts:291](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/types.ts#L291)
+Defined in: [packages/core/src/types.ts:291](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/types.ts#L291)
 
 Infer TypeScript type from a `TupleSchema`.
 Handles optional (`?`) and rest (`...`) elements.

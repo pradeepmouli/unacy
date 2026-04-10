@@ -8,7 +8,7 @@
 
 > **Converter**\<`TInput`, `TOutput`\> = (`input`) => `TOutput`
 
-Defined in: [packages/core/src/converters.ts:28](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/converters.ts#L28)
+Defined in: [packages/core/src/converters.ts:28](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/converters.ts#L28)
 
 Unidirectional converter from one unit to another.
 

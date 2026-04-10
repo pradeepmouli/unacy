@@ -8,7 +8,7 @@
 
 > **isTupleMetadata**(`meta`): `meta is { name: string; type: TupleSchema }`
 
-Defined in: [packages/core/src/utils/validation.ts:344](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/utils/validation.ts#L344)
+Defined in: [packages/core/src/utils/validation.ts:344](https://github.com/pradeepmouli/unacy/blob/656040cb6a1ed107db77963b644a2a627efc52c2/packages/core/src/utils/validation.ts#L344)
 
 Type guard: returns `true` when `meta.type` is a tuple schema array.
 
