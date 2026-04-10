@@ -8,7 +8,7 @@
 
 > **SupportedType** = [`PrimitiveType`](PrimitiveType.md) \| [`EnumType`](EnumType.md) \| [`ClassType`](ClassType.md) \| [`RecordSchema`](RecordSchema.md) \| [`TupleSchema`](TupleSchema.md)
 
-Defined in: [packages/core/src/types.ts:129](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/types.ts#L129)
+Defined in: [packages/core/src/types.ts:129](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/types.ts#L129)
 
 Union of all types that can be used as a unit's base type.
 Includes primitives and non-primitive categories (enum, class, record, tuple).

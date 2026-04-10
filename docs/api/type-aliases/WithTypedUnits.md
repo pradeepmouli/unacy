@@ -8,7 +8,7 @@
 
 > **WithTypedUnits**\<`M`\> = `unknown` *extends* `M` ? [`WithUnits`](WithUnits.md)\<`any`, `any`\> : `M` *extends* `object` ? `TypeField` *extends* keyof `PrimitiveTypeMap` ? [`WithUnits`](WithUnits.md)\<`PrimitiveTypeMap`\[`TypeField`\], `M`\> : `TypeField` *extends* [`SupportedType`](SupportedType.md) ? [`WithUnits`](WithUnits.md)\<`ResolveValueType`\<`TypeField`\>, `M`\> : `never` : `never`
 
-Defined in: [packages/core/src/types.ts:57](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/types.ts#L57)
+Defined in: [packages/core/src/types.ts:57](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/types.ts#L57)
 
 Resolve a branded unit type from a `TypedMetadata` object.
 

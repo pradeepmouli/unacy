@@ -6,7 +6,7 @@
 
 # Class: ParseError
 
-Defined in: [packages/core/src/errors.ts:66](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/errors.ts#L66)
+Defined in: [packages/core/src/errors.ts:66](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/errors.ts#L66)
 
 Error thrown when parsing a string into a tagged format fails
 
@@ -20,7 +20,7 @@ Error thrown when parsing a string into a tagged format fails
 
 > **new ParseError**(`format`, `input`, `reason`): `ParseError`
 
-Defined in: [packages/core/src/errors.ts:71](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/errors.ts#L71)
+Defined in: [packages/core/src/errors.ts:71](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/errors.ts#L71)
 
 #### Parameters
 
@@ -62,7 +62,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **format**: `string`
 
-Defined in: [packages/core/src/errors.ts:67](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/errors.ts#L67)
+Defined in: [packages/core/src/errors.ts:67](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/errors.ts#L67)
 
 ***
 
@@ -70,7 +70,7 @@ Defined in: [packages/core/src/errors.ts:67](https://github.com/pradeepmouli/una
 
 > `readonly` **input**: `string`
 
-Defined in: [packages/core/src/errors.ts:68](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/errors.ts#L68)
+Defined in: [packages/core/src/errors.ts:68](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/errors.ts#L68)
 
 ***
 
@@ -102,7 +102,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **reason**: `string`
 
-Defined in: [packages/core/src/errors.ts:69](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/errors.ts#L69)
+Defined in: [packages/core/src/errors.ts:69](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/errors.ts#L69)
 
 ***
 

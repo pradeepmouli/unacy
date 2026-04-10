@@ -8,7 +8,7 @@
 
 > **validateClass**(`value`): `value is ClassType`
 
-Defined in: [packages/core/src/utils/validation.ts:118](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/utils/validation.ts#L118)
+Defined in: [packages/core/src/utils/validation.ts:118](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/utils/validation.ts#L118)
 
 Validate that a runtime value is a valid class constructor.
 

@@ -6,7 +6,7 @@
 
 # Interface: UnitRegistry\<Edges\>
 
-Defined in: [packages/core/src/registry.ts:107](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/registry.ts#L107)
+Defined in: [packages/core/src/registry.ts:107](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/registry.ts#L107)
 
 Registry for managing and composing unit converters
 
@@ -22,7 +22,7 @@ Registry for managing and composing unit converters
 
 > **allow**\<`From`, `To`, `FromMeta`, `ToMeta`\>(`from`, `to`): `UnitRegistry`\<\[`...Edges[]`, `Edge`\<`From`, `To`\>\]\> & [`UnitMap`](../type-aliases/UnitMap.md)\<\[`...Edges[]`, `Edge`\<`From`, `To`\>\]\>
 
-Defined in: [packages/core/src/registry.ts:173](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/registry.ts#L173)
+Defined in: [packages/core/src/registry.ts:173](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/registry.ts#L173)
 
 Explicitly allow a conversion path in the type system (for multi-hop conversions)
 
@@ -89,7 +89,7 @@ const f = registry.Celsius.to.Fahrenheit(temp);
 
 > **convert**\<`From`\>(`value`, `fromUnit`): `object`
 
-Defined in: [packages/core/src/registry.ts:203](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/registry.ts#L203)
+Defined in: [packages/core/src/registry.ts:203](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/registry.ts#L203)
 
 Convert a value using fluent API
 
@@ -145,7 +145,7 @@ Object with to() method for conversion
 
 > **getConverter**\<`From`, `To`\>(`from`, `to`): [`Converter`](../type-aliases/Converter.md)\<`From`, `To`\> \| `undefined`
 
-Defined in: [packages/core/src/registry.ts:189](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/registry.ts#L189)
+Defined in: [packages/core/src/registry.ts:189](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/registry.ts#L189)
 
 Get a converter (direct or composed via BFS)
 
@@ -187,7 +187,7 @@ Converter function, or undefined if no path exists
 
 > **register**\<`From`, `FromMeta`\>(`unit`): `UnitRegistry`\<`Edges`\> & `{ [K in string]: UnitAccessor<From, Edges> }`
 
-Defined in: [packages/core/src/registry.ts:108](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/registry.ts#L108)
+Defined in: [packages/core/src/registry.ts:108](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/registry.ts#L108)
 
 ##### Type Parameters
 
@@ -213,7 +213,7 @@ Defined in: [packages/core/src/registry.ts:108](https://github.com/pradeepmouli/
 
 > **register**\<`From`, `To`, `FromMeta`, `ToMeta`\>(`from`, `to`, `converter`): `UnitRegistry`\<\[`...Edges[]`, `Edge`\<`From`, `To`\>\]\> & [`UnitMap`](../type-aliases/UnitMap.md)\<\[`...Edges[]`, `Edge`\<`From`, `To`\>\]\>
 
-Defined in: [packages/core/src/registry.ts:119](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/registry.ts#L119)
+Defined in: [packages/core/src/registry.ts:119](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/registry.ts#L119)
 
 Register a unidirectional converter
 
@@ -265,7 +265,7 @@ New registry instance with the converter registered
 
 > **register**\<`From`, `To`, `FromMeta`, `ToMeta`\>(`from`, `to`, `converter`): `UnitRegistry`\<\[`...Edges[]`, `Edge`\<`From`, `To`\>, `Edge`\<`To`, `From`\>\]\> & [`UnitMap`](../type-aliases/UnitMap.md)\<\[`...Edges[]`, `Edge`\<`From`, `To`\>, `Edge`\<`To`, `From`\>\]\>
 
-Defined in: [packages/core/src/registry.ts:137](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/registry.ts#L137)
+Defined in: [packages/core/src/registry.ts:137](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/registry.ts#L137)
 
 Register a bidirectional converter (both directions)
 

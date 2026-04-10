@@ -8,7 +8,7 @@
 
 > **createRegistry**\<`Edges`\>(): [`UnitRegistry`](../interfaces/UnitRegistry.md)\<`Edges` *extends* readonly `E`[] ? `E`[] : `never`\> & [`UnitMap`](../type-aliases/UnitMap.md)\<`Edges`\>
 
-Defined in: [packages/core/src/registry.ts:583](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/registry.ts#L583)
+Defined in: [packages/core/src/registry.ts:583](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/registry.ts#L583)
 
 Create a new converter registry
 

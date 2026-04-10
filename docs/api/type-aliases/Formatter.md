@@ -8,7 +8,7 @@
 
 > **Formatter**\<`TInput`\> = (`input`) => `string`
 
-Defined in: [packages/core/src/formatters.ts:26](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/formatters.ts#L26)
+Defined in: [packages/core/src/formatters.ts:26](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/formatters.ts#L26)
 
 Formatter converts a format-tagged value to a string representation.
 

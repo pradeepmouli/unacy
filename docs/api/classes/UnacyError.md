@@ -6,7 +6,7 @@
 
 # Class: UnacyError
 
-Defined in: [packages/core/src/errors.ts:4](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/errors.ts#L4)
+Defined in: [packages/core/src/errors.ts:4](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/errors.ts#L4)
 
 Base error class for all Unacy errors
 
@@ -27,7 +27,7 @@ Base error class for all Unacy errors
 
 > **new UnacyError**(`message`): `UnacyError`
 
-Defined in: [packages/core/src/errors.ts:5](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/errors.ts#L5)
+Defined in: [packages/core/src/errors.ts:5](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/errors.ts#L5)
 
 #### Parameters
 

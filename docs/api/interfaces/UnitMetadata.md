@@ -6,7 +6,7 @@
 
 # Interface: UnitMetadata
 
-Defined in: [packages/core/src/types.ts:254](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/types.ts#L254)
+Defined in: [packages/core/src/types.ts:254](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/types.ts#L254)
 
 Metadata that can be attached to units in the registry
 Supports common properties like abbreviation, format, description,
@@ -24,7 +24,7 @@ Allow arbitrary custom metadata properties
 
 > `optional` **abbreviation?**: `string`
 
-Defined in: [packages/core/src/types.ts:256](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/types.ts#L256)
+Defined in: [packages/core/src/types.ts:256](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/types.ts#L256)
 
 Short abbreviation for the unit (e.g., "°C", "m", "kg")
 
@@ -34,7 +34,7 @@ Short abbreviation for the unit (e.g., "°C", "m", "kg")
 
 > `optional` **description?**: `string`
 
-Defined in: [packages/core/src/types.ts:260](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/types.ts#L260)
+Defined in: [packages/core/src/types.ts:260](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/types.ts#L260)
 
 Human-readable description of the unit
 
@@ -44,7 +44,7 @@ Human-readable description of the unit
 
 > `optional` **format?**: `string`
 
-Defined in: [packages/core/src/types.ts:258](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/types.ts#L258)
+Defined in: [packages/core/src/types.ts:258](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/types.ts#L258)
 
 Format string for displaying values (e.g., "${value}°C")
 
@@ -54,6 +54,6 @@ Format string for displaying values (e.g., "${value}°C")
 
 > `optional` **symbol?**: `string`
 
-Defined in: [packages/core/src/types.ts:262](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/types.ts#L262)
+Defined in: [packages/core/src/types.ts:262](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/types.ts#L262)
 
 Symbol representation of the unit

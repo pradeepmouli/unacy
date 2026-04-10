@@ -8,7 +8,7 @@
 
 > **RecordSchema** = `object`
 
-Defined in: [packages/core/src/types.ts:112](https://github.com/pradeepmouli/unacy/blob/7e5ab79c98ba3430d0f51e82fb8b3a1d058218ee/packages/core/src/types.ts#L112)
+Defined in: [packages/core/src/types.ts:112](https://github.com/pradeepmouli/unacy/blob/e832fb557c574392ab22fd14b1f66b3ded90f11a/packages/core/src/types.ts#L112)
 
 A schema describing an object shape. Keys are property names;
 values are primitive type name strings (`'number'`, `'string'`, etc.)
