@@ -1,6 +1,6 @@
 # Types & Enums
 
-## Types
+## types
 
 ### `WithUnits`
 Brand a value with a unit identifier for compile-time unit safety.
@@ -106,6 +106,28 @@ readonly string[]
 T extends PrimitiveTypeMap[infer U extends keyof PrimitiveTypeMap] ? U : never
 ```
 
+### `PrimitiveTypeFromName`
+Map type name strings to TypeScript primitive types.
+```ts
+T extends "number" ? number : T extends "string" ? string : T extends "boolean" ? boolean : T extends "bigint" ? bigint : never
+```
+
+### `InferFromRecordSchema`
+Infer TypeScript type from a `RecordSchema`.
+Recursively processes nested schemas.
+```ts
+Simplify<{ [K in keyof S]: S[K] extends string ? PrimitiveTypeFromName<S[K]> : S[K] extends RecordSchema ? InferFromRecordSchema<S[K]> : never }>
+```
+
+### `InferFromTupleSchema`
+Infer TypeScript type from a `TupleSchema`.
+Handles optional (`?`) and rest (`...`) elements.
+```ts
+T extends readonly [] ? [] : T extends readonly [infer Head extends string, ...(infer Rest extends readonly string[])] ? Head extends `...${infer Base}` ? Rest extends readonly [] ? [...PrimitiveTypeFromName<Base>[]] : never : Head extends `${infer Base}?` ? [PrimitiveTypeFromName<Base>?, ...InferFromTupleSchema<Rest>] : [PrimitiveTypeFromName<Head>, ...InferFromTupleSchema<Rest>] : never
+```
+
+## converters
+
 ### `Converter`
 Unidirectional converter from one unit to another.
 ```ts
@@ -131,6 +153,8 @@ types are also assignable to this type.
 A bidirectional converter with relaxed (unwrapped) output types.
 Input remains branded for full autocompletion.
 
+## formatters
+
 ### `Formatter`
 Formatter converts a format-tagged value to a string representation.
 ```ts
@@ -145,6 +169,8 @@ Parser converts a string into a format-tagged value with validation.
 
 ### `FormatterParser`
 Paired formatter/parser for round-trip format transformations.
+
+## registry
 
 ### `UnitRegistry`
 Registry for managing and composing unit converters
@@ -162,24 +188,4 @@ Type for unit accessor with metadata and conversion methods
 Can be called as a function to create branded unit values
 ```ts
 { (args: InferCallableArgs<From>): From; to: { [To in ToUnitsFor<Edges, From> as UnitsFor<To>]: (value: Relax<From>) => To }; addMetadata: any; register: any } & UnitsOf<From>
-```
-
-### `PrimitiveTypeFromName`
-Map type name strings to TypeScript primitive types.
-```ts
-T extends "number" ? number : T extends "string" ? string : T extends "boolean" ? boolean : T extends "bigint" ? bigint : never
-```
-
-### `InferFromRecordSchema`
-Infer TypeScript type from a `RecordSchema`.
-Recursively processes nested schemas.
-```ts
-Simplify<{ [K in keyof S]: S[K] extends string ? PrimitiveTypeFromName<S[K]> : S[K] extends RecordSchema ? InferFromRecordSchema<S[K]> : never }>
-```
-
-### `InferFromTupleSchema`
-Infer TypeScript type from a `TupleSchema`.
-Handles optional (`?`) and rest (`...`) elements.
-```ts
-T extends readonly [] ? [] : T extends readonly [infer Head extends string, ...(infer Rest extends readonly string[])] ? Head extends `...${infer Base}` ? Rest extends readonly [] ? [...PrimitiveTypeFromName<Base>[]] : never : Head extends `${infer Base}?` ? [PrimitiveTypeFromName<Base>?, ...InferFromTupleSchema<Rest>] : [PrimitiveTypeFromName<Head>, ...InferFromTupleSchema<Rest>] : never
 ```

@@ -1,24 +1,26 @@
 ---
 name: unacy-monorepo
-description: "Unacy Core - Type-safe unit and format conversion library Use when working with createRegistry, createParserWithSchema, validateEnum, validateClass, validateRecordSchema, UnacyError, CycleError, MaxDepthError. Keywords: monorepo, oxfmt, oxlint, pnpm, template, vitest."
+description: "TypeScript monorepo template with pnpm, oxlint, oxfmt, and Vitest Use when working with monorepo, oxfmt, oxlint, pnpm, template, vitest."
 license: MIT
 ---
 
 # unacy-monorepo
 
-Unacy Core - Type-safe unit and format conversion library
+TypeScript monorepo template with pnpm, oxlint, oxfmt, and Vitest
 
 ## When to Use
 
-- Calling `createRegistry()`, `createParserWithSchema()`, `validateEnum()`, `validateClass()`, `validateRecordSchema()`, and 6 more
-- Instantiating or extending `UnacyError`, `CycleError`, `MaxDepthError`
-- Typing with `WithUnits`, `WithTypedUnits`, `WithFormat`, `BaseMetadata`, `TypedMetadata`
+- Working with monorepo, oxfmt, oxlint, pnpm, template, vitest
+- API surface: 11 functions, 5 classes, 27 types
 
 ## Quick Reference
 
-**11 functions** — `createRegistry`, `createParserWithSchema`, `validateEnum`, `validateClass`, `validateRecordSchema`, `validateTupleSchema`, `isEnumMetadata`, `isClassMetadata`, `isRecordMetadata`, `isTupleMetadata`, `detectMetadataKind`
-**5 classes** — `UnacyError`, `CycleError`, `MaxDepthError`, `ConversionError`, `ParseError`
-**27 types** — `WithUnits`, `WithTypedUnits`, `WithFormat`, `BaseMetadata`, `TypedMetadata`, `UnitMetadata`, `Relax`, `PrimitiveType`, `SupportedType`, `EnumType`, `ClassType`, `RecordSchema`, `TupleSchema`, `ToPrimitiveTypeName`, `Converter`, `BidirectionalConverter`, `RelaxedConverter`, `RelaxedBidirectionalConverter`, `Formatter`, `Parser`, `FormatterParser`, `UnitRegistry`, `UnitMap`, `UnitAccessor`, `PrimitiveTypeFromName`, `InferFromRecordSchema`, `InferFromTupleSchema`
+**registry:** `createRegistry`, `UnitRegistry`, `UnitMap`, `UnitAccessor`
+**validation:** `createParserWithSchema`, `validateEnum`, `validateClass`, `validateRecordSchema`, `validateTupleSchema`, `isEnumMetadata`, `isClassMetadata`, `isRecordMetadata`, `isTupleMetadata`, `detectMetadataKind`
+**errors:** `UnacyError`, `CycleError`, `MaxDepthError`, `ConversionError`, `ParseError`
+**types:** `WithUnits`, `WithTypedUnits`, `WithFormat`, `BaseMetadata`, `TypedMetadata`, `UnitMetadata`, `Relax`, `PrimitiveType`, `SupportedType`, `EnumType`, `ClassType`, `RecordSchema`, `TupleSchema`, `ToPrimitiveTypeName`, `PrimitiveTypeFromName`, `InferFromRecordSchema`, `InferFromTupleSchema`
+**converters:** `Converter`, `BidirectionalConverter`, `RelaxedConverter`, `RelaxedBidirectionalConverter`
+**formatters:** `Formatter`, `Parser`, `FormatterParser`
 
 ## Links
 

@@ -1,6 +1,8 @@
 # Classes
 
-## `UnacyError`
+## errors
+
+### `UnacyError`
 Base error class for all Unacy errors
 *extends `Error`*
 ```ts
@@ -16,10 +18,10 @@ will affect any stack trace captured _after_ the value has been changed.
 
 If set to a non-number value, or set to a negative number, stack traces will
 not capture any frames.
-- `name: string` — 
-- `message: string` — 
-- `stack: string` (optional) — 
-- `cause: unknown` (optional) — 
+- `name: string`
+- `message: string`
+- `stack: string` (optional)
+- `cause: unknown` (optional)
 **Methods:**
 - `captureStackTrace(targetObject: object, constructorOpt?: Function): void` — Creates a `.stack` property on `targetObject`, which when accessed returns
 a string representing the location in the code at which
@@ -64,9 +66,9 @@ function c() {
 
 a();
 ```
-- `prepareStackTrace(err: Error, stackTraces: CallSite[]): any` — 
+- `prepareStackTrace(err: Error, stackTraces: CallSite[]): any`
 
-## `CycleError`
+### `CycleError`
 Error thrown when a cycle is detected in the conversion graph
 *extends `UnacyError`*
 ```ts
@@ -82,11 +84,11 @@ will affect any stack trace captured _after_ the value has been changed.
 
 If set to a non-number value, or set to a negative number, stack traces will
 not capture any frames.
-- `path: PropertyKey[]` — 
-- `name: string` — 
-- `message: string` — 
-- `stack: string` (optional) — 
-- `cause: unknown` (optional) — 
+- `path: PropertyKey[]`
+- `name: string`
+- `message: string`
+- `stack: string` (optional)
+- `cause: unknown` (optional)
 **Methods:**
 - `captureStackTrace(targetObject: object, constructorOpt?: Function): void` — Creates a `.stack` property on `targetObject`, which when accessed returns
 a string representing the location in the code at which
@@ -131,9 +133,9 @@ function c() {
 
 a();
 ```
-- `prepareStackTrace(err: Error, stackTraces: CallSite[]): any` — 
+- `prepareStackTrace(err: Error, stackTraces: CallSite[]): any`
 
-## `MaxDepthError`
+### `MaxDepthError`
 Error thrown when maximum conversion depth is exceeded
 *extends `UnacyError`*
 ```ts
@@ -149,13 +151,13 @@ will affect any stack trace captured _after_ the value has been changed.
 
 If set to a non-number value, or set to a negative number, stack traces will
 not capture any frames.
-- `from: PropertyKey` — 
-- `to: PropertyKey` — 
-- `maxDepth: number` — 
-- `name: string` — 
-- `message: string` — 
-- `stack: string` (optional) — 
-- `cause: unknown` (optional) — 
+- `from: PropertyKey`
+- `to: PropertyKey`
+- `maxDepth: number`
+- `name: string`
+- `message: string`
+- `stack: string` (optional)
+- `cause: unknown` (optional)
 **Methods:**
 - `captureStackTrace(targetObject: object, constructorOpt?: Function): void` — Creates a `.stack` property on `targetObject`, which when accessed returns
 a string representing the location in the code at which
@@ -200,9 +202,9 @@ function c() {
 
 a();
 ```
-- `prepareStackTrace(err: Error, stackTraces: CallSite[]): any` — 
+- `prepareStackTrace(err: Error, stackTraces: CallSite[]): any`
 
-## `ConversionError`
+### `ConversionError`
 Error thrown when a conversion cannot be performed
 *extends `UnacyError`*
 ```ts
@@ -218,12 +220,12 @@ will affect any stack trace captured _after_ the value has been changed.
 
 If set to a non-number value, or set to a negative number, stack traces will
 not capture any frames.
-- `from: PropertyKey` — 
-- `to: PropertyKey` — 
-- `name: string` — 
-- `message: string` — 
-- `stack: string` (optional) — 
-- `cause: unknown` (optional) — 
+- `from: PropertyKey`
+- `to: PropertyKey`
+- `name: string`
+- `message: string`
+- `stack: string` (optional)
+- `cause: unknown` (optional)
 **Methods:**
 - `captureStackTrace(targetObject: object, constructorOpt?: Function): void` — Creates a `.stack` property on `targetObject`, which when accessed returns
 a string representing the location in the code at which
@@ -268,9 +270,9 @@ function c() {
 
 a();
 ```
-- `prepareStackTrace(err: Error, stackTraces: CallSite[]): any` — 
+- `prepareStackTrace(err: Error, stackTraces: CallSite[]): any`
 
-## `ParseError`
+### `ParseError`
 Error thrown when parsing a string into a tagged format fails
 *extends `UnacyError`*
 ```ts
@@ -286,13 +288,13 @@ will affect any stack trace captured _after_ the value has been changed.
 
 If set to a non-number value, or set to a negative number, stack traces will
 not capture any frames.
-- `format: string` — 
-- `input: string` — 
-- `reason: string` — 
-- `name: string` — 
-- `message: string` — 
-- `stack: string` (optional) — 
-- `cause: unknown` (optional) — 
+- `format: string`
+- `input: string`
+- `reason: string`
+- `name: string`
+- `message: string`
+- `stack: string` (optional)
+- `cause: unknown` (optional)
 **Methods:**
 - `captureStackTrace(targetObject: object, constructorOpt?: Function): void` — Creates a `.stack` property on `targetObject`, which when accessed returns
 a string representing the location in the code at which
@@ -337,4 +339,4 @@ function c() {
 
 a();
 ```
-- `prepareStackTrace(err: Error, stackTraces: CallSite[]): any` — 
+- `prepareStackTrace(err: Error, stackTraces: CallSite[]): any`

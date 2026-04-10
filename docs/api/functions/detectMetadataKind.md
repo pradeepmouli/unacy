@@ -8,7 +8,7 @@
 
 > **detectMetadataKind**(`meta`): `"primitive"` \| `"enum"` \| `"class"` \| `"tuple"` \| `"record"` \| `"unknown"`
 
-Defined in: [packages/core/src/utils/validation.ts:368](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/utils/validation.ts#L368)
+Defined in: [packages/core/src/utils/validation.ts:368](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/utils/validation.ts#L368)
 
 Detect the kind of a metadata object by inspecting its `type` field.
 

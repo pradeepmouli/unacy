@@ -1,6 +1,8 @@
 # Functions
 
-## `createRegistry`
+## registry
+
+### `createRegistry`
 Create a new converter registry
 ```ts
 createRegistry<Edges>(): UnitRegistry<Edges extends readonly E[] ? E[] : never> & UnitMap<Edges>
@@ -25,7 +27,9 @@ const fahrenheit = registry.Celsius.to.Fahrenheit(temp);
 console.log(fahrenheit); // 77
 ```
 
-## `createParserWithSchema`
+## validation
+
+### `createParserWithSchema`
 Create a parser with Zod schema validation.
 ```ts
 createParserWithSchema<F, T>(schema: any, format: F): Parser<WithFormat<T, F>>
@@ -41,7 +45,7 @@ const parseHex = createParserWithSchema(
 );
 ```
 
-## `validateEnum`
+### `validateEnum`
 Validate that a runtime value is a valid TypeScript enum object.
 
 Accepts numeric enums (with reverse-mapped keys filtered out) and
@@ -60,7 +64,7 @@ validateEnum(LogLevel); // true
 validateEnum({}); // false
 ```
 
-## `validateClass`
+### `validateClass`
 Validate that a runtime value is a valid class constructor.
 
 Checks that the value is a function with a `prototype` property.
@@ -72,7 +76,7 @@ validateClass(value: unknown): value is ClassType
 - `value: unknown` — The value to validate
 **Returns:** `value is ClassType` — `true` if `value` is a valid `ClassType` constructor
 
-## `validateRecordSchema`
+### `validateRecordSchema`
 Validate that a runtime value is a valid record schema.
 
 A valid record schema is a plain object whose leaf values are primitive
@@ -91,7 +95,7 @@ validateRecordSchema({ x: 'number', y: 'number' }); // true
 validateRecordSchema({ pos: { x: 'number' } }); // true (nested)
 ```
 
-## `validateTupleSchema`
+### `validateTupleSchema`
 Validate that a runtime value is a valid tuple schema.
 
 A valid tuple schema is an array of primitive type name strings,
@@ -110,7 +114,7 @@ validateTupleSchema(['string', 'number?']); // true (optional)
 validateTupleSchema(['number', '...string']); // true (rest)
 ```
 
-## `isEnumMetadata`
+### `isEnumMetadata`
 Type guard: returns `true` when `meta.type` is an enum object.
 
 Distinguishes enums from record schemas by first checking whether the
@@ -123,7 +127,7 @@ isEnumMetadata(meta: unknown): meta is { name: string; type: EnumType }
 - `meta: unknown` — Metadata object to inspect
 **Returns:** `meta is { name: string; type: EnumType }`
 
-## `isClassMetadata`
+### `isClassMetadata`
 Type guard: returns `true` when `meta.type` is a class constructor.
 ```ts
 isClassMetadata(meta: unknown): meta is { name: string; type: ClassType }
@@ -132,7 +136,7 @@ isClassMetadata(meta: unknown): meta is { name: string; type: ClassType }
 - `meta: unknown` — Metadata object to inspect
 **Returns:** `meta is { name: string; type: ClassType }`
 
-## `isRecordMetadata`
+### `isRecordMetadata`
 Type guard: returns `true` when `meta.type` is a record schema object.
 ```ts
 isRecordMetadata(meta: unknown): meta is { name: string; type: RecordSchema }
@@ -141,7 +145,7 @@ isRecordMetadata(meta: unknown): meta is { name: string; type: RecordSchema }
 - `meta: unknown` — Metadata object to inspect
 **Returns:** `meta is { name: string; type: RecordSchema }`
 
-## `isTupleMetadata`
+### `isTupleMetadata`
 Type guard: returns `true` when `meta.type` is a tuple schema array.
 ```ts
 isTupleMetadata(meta: unknown): meta is { name: string; type: TupleSchema }
@@ -150,7 +154,7 @@ isTupleMetadata(meta: unknown): meta is { name: string; type: TupleSchema }
 - `meta: unknown` — Metadata object to inspect
 **Returns:** `meta is { name: string; type: TupleSchema }`
 
-## `detectMetadataKind`
+### `detectMetadataKind`
 Detect the kind of a metadata object by inspecting its `type` field.
 
 Resolution priority: `primitive` → `class` → `tuple` → `record` → `enum`.

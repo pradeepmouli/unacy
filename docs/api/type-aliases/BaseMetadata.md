@@ -8,7 +8,7 @@
 
 > **BaseMetadata** = `object`
 
-Defined in: [packages/core/src/types.ts:220](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/types.ts#L220)
+Defined in: [packages/core/src/types.ts:220](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/types.ts#L220)
 
 Base metadata type that all unit metadata must extend.
 Requires a `name` property and allows arbitrary additional properties.
@@ -29,6 +29,6 @@ const Celsius = {
 
 > **name**: `string`
 
-Defined in: [packages/core/src/types.ts:222](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/types.ts#L222)
+Defined in: [packages/core/src/types.ts:222](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/types.ts#L222)
 
 Unique identifier for the unit (replaces tag)

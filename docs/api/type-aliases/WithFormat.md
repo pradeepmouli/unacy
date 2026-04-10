@@ -8,7 +8,7 @@
 
 > **WithFormat**\<`T`, `F`\> = `Tagged`\<`T`, *typeof* `UNITS`, `F`\>
 
-Defined in: [packages/core/src/types.ts:187](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/types.ts#L187)
+Defined in: [packages/core/src/types.ts:187](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/types.ts#L187)
 
 Brand a value with a format identifier for compile-time format safety.
 

@@ -8,7 +8,7 @@
 
 > **FormatterParser**\<`T`\> = `object`
 
-Defined in: [packages/core/src/formatters.ts:82](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/formatters.ts#L82)
+Defined in: [packages/core/src/formatters.ts:82](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/formatters.ts#L82)
 
 Paired formatter/parser for round-trip format transformations.
 
@@ -47,7 +47,7 @@ Format-tagged type
 
 > **format**: [`Formatter`](Formatter.md)\<`T`\>
 
-Defined in: [packages/core/src/formatters.ts:83](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/formatters.ts#L83)
+Defined in: [packages/core/src/formatters.ts:83](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/formatters.ts#L83)
 
 Converts tagged value → string
 
@@ -57,6 +57,6 @@ Converts tagged value → string
 
 > **parse**: [`Parser`](Parser.md)\<`T`\>
 
-Defined in: [packages/core/src/formatters.ts:84](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/formatters.ts#L84)
+Defined in: [packages/core/src/formatters.ts:84](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/formatters.ts#L84)
 
 Converts string → tagged value

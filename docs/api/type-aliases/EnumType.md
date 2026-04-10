@@ -8,7 +8,7 @@
 
 > **EnumType** = `Record`\<`string`, `string` \| `number`\>
 
-Defined in: [packages/core/src/types.ts:90](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/types.ts#L90)
+Defined in: [packages/core/src/types.ts:90](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/types.ts#L90)
 
 A TypeScript enum object at runtime — an object whose values are all
 strings (string enum) or all numbers (numeric enum).

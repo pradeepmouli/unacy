@@ -8,7 +8,7 @@
 
 > **BidirectionalConverter**\<`TInput`, `TOutput`\> = `object`
 
-Defined in: [packages/core/src/converters.ts:65](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/converters.ts#L65)
+Defined in: [packages/core/src/converters.ts:65](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/converters.ts#L65)
 
 Bidirectional converter with forward and reverse transformations.
 
@@ -47,7 +47,7 @@ Second unit type
 
 > **from**: [`Converter`](Converter.md)\<`TOutput`, `TInput`\>
 
-Defined in: [packages/core/src/converters.ts:67](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/converters.ts#L67)
+Defined in: [packages/core/src/converters.ts:67](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/converters.ts#L67)
 
 Reverse converter (TOutput → TInput)
 
@@ -57,6 +57,6 @@ Reverse converter (TOutput → TInput)
 
 > **to**: [`Converter`](Converter.md)\<`TInput`, `TOutput`\>
 
-Defined in: [packages/core/src/converters.ts:66](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/converters.ts#L66)
+Defined in: [packages/core/src/converters.ts:66](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/converters.ts#L66)
 
 Forward converter (TInput → TOutput)

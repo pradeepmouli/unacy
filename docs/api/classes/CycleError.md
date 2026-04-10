@@ -6,7 +6,7 @@
 
 # Class: CycleError
 
-Defined in: [packages/core/src/errors.ts:17](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/errors.ts#L17)
+Defined in: [packages/core/src/errors.ts:17](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/errors.ts#L17)
 
 Error thrown when a cycle is detected in the conversion graph
 
@@ -20,7 +20,7 @@ Error thrown when a cycle is detected in the conversion graph
 
 > **new CycleError**(`path`): `CycleError`
 
-Defined in: [packages/core/src/errors.ts:20](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/errors.ts#L20)
+Defined in: [packages/core/src/errors.ts:20](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/errors.ts#L20)
 
 #### Parameters
 
@@ -78,7 +78,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **path**: `PropertyKey`[]
 
-Defined in: [packages/core/src/errors.ts:18](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/errors.ts#L18)
+Defined in: [packages/core/src/errors.ts:18](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/errors.ts#L18)
 
 ***
 

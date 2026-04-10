@@ -8,7 +8,7 @@
 
 > **Parser**\<`TOutput`\> = (`input`) => `TOutput`
 
-Defined in: [packages/core/src/formatters.ts:53](https://github.com/pradeepmouli/unacy/blob/48ee59106cbea9314eeb1c55929a92b1d10d8465/packages/core/src/formatters.ts#L53)
+Defined in: [packages/core/src/formatters.ts:53](https://github.com/pradeepmouli/unacy/blob/183504d164b047a8cc7d04fd3bd6664982040096/packages/core/src/formatters.ts#L53)
 
 Parser converts a string into a format-tagged value with validation.
 
