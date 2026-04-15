@@ -101,4 +101,3 @@ jobs:
               }
             `, { id: pr.node_id });
             console.log(`Auto-merge enabled on PR #${pr.number}`);
-
