@@ -50,6 +50,8 @@
     "changeset:publish": "pnpm run build && changeset publish",
     "prepare": "simple-git-hooks",
     "docs": "typedoc --out docs/html --plugin typedoc-plugin-to-skills",
+    "docs:build": "pnpm --filter unacy-docs build",
+    "docs:dev": "pnpm --filter unacy-docs dev",
     "docs:md": "typedoc"
   },
   "devDependencies": {
