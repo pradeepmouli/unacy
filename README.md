@@ -1,60 +1,54 @@
 # unacy
 
-Type-safe unit, format and type conversion library for TypeScript
+> Type-safe unit, format, and dimensional conversion for TypeScript — catch "Fahrenheit into Celsius" bugs at compile time, compose multi-hop conversions automatically, and pay zero runtime cost for the safety.
 
 > **⚠️ Pre-1.0 software** — APIs are subject to change between minor versions. Pin to exact versions in production. See the [CHANGELOG](./CHANGELOG.md) for breaking changes between releases.
 
+<p align="center">
+  <a href="https://www.npmjs.com/package/unacy"><img src="https://img.shields.io/npm/v/unacy?style=flat-square&label=unacy" alt="npm version" /></a>
+  <a href="https://github.com/pradeepmouli/unacy/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/pradeepmouli/unacy/ci.yml?style=flat-square" alt="ci" /></a>
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="license" />
+  <img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=flat-square" alt="node" />
+</p>
+
 📚 **Documentation:** <https://pradeepmouli.github.io/unacy/>
+
+## Overview
+
+Unit conversions are one of those problems that look trivial until a `number` flagged as one unit slips into a function expecting another and ships to production. `unacy` solves that class of bug the way TypeScript solves most bugs: by making the mistake impossible to express. Values are branded with their unit via phantom types (`Celsius`, `Meters`, `USD`), and the converter registry exposes a nested accessor (`registry.Celsius.to.Fahrenheit(value)`) whose callable surface is determined by the edges you actually registered.
+
+The branding is purely compile-time — there is no wrapper object, no runtime tag, no proxy dispatching, and no bundle-size tax for units that never get used. At runtime a conversion is the function you registered, called directly. At type-check time, passing a `Fahrenheit` to `registry.Celsius.to.Fahrenheit(...)` is a type error, passing it to a cross-dimension converter like `Celsius.to.Meters(...)` is a type error, and assigning a `Fahrenheit` to a variable typed `Celsius` is a type error.
+
+When conversions don't exist as a single edge, the registry composes them automatically via a BFS shortest-path search (`Celsius → Kelvin → Fahrenheit`), and an `allow()` API lifts composed paths into the type system so the direct accessor `registry.Celsius.to.Fahrenheit(...)` becomes type-safe even when the edge was synthesized.
 
 ## Features
 
-- **Full Compile-Time Type Safety**:
-  - Prevents invalid value assignments (e.g., can't assign a Fahrenheit value to a Celsius variable)
-  - Prevents invalid conversions (e.g., can't pass a Fahrenheit value to a Celsius converter)
-  - Prevents cross-dimension conversions (e.g., Celsius to Meters)
-  - No explicit type casting needed when registering converters
-- **Unit Accessor API**: Intuitive `registry.Celsius.to.Fahrenheit(value)` syntax
-- **Extensible Units**: Add metadata to units and register new converters dynamically
-- **Auto-Composition**: Multi-hop conversions via BFS shortest path algorithm
-- **Tree-Shakeable**: Export individual unit converters for optimal bundle size
-- **Zero Runtime Overhead**: Type branding uses phantom types with no runtime cost
+- **Full compile-time type safety** — invalid assignments, wrong-direction conversions, and cross-dimension conversions are all TypeScript errors, not runtime failures.
+- **Phantom-typed values** — `WithUnits<number, Metadata>` brands values without boxing them; zero runtime overhead.
+- **Unit accessor API** — intuitive nested syntax: `registry.Celsius.to.Fahrenheit(value)`.
+- **Extensible metadata** — attach symbol, abbreviation, description, or custom fields to each unit via `BaseMetadata` and read them back off the registry (`registry.Celsius.symbol`).
+- **Dynamic registration** — grow the registry incrementally with `.register(A, B, fn)` or the accessor form `registry.Celsius.register(KelvinMetadata, fn)`; each call returns a new registry type that includes the new edge.
+- **Bidirectional converters** — register `{ to, from }` pairs in a single call to get both directions typed.
+- **Auto-composed multi-hop paths** — runtime BFS finds `A → B → C` automatically; `allow(A, C)` lifts the composed path into the static type.
+- **Tree-shakeable** — destructure individual unit converters (`export const { Celsius, Fahrenheit } = registry`) so bundlers can drop what you don't import.
+- **Dimension safety** — units from different dimensions (temperature vs. length) have disjoint accessor namespaces; the compiler won't let you mix them.
+- **ESM-only, dependency-light** — per the project constitution, the core ships with no runtime dependencies.
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js >= 20.0.0
-- pnpm >= 10.0.0
-
-### Installation
+## Install
 
 ```bash
-# Install from npm
-npm install unacy
-
-# Or with pnpm
 pnpm add unacy
-
-# Or with yarn
-yarn add unacy
+# or
+npm install unacy
 ```
 
-For development:
-
-```bash
-git clone https://github.com/pradeepmouli/unacy.git
-cd unacy
-pnpm install
-```
+Requires **Node.js ≥ 20** and a TypeScript version new enough for template literal types and const type parameters (5.x).
 
 ## Quick Start
-
-### Basic Usage
 
 ```typescript
 import { createRegistry, type WithUnits, type BaseMetadata } from 'unacy';
 
-// Define metadata for units
 const CelsiusMetadata = {
   name: 'Celsius' as const,
   symbol: '°C',
@@ -67,81 +61,65 @@ const FahrenheitMetadata = {
   description: 'Temperature in Fahrenheit'
 } satisfies BaseMetadata;
 
-// Define unit types with metadata
 type Celsius = WithUnits<number, typeof CelsiusMetadata>;
 type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
 
-// Create registry and register converters using metadata objects
-// Note: No explicit type casting needed in converter functions!
 const registry = createRegistry()
   .register(CelsiusMetadata, FahrenheitMetadata, {
     to: (c: Celsius) => (c * 9 / 5) + 32,
     from: (f: Fahrenheit) => (f - 32) * 5 / 9
   });
 
-// Use the unit accessor API
 const temp = 25 as Celsius;
 const fahrenheit = registry.Celsius.to.Fahrenheit(temp);
 console.log(fahrenheit); // 77
 ```
 
-### Type Safety Guarantees
+## Usage
 
-The type system provides comprehensive compile-time safety:
+### Type safety guarantees
 
 ```typescript
 type Meters = WithUnits<number, 'Meters'>;
 
-// ❌ Type safety for value assignments
 const celsiusTemp = 25 as Celsius;
 const fahrenheitTemp = 77 as Fahrenheit;
-const invalidTemp: Celsius = fahrenheitTemp; // TypeScript error!
 
-// ❌ Type safety for conversions
-registry.Celsius.to.Fahrenheit(fahrenheitTemp); // TypeScript error!
-// Can't pass a Fahrenheit value to a converter that expects Celsius
+// ❌ Invalid value assignment
+const invalid: Celsius = fahrenheitTemp;                    // TS error
 
-// ❌ Type safety for cross-dimension conversions
-registry.Celsius.to.Meters(temp); // TypeScript error!
-// Property 'Meters' does not exist
+// ❌ Wrong direction — passing Fahrenheit to Celsius converter
+registry.Celsius.to.Fahrenheit(fahrenheitTemp);             // TS error
+
+// ❌ Cross-dimension — Meters isn't in the temperature registry
+registry.Celsius.to.Meters(celsiusTemp);                    // TS error
 ```
 
-### Multi-Hop Conversions
+### Multi-hop conversions
 
-The registry automatically composes multi-hop conversions via BFS:
+Register each hop once; the registry composes the rest via BFS at runtime. Use `allow()` to lift a composed path into the accessor's static type:
 
 ```typescript
-// Define metadata
-const KelvinMetadata = {
-  name: 'Kelvin' as const,
-  symbol: 'K'
-} satisfies BaseMetadata;
+const KelvinMetadata = { name: 'Kelvin' as const, symbol: 'K' } satisfies BaseMetadata;
+type Kelvin = WithUnits<number, typeof KelvinMetadata>;
 
 const registry = createRegistry()
   .register(CelsiusMetadata, KelvinMetadata, (c: Celsius) => c + 273.15)
-  .register(KelvinMetadata, FahrenheitMetadata, (k: Kelvin) => (k - 273.15) * 9/5 + 32);
+  .register(KelvinMetadata, FahrenheitMetadata, (k: Kelvin) => (k - 273.15) * 9 / 5 + 32);
 
-// Runtime: Celsius → Kelvin → Fahrenheit (automatic)
-const fahrenheit = registry.convert(0 as Celsius, 'Celsius').to('Fahrenheit');
-console.log(fahrenheit); // 32
+// Runtime: walks Celsius → Kelvin → Fahrenheit automatically
+const f1 = registry.convert(0 as Celsius, 'Celsius').to('Fahrenheit'); // 32
 
-// To enable type-safe accessor syntax for multi-hop paths, use allow():
-const typeSafeRegistry = registry.allow(CelsiusMetadata, FahrenheitMetadata);
-
-// Now type-safe:
-const f = typeSafeRegistry.Celsius.to.Fahrenheit(0 as Celsius);
+// Lift the composed path into the type system
+const typed = registry.allow(CelsiusMetadata, FahrenheitMetadata);
+const f2 = typed.Celsius.to.Fahrenheit(0 as Celsius); // now type-safe
 ```
 
-### Recent Enhancements
+### Unit metadata
 
-#### Unit Metadata
-
-Add custom metadata to units for richer context:
+Attach symbol, abbreviation, description, or any extra field to a unit and read it off the registry:
 
 ```typescript
-import { createRegistry, type WithUnits, type BaseMetadata } from 'unacy';
-
-// Define metadata objects with unit information
 const CelsiusMetadata = {
   name: 'Celsius' as const,
   symbol: '°C',
@@ -149,82 +127,41 @@ const CelsiusMetadata = {
   description: 'Degrees Celsius'
 } satisfies BaseMetadata;
 
-const FahrenheitMetadata = {
-  name: 'Fahrenheit' as const,
-  symbol: '°F',
-  abbreviation: '°F',
-  description: 'Degrees Fahrenheit'
-} satisfies BaseMetadata;
+const registry = createRegistry().register(CelsiusMetadata, FahrenheitMetadata, {
+  to: (c: Celsius) => (c * 9 / 5) + 32,
+  from: (f: Fahrenheit) => (f - 32) * 5 / 9
+});
 
-type Celsius = WithUnits<number, typeof CelsiusMetadata>;
-type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
-
-// Register converters with metadata objects - metadata is automatically stored
-const registry = createRegistry()
-  .register(CelsiusMetadata, FahrenheitMetadata, {
-    to: (c: Celsius) => (c * 9 / 5) + 32,
-    from: (f: Fahrenheit) => (f - 32) * 5 / 9
-  });
-
-// Access metadata properties directly
-console.log(registry.Celsius.symbol); // '°C'
-console.log(registry.Celsius.description); // 'Degrees Celsius'
-console.log(registry.Fahrenheit.abbreviation); // '°F'
+registry.Celsius.symbol;       // '°C'
+registry.Celsius.description;  // 'Degrees Celsius'
+registry.Fahrenheit.abbreviation; // '°F'
 ```
 
-#### Dynamic Converter Registration via Unit Accessor
-
-Register new converters using the intuitive unit accessor API:
+### Dynamic registration via the accessor
 
 ```typescript
-// Define Kelvin metadata
-const KelvinMetadata = {
-  name: 'Kelvin' as const,
-  symbol: 'K',
-  description: 'Absolute temperature'
-} satisfies BaseMetadata;
-
-type Kelvin = WithUnits<number, typeof KelvinMetadata>;
-
-// Register converters directly through the unit accessor using metadata objects
-const updatedRegistry = registry
+const updated = registry
   .Celsius.register(KelvinMetadata, (c: Celsius) => c + 273.15)
   .Kelvin.register(CelsiusMetadata, (k: Kelvin) => k - 273.15);
 
-// Now use the newly registered converters
-const kelvin = updatedRegistry.Celsius.to.Kelvin(25 as Celsius);
-console.log(kelvin); // 298.15
+const kelvin = updated.Celsius.to.Kelvin(25 as Celsius); // 298.15
 ```
 
-### Tree-Shakeable Exports
+### Tree-shakeable exports
 
-Export individual unit converters for optimal bundle size:
+Destructure per-unit accessors so bundlers drop unused conversions:
 
 ```typescript
 // temperature.ts
-import { createRegistry, type WithUnits, type BaseMetadata } from 'unacy';
+export const CelsiusMetadata    = { name: 'Celsius' as const, symbol: '°C' } satisfies BaseMetadata;
+export const FahrenheitMetadata = { name: 'Fahrenheit' as const, symbol: '°F' } satisfies BaseMetadata;
+export const KelvinMetadata     = { name: 'Kelvin' as const, symbol: 'K' } satisfies BaseMetadata;
 
-// Define and export metadata
-export const CelsiusMetadata = {
-  name: 'Celsius' as const,
-  symbol: '°C'
-} satisfies BaseMetadata;
-
-export const FahrenheitMetadata = {
-  name: 'Fahrenheit' as const,
-  symbol: '°F'
-} satisfies BaseMetadata;
-
-export const KelvinMetadata = {
-  name: 'Kelvin' as const,
-  symbol: 'K'
-} satisfies BaseMetadata;
-
-export type Celsius = WithUnits<number, typeof CelsiusMetadata>;
+export type Celsius    = WithUnits<number, typeof CelsiusMetadata>;
 export type Fahrenheit = WithUnits<number, typeof FahrenheitMetadata>;
-export type Kelvin = WithUnits<number, typeof KelvinMetadata>;
+export type Kelvin     = WithUnits<number, typeof KelvinMetadata>;
 
-const TemperatureRegistry = createRegistry()
+const Temperature = createRegistry()
   .register(CelsiusMetadata, FahrenheitMetadata, {
     to: (c: Celsius) => (c * 9 / 5) + 32,
     from: (f: Fahrenheit) => (f - 32) * 5 / 9
@@ -233,82 +170,48 @@ const TemperatureRegistry = createRegistry()
   .register(KelvinMetadata, CelsiusMetadata, (k: Kelvin) => k - 273.15)
   .allow(KelvinMetadata, FahrenheitMetadata);
 
-// Export individual converters using destructuring
-export const { Celsius, Fahrenheit, Kelvin } = TemperatureRegistry;
+export const { Celsius, Fahrenheit, Kelvin } = Temperature;
 
-// Usage - only imports what you use
+// Consumer — only pulls in what it imports
 import { Celsius } from './temperature';
-const fahrenheit = Celsius.to.Fahrenheit(25 as Celsius);
+const f = Celsius.to.Fahrenheit(25 as Celsius);
 ```
 
-### Development
+## How it works
 
-```bash
-# Run tests
-pnpm test
+The core trick is that `WithUnits<T, M>` is `T & { readonly __unit: M }` — a phantom intersection that exists only in the type system. At runtime, values are plain `number`s (or `string`s, etc.). Converters you register are plain functions, stored in a graph keyed by metadata `name`.
 
-# Run tests in watch mode
-pnpm test:watch
+`createRegistry()` returns an object whose static type is a mapping over the registered edges: each `.register(A, B, fn)` call threads through a type-level accumulator that adds `A.to.B` (and, for bidirectional registrations, `B.to.A`) to the accessor. At runtime, the registry stores edges in an adjacency map and runs a BFS over it when `.convert(...).to(...)` is called on a path that wasn't registered directly. `allow(A, B)` asserts to the type system that a path exists so the accessor form becomes available without widening runtime behavior.
 
-# Build packages
-pnpm build
-
-# Lint code
-pnpm lint
-
-# Format code
-pnpm format
-
-# Type check
-pnpm type-check
-```
+The net effect: you get F#-units-of-measure-style compile-time safety in TypeScript, with no runtime boxing and bundle sizes that scale only with the units you actually import.
 
 ## Packages
 
-This monorepo contains the following packages:
+| Package | Description |
+|---|---|
+| [`unacy`](packages/core) | Core library — registry, converters, formatters, type utilities, BFS pathfinding |
 
-- **[unacy](packages/core)** - Core conversion library with type-safe unit conversions, registry, and formatters
+## Related projects
 
-## Project Structure
+- **[js-quantities](https://github.com/gentooboontoo/js-quantities)** / **[convert-units](https://github.com/convert-units/convert-units)** — runtime-first conversion libraries with predefined unit catalogs. `unacy` inverts that: no catalog, no runtime wrappers, type-safety-first, bring your own units.
+- **[ts-units](https://github.com/bheisig/ts-units)** — similar philosophy; `unacy` differs in its registry-and-accessor model, multi-hop BFS composition, and metadata reflection (`registry.Celsius.symbol`).
+- **F# units of measure** — the inspiration. `unacy` is the closest TypeScript approximation the author could find.
 
+## Development
+
+```bash
+pnpm install
+pnpm test          # run tests
+pnpm test:watch    # watch mode
+pnpm build
+pnpm lint
+pnpm type-check
 ```
-unacy/
-├── packages/
-│   └── core/           # unacy - Core conversion library
-│       ├── src/
-│       │   ├── types.ts           # WithUnits, WithFormat types
-│       │   ├── converters.ts      # Converter types
-│       │   ├── registry.ts        # ConverterRegistry implementation
-│       │   ├── formatters.ts      # Formatter/Parser types
-│       │   ├── errors.ts          # Error classes
-│       │   └── utils/
-│       │       ├── graph.ts       # BFS pathfinding
-│       │       └── validation.ts  # Runtime validation helpers
-│       └── __tests__/             # Test suites
-├── specs/                         # Feature specifications
-│   └── 001-unacy-core/
-├── docs/                          # Documentation
-├── .github/workflows/             # CI/CD workflows
-└── README.md
-```
-
-## Documentation
-
-- [Feature Specification](specs/001-unacy-core/spec.md) - Complete feature specification
-- [Implementation Plan](specs/001-unacy-core/plan.md) - Technical implementation details
-- [API Documentation](packages/core/README.md) - Core package API reference
-- [Type System Architecture](specs/001-unacy-core/spec.md#type-system-architecture) - Edge-based type tracking
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## License
 
-MIT - See [LICENSE](LICENSE) for details
-
----
-
-**Author**: Pradeep Mouli
-**Created**: January 06, 2026
-
+MIT — see [LICENSE](./LICENSE).
