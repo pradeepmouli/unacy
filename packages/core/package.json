@@ -4,7 +4,7 @@
   "description": "Type-safe unit and format conversion library",
   "type": "module",
   "private": false,
-  "author": "Pradeep Mouli",
+  "author": "Pradeep Mouli <pmouli@mac.com> (https://github.com/pradeepmouli)",
   "license": "MIT",
   "repository": {
     "type": "git",

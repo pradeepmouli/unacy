@@ -2,6 +2,8 @@
 
 Type-safe unit, format and type conversion library for TypeScript
 
+> **⚠️ Pre-1.0 software** — APIs are subject to change between minor versions. Pin to exact versions in production. See the [CHANGELOG](./CHANGELOG.md) for breaking changes between releases.
+
 ## Features
 
 - **Full Compile-Time Type Safety**:
