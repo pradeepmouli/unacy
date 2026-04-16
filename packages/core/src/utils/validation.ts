@@ -9,21 +9,48 @@ import type { EnumType, ClassType, RecordSchema, TupleSchema, TypedMetadata } fr
 import { ParseError } from '../errors.js';
 
 /**
- * Create a parser with Zod schema validation.
+ * Create a `Parser<WithFormat<T, F>>` backed by a Zod-compatible schema.
  *
- * @template F - Format identifier
- * @template T - Base type
- * @param schema - Zod schema for validation
- * @param format - Format identifier string
- * @returns Parser function that validates and tags values
+ * Wraps a Zod (or Zod-compatible) schema's `.parse()` method to produce a
+ * typed `Parser`. On schema rejection, the Zod error message is re-thrown
+ * as a `ParseError` so callers always receive a consistent error type.
+ *
+ * @template F - Format identifier string literal (e.g., `'HexColor'`)
+ * @template T - Base runtime type that the schema validates into
+ * @param schema - Any object with a `.parse(input: string)` method (Zod schema)
+ * @param format - Format identifier used in thrown `ParseError` instances
+ * @returns Parser function that validates and tags values as `WithFormat<T, F>`
+ *
+ * @throws {ParseError} When `schema.parse` rejects the input
  *
  * @example
  * ```typescript
- * const parseHex = createParserWithSchema(
+ * import { z } from 'zod';
+ * import { createParserWithSchema } from 'unacy';
+ *
+ * type HexColor = WithFormat<string, 'HexColor'>;
+ * const parseHex = createParserWithSchema<'HexColor', string>(
  *   z.string().regex(/^#[0-9A-Fa-f]{6}$/),
  *   'HexColor'
  * );
+ *
+ * parseHex('#ff0000'); // OK → tagged as HexColor
+ * parseHex('red');     // throws ParseError
  * ```
+ *
+ * @useWhen You already have a Zod schema for a format and want to produce a
+ * typed `Parser` with minimal boilerplate.
+ *
+ * @avoidWhen Your validation logic cannot be expressed as a Zod schema — write
+ * a custom `Parser<T>` instead, throwing `ParseError` on failure.
+ *
+ * @pitfalls
+ * NEVER pass a schema whose `.parse()` does not throw on invalid input — the
+ * returned parser relies on schema rejection to trigger `ParseError`.
+ *
+ * @category Validation
+ * @see Parser
+ * @see ParseError
  */
 export function createParserWithSchema<F extends string, T>(
   schema: any,
@@ -61,6 +88,16 @@ export function createParserWithSchema<F extends string, T>(
  * validateEnum(LogLevel); // true
  * validateEnum({}); // false
  * ```
+ *
+ * @useWhen You are receiving a runtime value and need to confirm it is a valid
+ * TypeScript enum before using it as a `TypedMetadata<EnumType>.type` field.
+ *
+ * @pitfalls
+ * NEVER use `validateEnum` to check plain objects that happen to have string
+ * values — they may look like string enums but carry no semantic meaning.
+ * Use `validateRecordSchema` for plain data objects.
+ *
+ * @category Validation
  */
 export function validateEnum(value: unknown): value is EnumType {
   if (typeof value !== 'object' || value === null) {
@@ -114,6 +151,8 @@ export function validateEnum(value: unknown): value is EnumType {
  *
  * @param value - The value to validate
  * @returns `true` if `value` is a valid `ClassType` constructor
+ *
+ * @category Validation
  */
 export function validateClass(value: unknown): value is ClassType {
   if (typeof value !== 'function') {
@@ -145,6 +184,8 @@ export function validateClass(value: unknown): value is ClassType {
  * validateRecordSchema({ x: 'number', y: 'number' }); // true
  * validateRecordSchema({ pos: { x: 'number' } }); // true (nested)
  * ```
+ *
+ * @category Validation
  */
 export function validateRecordSchema(
   value: unknown,
@@ -214,6 +255,8 @@ export function validateRecordSchema(
  * validateTupleSchema(['string', 'number?']); // true (optional)
  * validateTupleSchema(['number', '...string']); // true (rest)
  * ```
+ *
+ * @category Validation
  */
 export function validateTupleSchema(value: unknown): value is TupleSchema {
   if (!Array.isArray(value)) {
@@ -265,6 +308,7 @@ export function validateTupleSchema(value: unknown): value is TupleSchema {
  * classified as a record, not an enum.
  *
  * @param meta - Metadata object to inspect
+ * @category Validation
  */
 export function isEnumMetadata(meta: unknown): meta is TypedMetadata<EnumType> {
   if (typeof meta !== 'object' || meta === null || !('type' in meta)) {
@@ -301,6 +345,7 @@ export function isEnumMetadata(meta: unknown): meta is TypedMetadata<EnumType> {
  * Type guard: returns `true` when `meta.type` is a class constructor.
  *
  * @param meta - Metadata object to inspect
+ * @category Validation
  */
 export function isClassMetadata(meta: unknown): meta is TypedMetadata<ClassType> {
   if (typeof meta !== 'object' || meta === null || !('type' in meta)) {
@@ -315,6 +360,7 @@ export function isClassMetadata(meta: unknown): meta is TypedMetadata<ClassType>
  * Type guard: returns `true` when `meta.type` is a record schema object.
  *
  * @param meta - Metadata object to inspect
+ * @category Validation
  */
 export function isRecordMetadata(meta: unknown): meta is TypedMetadata<RecordSchema> {
   if (typeof meta !== 'object' || meta === null || !('type' in meta)) {
@@ -340,6 +386,7 @@ export function isRecordMetadata(meta: unknown): meta is TypedMetadata<RecordSch
  * Type guard: returns `true` when `meta.type` is a tuple schema array.
  *
  * @param meta - Metadata object to inspect
+ * @category Validation
  */
 export function isTupleMetadata(meta: unknown): meta is TypedMetadata<TupleSchema> {
   if (typeof meta !== 'object' || meta === null || !('type' in meta)) {
@@ -364,6 +411,25 @@ export function isTupleMetadata(meta: unknown): meta is TypedMetadata<TupleSchem
  *
  * @param meta - Metadata object to categorise
  * @returns The detected kind string
+ *
+ * @remarks
+ * Resolution priority order: `primitive` → `class` → `tuple` → `record` → `enum` → `unknown`.
+ * This ordering is important: a class constructor would otherwise match the object check,
+ * and a tuple schema (array) would match the record check, so the dispatcher checks
+ * the more specific types first.
+ *
+ * @example
+ * ```typescript
+ * detectMetadataKind({ name: 'Celsius', type: 'number' }); // 'primitive'
+ * detectMetadataKind({ name: 'Point', type: { x: 'number', y: 'number' } }); // 'record'
+ * detectMetadataKind({ name: 'RGB', type: ['number', 'number', 'number'] }); // 'tuple'
+ * detectMetadataKind({ name: 'Direction', type: Direction }); // 'enum' (if Direction is an enum)
+ * ```
+ *
+ * @useWhen You need to dynamically dispatch on the kind of a metadata object
+ * at runtime (e.g., in serialisers or schema generators built on top of unacy).
+ *
+ * @category Validation
  */
 export function detectMetadataKind(
   meta: unknown

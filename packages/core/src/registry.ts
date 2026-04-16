@@ -52,8 +52,39 @@ type ToUnitsFor<Edges extends readonly Edge[], FromUnit extends WithTypedUnits<a
  * Extract metadata type from a WithUnits type
  */
 /**
- * Type for unit accessor with metadata and conversion methods
- * Can be called as a function to create branded unit values
+ * Callable accessor object returned per unit from the registry.
+ *
+ * Provides three capabilities in one surface:
+ * 1. **Callable** — call it to brand a plain value: `registry.Celsius(25)` → `Celsius`
+ * 2. **`.to.<Unit>(value)`** — convert to another registered unit
+ * 3. **`.register(toMeta, converter)`** — extend the registry from this unit
+ *
+ * Also reflects the unit's metadata properties directly (e.g., `registry.Celsius.symbol`).
+ *
+ * @template From - The branded unit type this accessor represents
+ * @template Edges - Tuple of registered conversion edges in the registry
+ *
+ * @example
+ * ```typescript
+ * const temp = registry.Celsius(25);              // brand a value
+ * const f = registry.Celsius.to.Fahrenheit(temp); // convert
+ * registry.Celsius.symbol;                         // '°C' (if registered in metadata)
+ * ```
+ *
+ * @useWhen You have a registry and want to convert, brand, or inspect a specific unit.
+ *
+ * @pitfalls
+ * NEVER use the accessor's `.to.*` property at a type that doesn't exist in the
+ * registry — TypeScript will report a type error, but at runtime the Proxy throws
+ * `ConversionError` if the path is not reachable.
+ *
+ * NEVER call the accessor without arguments for non-primitive types — class-typed
+ * units construct via `new Constructor(...args)`, so calling with zero args when
+ * the constructor requires arguments will throw at runtime.
+ *
+ * @category Registry
+ * @see UnitRegistry
+ * @see createRegistry
  */
 export type UnitAccessor<
   From extends WithTypedUnits<TypedMetadata<SupportedType>>,
@@ -93,16 +124,78 @@ export type UnitAccessor<
 } & UnitsOf<From>;
 
 /**
- * Type for unit-based conversion accessors
- * Provides the shape: registry.Celsius.to.Fahrenheit(value)
- * Only allows conversions that have been registered
+ * A map of unit name → `UnitAccessor` for all registered source units.
+ *
+ * Provides the fluent accessor shape:
+ * `registry.Celsius.to.Fahrenheit(value)`
+ * Only units that appear as the `From` side of a registered edge appear here.
+ *
+ * @remarks
+ * `UnitMap` is a type-level view over the registered `Edges` tuple. Each call to
+ * `registry.register(from, to, fn)` extends the `Edges` tuple at the type level,
+ * adding a new key to `UnitMap`. This means the accessible unit names grow
+ * monotonically — they are never removed once registered.
+ *
+ * @template Edges - Tuple of all registered conversion edges
+ *
+ * @category Registry
  */
 export type UnitMap<Edges extends readonly Edge[]> = {
   [FU in FromUnits<Edges> as UnitsFor<FU>]: UnitAccessor<FU, Edges>;
 };
 
 /**
- * Registry for managing and composing unit converters
+ * Registry for managing and composing unit converters.
+ *
+ * The central API of unacy. Each `register()` call returns a **new** registry
+ * instance (immutable accumulator pattern) whose static type reflects the newly
+ * added edge(s). At runtime, the registry stores edges in an adjacency map and
+ * runs BFS when a direct edge is absent.
+ *
+ * @template Edges - Tuple of conversion edges accumulated so far
+ *
+ * @remarks
+ * **Immutability**: every `register()` and `allow()` call produces a new
+ * registry. Assigning the result back to the same variable is intentional —
+ * the old instance remains valid but lacks the new edge in its type.
+ *
+ * **BFS caching**: multi-hop paths resolved via `getConverter` are cached by
+ * a `"from->to"` key. Mutating the graph after caching is not supported — the
+ * registry is designed to be built once and used many times.
+ *
+ * @example
+ * ```typescript
+ * const registry = createRegistry()
+ *   .register(CelsiusMeta, FahrenheitMeta, { to: c => (c * 9/5) + 32, from: f => (f - 32) * 5/9 })
+ *   .register(CelsiusMeta, KelvinMeta, c => c + 273.15)
+ *   .allow(KelvinMeta, FahrenheitMeta);
+ *
+ * registry.Celsius.to.Fahrenheit(0 as Celsius); // 32
+ * registry.Kelvin.to.Fahrenheit(273.15 as Kelvin); // 32
+ * ```
+ *
+ * @useWhen You need a central, type-safe registry for a domain's units (e.g.,
+ * temperature, length, currency) that enforces conversion safety at compile time.
+ *
+ * @avoidWhen You only need a single, always-direct conversion without
+ * BFS composition — a plain `Converter<A, B>` function is simpler.
+ *
+ * @pitfalls
+ * NEVER mutate the internal graph after calling `getConverter` on a path that
+ * was composed via BFS — the path cache is not invalidated on mutation and will
+ * return stale composed converters.
+ *
+ * NEVER discard the return value of `register()` — the original registry
+ * instance does not have the new edge in its type or runtime graph.
+ *
+ * NEVER share a mutable registry reference across async boundaries where
+ * concurrent calls could interleave `register` and `convert` — the registry is
+ * designed to be fully built before any conversions are performed.
+ *
+ * @category Registry
+ * @see createRegistry
+ * @see UnitMap
+ * @see UnitAccessor
  */
 export interface UnitRegistry<Edges extends Edge[] = []> {
   register<From extends WithTypedUnits<FromMeta>, FromMeta extends TypedMetadata<SupportedType>>(
@@ -555,30 +648,67 @@ class ConverterRegistryImpl<Edges extends Edge[] = []> implements UnitRegistry<E
 }
 
 /**
- * Create a new converter registry
+ * Create a new, empty converter registry.
  *
- * @template Edges - Optional tuple of Edge types to pre-declare available units and conversions
- * @returns Empty converter registry with unit-based accessors
+ * The factory entry point for unacy. Returns an empty `UnitRegistry` that can
+ * be grown incrementally via chained `.register()` calls. Each call produces a
+ * new registry instance with an expanded type signature reflecting the new edge.
+ *
+ * @template Edges - Optional tuple of Edge types to pre-declare available units
+ * and conversions before `register()` calls (rarely needed in practice).
+ *
+ * @returns Empty converter registry with full type-safe unit accessor support
  *
  * @example
  * ```typescript
- * type Celsius = WithUnits<PrimitiveType, 'Celsius'>;
- * type Fahrenheit = WithUnits<PrimitiveType, 'Fahrenheit'>;
- * type Meters = WithUnits<PrimitiveType, 'meters'>;
- * type Kilometers = WithUnits<PrimitiveType, 'kilometers'>;
+ * import { createRegistry, type WithUnits, type BaseMetadata } from 'unacy';
  *
- * // Without pre-declared units
+ * const CelsiusMeta = { name: 'Celsius' as const, symbol: '°C' } satisfies BaseMetadata;
+ * const FahrenheitMeta = { name: 'Fahrenheit' as const, symbol: '°F' } satisfies BaseMetadata;
+ * const KelvinMeta = { name: 'Kelvin' as const, symbol: 'K' } satisfies BaseMetadata;
+ *
+ * type Celsius = WithUnits<number, typeof CelsiusMeta>;
+ * type Fahrenheit = WithUnits<number, typeof FahrenheitMeta>;
+ * type Kelvin = WithUnits<number, typeof KelvinMeta>;
+ *
  * const registry = createRegistry()
- *   .register('Celsius', 'Fahrenheit', (c: Celsius) => ((c * 9/5) + 32) as Fahrenheit);
+ *   .register(CelsiusMeta, FahrenheitMeta, { to: c => (c * 9/5) + 32, from: f => (f - 32) * 5/9 })
+ *   .register(CelsiusMeta, KelvinMeta, c => c + 273.15)
+ *   .allow(KelvinMeta, FahrenheitMeta); // lift BFS-composed path into types
  *
- * // With pre-declared edges (for unit accessor registration before converters exist)
- * const registry2 = createRegistry<[Edge<'meters', 'kilometers'>]>()
- *   .meters.register('kilometers', (m) => (m / 1000) as Kilometers);
- *
- * const temp: Celsius = 25 as Celsius;
- * const fahrenheit = registry.Celsius.to.Fahrenheit(temp);
- * console.log(fahrenheit); // 77
+ * const f = registry.Celsius.to.Fahrenheit(25 as Celsius); // 77
+ * const k = registry.Celsius.to.Kelvin(0 as Celsius);      // 273.15
  * ```
+ *
+ * @useWhen You need a type-safe, composable unit conversion graph for a domain.
+ * The primary entry point for all unacy usage.
+ *
+ * @avoidWhen You only need a single direct conversion with no type guarantees —
+ * a plain function is lighter and requires no registry setup overhead.
+ *
+ * @pitfalls
+ * NEVER reassign a registry variable without capturing the `register()` return
+ * value — each call returns a new instance; the original is unchanged.
+ * ```typescript
+ * // WRONG — result is discarded
+ * const r = createRegistry();
+ * r.register(CelsiusMeta, FahrenheitMeta, converter); // r is not updated
+ *
+ * // CORRECT — chain the calls
+ * const registry = createRegistry()
+ *   .register(CelsiusMeta, FahrenheitMeta, converter);
+ * ```
+ *
+ * NEVER add values of different units directly in arithmetic — the type system
+ * prevents this at compile time, but if you bypass it with `as`, the runtime
+ * will silently produce incorrect results with no error.
+ *
+ * NEVER use `as` to cast a `Quantity<Celsius>` to `Quantity<Fahrenheit>` —
+ * this defeats the entire purpose of the phantom type system.
+ *
+ * @category Registry
+ * @see UnitRegistry
+ * @see UnitMap
  */
 export function createRegistry<Edges extends readonly Edge[] = []>(): UnitRegistry<
   Edges extends readonly (infer E)[] ? E[] : never
