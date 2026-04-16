@@ -7,6 +7,30 @@ export default defineConfig({
   base: '/unacy/',
   lastUpdated: true,
   cleanUrls: true,
+  head: [
+    ['meta', { property: 'og:title', content: 'unacy' }],
+    [
+      'meta',
+      {
+        property: 'og:description',
+        content: 'Type-safe unit, format and type conversion library for TypeScript'
+      }
+    ],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:url', content: 'https://pradeepmouli.github.io/unacy/' }],
+    ['meta', { name: 'twitter:card', content: 'summary' }],
+    ['meta', { name: 'twitter:title', content: 'unacy' }],
+    [
+      'meta',
+      {
+        name: 'twitter:description',
+        content: 'Type-safe unit, format and type conversion library for TypeScript'
+      }
+    ]
+  ],
+  sitemap: {
+    hostname: 'https://pradeepmouli.github.io/unacy'
+  },
   themeConfig: {
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
