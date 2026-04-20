@@ -63,8 +63,8 @@ importers:
         specifier: ^4.11.0
         version: 4.11.0(typedoc@0.28.19(typescript@6.0.3))
       typedoc-plugin-to-skills:
-        specifier: ^0.6.6
-        version: 0.6.6(typedoc@0.28.19(typescript@6.0.3))
+        specifier: ^1.0.0
+        version: 1.0.0(typedoc@0.28.19(typescript@6.0.3))
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -84,8 +84,8 @@ importers:
         specifier: ^4.11.0
         version: 4.11.0(typedoc@0.28.19(typescript@6.0.3))
       typedoc-plugin-to-skills:
-        specifier: ^0.6.0
-        version: 0.6.0(typedoc@0.28.19(typescript@6.0.3))
+        specifier: ^1.0.0
+        version: 1.0.0(typedoc@0.28.19(typescript@6.0.3))
       typedoc-vitepress-theme:
         specifier: ^1.1.2
         version: 1.1.2(typedoc-plugin-markdown@4.11.0(typedoc@0.28.19(typescript@6.0.3)))
@@ -1305,22 +1305,11 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@to-skills/core@0.10.3':
-    resolution: {integrity: sha512-xPQsfY30rrIZThu13d/AFzUnXNySPC1hG+6xbnvEe3Z1ZZZgHc4u8KP+IcrAa/YX1gKbkr4x9Bog2tZTDrYYxw==}
-
-  '@to-skills/core@0.8.0':
-    resolution: {integrity: sha512-P+sJNS3RHVCbYFVvYAZdQwhQhTniQNS7xv+rd/9bVJbfIBKUjpjiaxSq0qU2kLzQzT4mu/Q65OHDbYYrEtPPtw==}
-
   '@to-skills/core@1.0.0':
     resolution: {integrity: sha512-O6UiA4jmg9mozNJ2TTdACvaLP3VfTCK6QNI3uTcI/9UIth6Me1DYzbJcnDUfz35RtI3H6yr3PHKCAZGURUkUSQ==}
 
-  '@to-skills/typedoc@0.11.4':
-    resolution: {integrity: sha512-FFGhyx/tEtzbQQxNFGGdbLO8tNXtwwL1O9izTBaElwrzDPJHa12SsLIakD5NlyeKn+YOOKLGnKFKjxy+5eNVPw==}
-    peerDependencies:
-      typedoc: '>=0.28.0'
-
-  '@to-skills/typedoc@0.9.0':
-    resolution: {integrity: sha512-sCaTL84RUrggqzUoSkMmQz49dKLje0pUDrvCqlHYMnO8Gs+dQaIbWYSfWBVzhGaWKU1xpqb1R0YIIVIGUTsj1Q==}
+  '@to-skills/typedoc@1.0.0':
+    resolution: {integrity: sha512-umdbTJ0IuCcpoAmR0KJb3H1EH8hel/Cr00MTOqL2r/qsWN02k1NB90lm5s9Jvaaif8ewSnc0PMmmAnN/VLMGMg==}
     peerDependencies:
       typedoc: '>=0.28.0'
 
@@ -2419,13 +2408,8 @@ packages:
     peerDependencies:
       typedoc: 0.28.x
 
-  typedoc-plugin-to-skills@0.6.0:
-    resolution: {integrity: sha512-ySVxoXCott6emILNPLNTyvmNLLkXHCHZ6yxz8X7OeJPko1auBQSQ5Uogs2mhT0ZC0vYgmc9ZzTIwk5lZdGXeBQ==}
-    peerDependencies:
-      typedoc: '>=0.28.0'
-
-  typedoc-plugin-to-skills@0.6.6:
-    resolution: {integrity: sha512-iusBTiIW4HuSq3qhDSVZGc9feNq1N7cI4L03n8g63JRG4pJQdg9ZRWe/ZE4OnSLt/m2+Mn2+jHayAr+ArxHzwQ==}
+  typedoc-plugin-to-skills@1.0.0:
+    resolution: {integrity: sha512-fr5DvvTaUrV7jBpGskl95nGWDXXzinuGPN9n++D97SXSXHbSwI0tx+S8sm5LPn6+h1HzzeqKwhVDswjGJV1g0A==}
     peerDependencies:
       typedoc: '>=0.28.0'
 
@@ -3473,20 +3457,11 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@to-skills/core@0.10.3': {}
-
-  '@to-skills/core@0.8.0': {}
-
   '@to-skills/core@1.0.0': {}
 
-  '@to-skills/typedoc@0.11.4(typedoc@0.28.19(typescript@6.0.3))':
+  '@to-skills/typedoc@1.0.0(typedoc@0.28.19(typescript@6.0.3))':
     dependencies:
-      '@to-skills/core': 0.10.3
-      typedoc: 0.28.19(typescript@6.0.3)
-
-  '@to-skills/typedoc@0.9.0(typedoc@0.28.19(typescript@6.0.3))':
-    dependencies:
-      '@to-skills/core': 0.8.0
+      '@to-skills/core': 1.0.0
       typedoc: 0.28.19(typescript@6.0.3)
 
   '@to-skills/vitepress@0.2.17':
@@ -4639,14 +4614,9 @@ snapshots:
     dependencies:
       typedoc: 0.28.19(typescript@6.0.3)
 
-  typedoc-plugin-to-skills@0.6.0(typedoc@0.28.19(typescript@6.0.3)):
+  typedoc-plugin-to-skills@1.0.0(typedoc@0.28.19(typescript@6.0.3)):
     dependencies:
-      '@to-skills/typedoc': 0.9.0(typedoc@0.28.19(typescript@6.0.3))
-      typedoc: 0.28.19(typescript@6.0.3)
-
-  typedoc-plugin-to-skills@0.6.6(typedoc@0.28.19(typescript@6.0.3)):
-    dependencies:
-      '@to-skills/typedoc': 0.11.4(typedoc@0.28.19(typescript@6.0.3))
+      '@to-skills/typedoc': 1.0.0(typedoc@0.28.19(typescript@6.0.3))
       typedoc: 0.28.19(typescript@6.0.3)
 
   typedoc-vitepress-theme@1.1.2(typedoc-plugin-markdown@4.11.0(typedoc@0.28.19(typescript@6.0.3))):
