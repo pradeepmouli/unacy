@@ -69,7 +69,7 @@
     "size-limit": "^12.0.0",
     "tsx": "^4.21.0",
     "type-fest": "^5.5.0",
-    "typedoc": "^0.28.18",
+    "typedoc": "^0.28.19",
     "typedoc-plugin-markdown": "^4.11.0",
     "typedoc-plugin-to-skills": "^0.6.0",
     "typescript": "^6.0.3",
