@@ -18,8 +18,8 @@ importers:
         specifier: ^12.1.0
         version: 12.1.0(size-limit@12.1.0(jiti@2.6.1))
       '@to-skills/vitepress':
-        specifier: ^0.2.17
-        version: 0.2.17
+        specifier: ^0.2.25
+        version: 0.2.25
       '@types/node':
         specifier: ^25.6.0
         version: 25.6.0
@@ -1311,8 +1311,8 @@ packages:
   '@to-skills/core@0.8.0':
     resolution: {integrity: sha512-P+sJNS3RHVCbYFVvYAZdQwhQhTniQNS7xv+rd/9bVJbfIBKUjpjiaxSq0qU2kLzQzT4mu/Q65OHDbYYrEtPPtw==}
 
-  '@to-skills/core@1.0.0':
-    resolution: {integrity: sha512-O6UiA4jmg9mozNJ2TTdACvaLP3VfTCK6QNI3uTcI/9UIth6Me1DYzbJcnDUfz35RtI3H6yr3PHKCAZGURUkUSQ==}
+  '@to-skills/core@1.3.0':
+    resolution: {integrity: sha512-rK0NPuUJAKhja6PZ7o1WRVCeqgJIg9jooiWhWPy6KYVTnMRgDkOvvFFSB5WmprdWqMgewp5I2weSbB9d8A3khg==}
 
   '@to-skills/typedoc@0.11.4':
     resolution: {integrity: sha512-FFGhyx/tEtzbQQxNFGGdbLO8tNXtwwL1O9izTBaElwrzDPJHa12SsLIakD5NlyeKn+YOOKLGnKFKjxy+5eNVPw==}
@@ -1324,8 +1324,8 @@ packages:
     peerDependencies:
       typedoc: '>=0.28.0'
 
-  '@to-skills/vitepress@0.2.17':
-    resolution: {integrity: sha512-Dc8pYPsnut9nbKgzcMhBhA0+pPyTiBrvgnm+FLPxP0QPatJNy22EifvfoU6OsBTrbzqg3CU/nmjC20FSyxBW7g==}
+  '@to-skills/vitepress@0.2.25':
+    resolution: {integrity: sha512-dKdl041eJoJYF7bl/Mrp+kvky/xadlVRgv8ORz8KjQMU7LrLPj4ArkaTOPS9LvihxGLpZjlhLiIFN2QhaQnzdg==}
     peerDependencies:
       vitepress: '>=1.0.0'
     peerDependenciesMeta:
@@ -3473,7 +3473,7 @@ snapshots:
 
   '@to-skills/core@0.8.0': {}
 
-  '@to-skills/core@1.0.0': {}
+  '@to-skills/core@1.3.0': {}
 
   '@to-skills/typedoc@0.11.4(typedoc@0.28.19(typescript@6.0.3))':
     dependencies:
@@ -3485,9 +3485,9 @@ snapshots:
       '@to-skills/core': 0.8.0
       typedoc: 0.28.19(typescript@6.0.3)
 
-  '@to-skills/vitepress@0.2.17':
+  '@to-skills/vitepress@0.2.25':
     dependencies:
-      '@to-skills/core': 1.0.0
+      '@to-skills/core': 1.3.0
 
   '@tybys/wasm-util@0.10.1':
     dependencies:
