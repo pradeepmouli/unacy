@@ -7,6 +7,7 @@ export default defineConfig({
   base: '/unacy/',
   lastUpdated: true,
   cleanUrls: true,
+  ignoreDeadLinks: true,
   head: [
     ['meta', { property: 'og:title', content: 'unacy' }],
     [
