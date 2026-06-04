@@ -1,0 +1,58 @@
+# unacy-docs
+
+> Documentation site for unacy
+
+### API
+
+- `createRegistry`: Create a new, empty converter registry.
+- `createParserWithSchema`: Create a `Parser<WithFormat<T, F>>` backed by a Zod-compatible schema.
+- `validateEnum`: Validate that a runtime value is a valid TypeScript enum object.
+- `validateClass`: Validate that a runtime value is a valid class constructor.
+- `validateRecordSchema`: Validate that a runtime value is a valid record schema.
+- `validateTupleSchema`: Validate that a runtime value is a valid tuple schema.
+- `isEnumMetadata`: Type guard: returns `true` when `meta.
+- `isClassMetadata`: Type guard: returns `true` when `meta.type` is a class constructor.
+- `isRecordMetadata`: Type guard: returns `true` when `meta.type` is a record schema object.
+- `isTupleMetadata`: Type guard: returns `true` when `meta.type` is a tuple schema array.
+- `detectMetadataKind`: Detect the kind of a metadata object by inspecting its `type` field.
+- `UnacyError`: Base error class for all unacy errors.
+- `CycleError`: Error thrown when a cycle is detected during BFS path-finding.
+- `MaxDepthError`: Error thrown when BFS path-finding exceeds the maximum conversion depth.
+- `ConversionError`: Error thrown when a conversion cannot be performed.
+- `ParseError`: Error thrown when parsing a string into a format-tagged value fails.
+
+## Optional
+
+### Types
+
+- `WithUnits`: Brand a value with a unit identifier for compile-time unit safety.
+- `WithTypedUnits`: Resolve a branded unit type from a `TypedMetadata` object.
+- `WithFormat`: Brand a value with a format identifier for compile-time format safety.
+- `Relax`: Relax a branded unit type to accept either the branded form or its raw unwrapped value.
+- `PrimitiveType`: Primitive JavaScript types that can be used as unit base types.
+- `SupportedType`: Union of all types that can be used as a unit's base type.
+Includes primitives and non-primitive categories (enum, class, record, tuple).
+- `EnumType`: A TypeScript enum object at runtime — an object whose values are all
+strings (string enum) or all numbers (numeric enum).
+- `ClassType`: A class constructor (including abstract classes) that can serve as a
+unit's type identity.
+- `RecordSchema`: A schema describing an object shape.
+- `TupleSchema`: A schema describing a tuple as an array of primitive type name strings.
+Supports optional (`'number?'`) and rest (`'...number'`) modifiers.
+- `ToPrimitiveTypeName`: Map a primitive TypeScript type to its corresponding type name string.
+- `Converter`: Unidirectional converter from one unit to another.
+- `BidirectionalConverter`: Bidirectional converter with forward and reverse transformations.
+- `RelaxedConverter`: A converter that accepts the branded input type but returns
+unwrapped (plain) output.
+- `RelaxedBidirectionalConverter`: A bidirectional converter with relaxed (unwrapped) output types.
+- `Formatter`: Formatter converts a format-tagged value to a string representation.
+- `Parser`: Parser converts a plain string into a format-tagged value with validation.
+- `FormatterParser`: Paired formatter/parser for round-trip format transformations.
+- `UnitRegistry`: Registry for managing and composing unit converters.
+- `UnitMap`: A map of unit name → `UnitAccessor` for all registered source units.
+- `UnitAccessor`: Callable accessor object returned per unit from the registry.
+- `PrimitiveTypeFromName`: Map type name strings to TypeScript primitive types.
+- `InferFromRecordSchema`: Infer TypeScript type from a `RecordSchema`.
+Recursively processes nested schemas.
+- `InferFromTupleSchema`: Infer TypeScript type from a `TupleSchema`.
+Handles optional (`?`) and rest (`...`) elements.
