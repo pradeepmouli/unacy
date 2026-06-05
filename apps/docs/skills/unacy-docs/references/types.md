@@ -40,36 +40,6 @@ Useful for APIs that should accept both `WithUnits<T, M>` and plain `T` intercha
 T | Unwrap<T>
 ```
 
-## Metadata
-
-### `BaseMetadata`
-Base metadata type that all unit metadata must extend.
-Requires a `name` property and allows arbitrary additional properties.
-
-### `TypedMetadata`
-Metadata type for units with explicit type information.
-
-For primitive types, `type` is the type name string (e.g., `'number'`).
-For non-primitive types, `type` IS the actual value:
-- Enum: the enum object itself
-- Class: the class constructor
-- Record: the schema object `{ x: 'number', y: 'string' }`
-- Tuple: the tuple schema array `['number', 'string']`
-```ts
-Simplify<{ name: string; type: T extends PrimitiveType ? ToPrimitiveTypeName<T> : T }>
-```
-
-### `UnitMetadata`
-Display and descriptive metadata that can be attached to units in the registry.
-
-Supports common properties like abbreviation, format template, description,
-and symbol, plus an index signature for arbitrary custom fields.
-**Properties:**
-- `abbreviation: string` (optional) — Short abbreviation for the unit (e.g., "°C", "m", "kg")
-- `format: string` (optional) — Format string for displaying values (e.g., "${value}°C")
-- `description: string` (optional) — Human-readable description of the unit
-- `symbol: string` (optional) — Symbol representation of the unit
-
 ## Types
 
 ### `PrimitiveType`

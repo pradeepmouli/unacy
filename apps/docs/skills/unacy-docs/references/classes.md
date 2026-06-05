@@ -31,10 +31,7 @@ constructor(path: PropertyKey[]): CycleError
 ```
 **Properties:**
 - `path: PropertyKey[]`
-- `name: string`
-- `message: string`
-- `stack: string` (optional)
-- `cause: unknown` (optional)
+*Inherits 4 properties from `UnacyError` — see [`UnacyError`](../unacyerror.md)*
 ```typescript
 try {
   registry.getConverter('Celsius', 'Celsius'); // same unit
@@ -55,10 +52,7 @@ constructor(from: PropertyKey, to: PropertyKey, maxDepth: number): MaxDepthError
 - `from: PropertyKey`
 - `to: PropertyKey`
 - `maxDepth: number`
-- `name: string`
-- `message: string`
-- `stack: string` (optional)
-- `cause: unknown` (optional)
+*Inherits 4 properties from `UnacyError` — see [`UnacyError`](../unacyerror.md)*
 ```typescript
 try {
   registry.getConverter('A', 'F'); // requires 6-hop path
@@ -78,10 +72,7 @@ constructor(from: PropertyKey, to: PropertyKey, reason?: string): ConversionErro
 **Properties:**
 - `from: PropertyKey`
 - `to: PropertyKey`
-- `name: string`
-- `message: string`
-- `stack: string` (optional)
-- `cause: unknown` (optional)
+*Inherits 4 properties from `UnacyError` — see [`UnacyError`](../unacyerror.md)*
 ```typescript
 try {
   registry.convert(temp, 'Celsius').to('Miles'); // no path
@@ -102,10 +93,7 @@ constructor(format: string, input: string, reason: string): ParseError
 - `format: string`
 - `input: string`
 - `reason: string`
-- `name: string`
-- `message: string`
-- `stack: string` (optional)
-- `cause: unknown` (optional)
+*Inherits 4 properties from `UnacyError` — see [`UnacyError`](../unacyerror.md)*
 ```typescript
 try {
   parseISO('not-a-date');
