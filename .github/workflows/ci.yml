@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [22.x, 24.x]
 
     steps:
       - uses: actions/checkout@v6
@@ -49,11 +49,11 @@ jobs:
 
       - name: Test Coverage
         run: pnpm run test:coverage
-        if: matrix.node-version == '20.x'
+        if: matrix.node-version == '22.x'
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v6
-        if: matrix.node-version == '20.x'
+        if: matrix.node-version == '22.x'
         with:
           files: ./coverage/lcov.info
           fail_ci_if_error: false
@@ -63,5 +63,5 @@ jobs:
         continue-on-error: true
 
       - name: Check Bundle Size
-        if: matrix.node-version == '20.x' && hashFiles('.size-limit.json') != ''
+        if: matrix.node-version == '22.x' && hashFiles('.size-limit.json') != ''
         run: pnpm exec size-limit
