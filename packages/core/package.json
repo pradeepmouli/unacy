@@ -39,7 +39,7 @@
     "type-fest": "^5.7.0"
   },
   "devDependencies": {
-    "@types/node": "^25.9.2",
+    "@types/node": "^25.9.3",
     "@typescript/native-preview": "beta",
     "vitest": "^4.1.8"
   },
