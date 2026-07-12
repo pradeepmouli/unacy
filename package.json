@@ -57,7 +57,7 @@
     "@changesets/cli": "^2.31.0",
     "@size-limit/preset-small-lib": "^12.1.0",
     "@to-skills/vitepress": "^0.2.26",
-    "@types/node": "^26.1.0",
+    "@types/node": "^26.1.1",
     "@typescript/native-preview": "beta",
     "@vitest/coverage-v8": "^4.1.9",
     "@vitest/ui": "^4.1.9",
