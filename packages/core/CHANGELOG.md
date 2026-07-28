@@ -1,5 +1,11 @@
 # unacy
 
+## 0.8.2
+
+### Patch Changes
+
+- [#53](https://github.com/pradeepmouli/unacy/pull/53) [`9983b18`](https://github.com/pradeepmouli/unacy/commit/9983b1849b414ccae7051117013b06663a7d5e4e) Thanks [@pradeepmouli](https://github.com/pradeepmouli)! - - chore: bump typedoc-plugin-to-skills to ^1.3.0
+
 ## 0.8.1
 
 ### Patch Changes
