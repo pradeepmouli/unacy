@@ -28,9 +28,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsgo -p tsconfig.json",
+    "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
-    "type-check": "tsgo --noEmit",
+    "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepublishOnly": "npm run clean && npm run build"
@@ -40,7 +40,6 @@
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
-    "@typescript/native-preview": "beta",
     "vitest": "^4.1.10"
   },
   "engines": {
