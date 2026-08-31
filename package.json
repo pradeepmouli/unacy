@@ -57,7 +57,7 @@
     "@changesets/cli": "^3.0.1",
     "@size-limit/preset-small-lib": "^12.1.0",
     "@to-skills/vitepress": "^0.2.26",
-    "@types/node": "^26.2.0",
+    "@types/node": "^26.4.0",
     "@vitest/coverage-v8": "^4.1.11",
     "@vitest/ui": "^4.1.11",
     "lint-staged": "^17.3.0",
