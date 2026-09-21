@@ -1,5 +1,17 @@
 # unacy
 
+## 0.8.3
+
+### Patch Changes
+
+- [#150](https://github.com/pradeepmouli/unacy/pull/150) [`8e4dc8c`](https://github.com/pradeepmouli/unacy/commit/8e4dc8c6b3a60534f0f3aeba3f4b96ea2308fa24) Thanks [@pradeepmouli](https://github.com/pradeepmouli)! - - fix(ci): generate changeset and keep TS6 pins in dep-update workflow
+  - chore(deps)(deps-dev): bump vitepress ([#147](https://github.com/pradeepmouli/unacy/issues/147))
+  - chore(deps)(deps-dev): bump the code-quality group across 1 directory with 2 updates ([#145](https://github.com/pradeepmouli/unacy/issues/145))
+  - chore(deps)(deps-dev): bump vite ([#146](https://github.com/pradeepmouli/unacy/issues/146))
+  - chore(deps)(deps): bump zod from 4.5.4 to 4.6.2 ([#149](https://github.com/pradeepmouli/unacy/issues/149))
+
+- - chore(deps): update runtime dependencies
+
 ## 0.8.2
 
 ### Patch Changes
