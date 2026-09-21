@@ -36,16 +36,16 @@
     "prepublishOnly": "npm run clean && npm run build"
   },
   "dependencies": {
-    "type-fest": "^5.7.0"
+    "type-fest": "^5.10.0"
   },
   "devDependencies": {
-    "@types/node": "^25.9.1",
-    "vitest": "^4.1.8"
+    "@types/node": "^26.6.1",
+    "vitest": "^4.1.11"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "optionalDependencies": {
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   }
 }

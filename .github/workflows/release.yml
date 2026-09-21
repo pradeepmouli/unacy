@@ -43,7 +43,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -53,9 +53,9 @@ jobs:
           version: 10.32.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
 
@@ -70,12 +70,12 @@ jobs:
 
       - name: Create Release Pull Request or Publish
         id: changesets
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
-          version: pnpm changeset:version
-          publish: pnpm changeset:publish
-          commit: 'chore: version packages'
-          title: 'chore: version packages'
+          version-script: pnpm changeset:version
+          publish-script: pnpm changeset:publish
+          commit-message: 'chore: version packages'
+          pr-title: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -92,15 +92,19 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
-              head: `${context.repo.owner}:changeset-release/master`
+              head: `${context.repo.owner}:changeset-release/${context.ref.replace('refs/heads/', '')}`
             });
-            if (pulls.length === 0) return;
+            if (pulls.length === 0) { console.log('No version PR found'); return; }
             const pr = pulls[0];
-            await github.graphql(`
-              mutation($id: ID!) {
-                enablePullRequestAutoMerge(input: { pullRequestId: $id, mergeMethod: SQUASH }) {
-                  pullRequest { number }
+            try {
+              await github.graphql(`
+                mutation($id: ID!) {
+                  enablePullRequestAutoMerge(input: { pullRequestId: $id, mergeMethod: SQUASH }) {
+                    pullRequest { number }
+                  }
                 }
-              }
-            `, { id: pr.node_id });
-            console.log(`Auto-merge enabled on PR #${pr.number}`);
+              `, { id: pr.node_id });
+              console.log(`Auto-merge enabled on PR #${pr.number}`);
+            } catch(e) {
+              console.log('Auto-merge not available:', e.message);
+            }
