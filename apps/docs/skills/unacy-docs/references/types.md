@@ -26,7 +26,7 @@ unknown extends M ? WithUnits<any, any> : M extends { name: string; type: infer 
 ### `WithFormat`
 Brand a value with a format identifier for compile-time format safety.
 
-Analogous to `WithUnits<T, M>` but for format tags rather than unit
+Analogous to `WithUnits&lt;T, M&gt;` but for format tags rather than unit
 metadata. Ensures a formatted string, `Date`, or number cannot be
 passed to a formatter/parser expecting a different format.
 ```ts
@@ -35,7 +35,7 @@ Tagged<T, typeof UNITS, F>
 
 ### `Relax`
 Relax a branded unit type to accept either the branded form or its raw unwrapped value.
-Useful for APIs that should accept both `WithUnits<T, M>` and plain `T` interchangeably.
+Useful for APIs that should accept both `WithUnits&lt;T, M&gt;` and plain `T` interchangeably.
 ```ts
 T | Unwrap<T>
 ```
@@ -141,7 +141,7 @@ unwrapped (plain) output. This eliminates the need to cast return values
 to branded types inside converter functions, while preserving
 full autocompletion on the input parameter.
 
-Since `Tagged<T, ...> extends T`, strict converters returning branded
+Since `Tagged&lt;T, ...&gt; extends T`, strict converters returning branded
 types are also assignable to this type.
 ```ts
 (input: TInput) => Unwrap<TOutput>
@@ -164,7 +164,7 @@ Formatter converts a format-tagged value to a string representation.
 Parser converts a plain string into a format-tagged value with validation.
 
 Parsers are the gatekeeper that transforms raw (unbranded) string input into
-a `WithFormat<T, F>` branded value. They must validate the input fully before
+a `WithFormat&lt;T, F&gt;` branded value. They must validate the input fully before
 applying the brand — invalid inputs must throw, never produce tagged garbage.
 ```ts
 (input: string) => TOutput
@@ -202,7 +202,7 @@ Callable accessor object returned per unit from the registry.
 
 Provides three capabilities in one surface:
 1. **Callable** — call it to brand a plain value: `registry.Celsius(25)` → `Celsius`
-2. **`.to.<Unit>(value)`** — convert to another registered unit
+2. **`.to.&lt;Unit&gt;(value)`** — convert to another registered unit
 3. **`.register(toMeta, converter)`** — extend the registry from this unit
 
 Also reflects the unit's metadata properties directly (e.g., `registry.Celsius.symbol`).
