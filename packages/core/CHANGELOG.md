@@ -1,5 +1,13 @@
 # unacy
 
+## 0.8.4
+
+### Patch Changes
+
+- [#167](https://github.com/pradeepmouli/unacy/pull/167) [`7ba748b`](https://github.com/pradeepmouli/unacy/commit/7ba748b45950dc988cef09f1558d26511eca604a) Thanks [@pradeepmouli](https://github.com/pradeepmouli)! - - fix(ci): bump docs deploy to Node 22
+
+- [#169](https://github.com/pradeepmouli/unacy/pull/169) [`e89c1c8`](https://github.com/pradeepmouli/unacy/commit/e89c1c8d519de9979cefd8f5179b3eb77faf666c) Thanks [@pradeepmouli](https://github.com/pradeepmouli)! - Bump vitest and @vitest/* to ^5.0.1.
+
 ## 0.8.3
 
 ### Patch Changes
