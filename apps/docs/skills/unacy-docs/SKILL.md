@@ -1,11 +1,11 @@
 ---
-description: "Documentation site for unacy Use when: You need a type-safe, composable unit conversion graph for a domain. The...."
+description: "Unacy Core - Type-safe unit and format conversion library Use when: You need a type-safe, composable unit conversion graph for a domain. The...."
 name: unacy-docs
 ---
 
 # unacy-docs
 
-Documentation site for unacy
+Unacy Core - Type-safe unit and format conversion library
 
 ## When to Use
 
