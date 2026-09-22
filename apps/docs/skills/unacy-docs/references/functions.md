@@ -37,7 +37,7 @@ const k = registry.Celsius.to.Kelvin(0 as Celsius);      // 273.15
 ## Validation
 
 ### `createParserWithSchema`
-Create a `Parser<WithFormat<T, F>>` backed by a Zod-compatible schema.
+Create a `Parser&lt;WithFormat&lt;T, F&gt;&gt;` backed by a Zod-compatible schema.
 
 Wraps a Zod (or Zod-compatible) schema's `.parse()` method to produce a
 typed `Parser`. On schema rejection, the Zod error message is re-thrown
@@ -48,7 +48,7 @@ createParserWithSchema<F, T>(schema: any, format: F): Parser<WithFormat<T, F>>
 **Parameters:**
 - `schema: any` — Any object with a `.parse(input: string)` method (Zod schema)
 - `format: F` — Format identifier used in thrown `ParseError` instances
-**Returns:** `Parser<WithFormat<T, F>>` — Parser function that validates and tags values as `WithFormat<T, F>`
+**Returns:** `Parser<WithFormat<T, F>>` — Parser function that validates and tags values as `WithFormat&lt;T, F&gt;`
 **Throws:** When `schema.parse` rejects the input
 **See:** - Parser
  - ParseError
