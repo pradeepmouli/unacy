@@ -1,5 +1,11 @@
 # unacy
 
+## 0.8.5
+
+### Patch Changes
+
+- [#173](https://github.com/pradeepmouli/unacy/pull/173) [`be09629`](https://github.com/pradeepmouli/unacy/commit/be0962961452ea60c9f900421c840ccda774a580) Thanks [@github-actions](https://github.com/apps/github-actions)! - - chore(deps): update dependencies to latest
+
 ## 0.8.4
 
 ### Patch Changes
