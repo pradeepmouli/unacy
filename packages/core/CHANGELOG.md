@@ -1,5 +1,11 @@
 # unacy
 
+## 0.8.4
+
+### Patch Changes
+
+- [#167](https://github.com/pradeepmouli/unacy/pull/167) [`7ba748b`](https://github.com/pradeepmouli/unacy/commit/7ba748b45950dc988cef09f1558d26511eca604a) Thanks [@pradeepmouli](https://github.com/pradeepmouli)! - - fix(ci): bump docs deploy to Node 22
+
 ## 0.8.3
 
 ### Patch Changes
